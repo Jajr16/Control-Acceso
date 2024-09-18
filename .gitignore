@@ -1,0 +1,6 @@
+# Binarios - Merge conflicts
+
+*.pyc
+__pycache__/
+
+virt
