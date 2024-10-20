@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% load static %}
+<section class="login-section">
+    <h1>Sistema de Administración Escolar</h1>
+    <p>Es la herramienta informática diseñada para apoyar en la consulta y atención de trámites escolares.</p>
+
+
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <form action="{% url 'login' %}" method="POST" class="login-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="boleta-id">Boleta:</label>
+            {{ form.boleta }}
+        </div>
+    
+        <div class="form-group">
+            <label for="password-id">Contraseña:</label>
+            {{ form.contraseña }}
+        </div>
+    
+        <div class="form-group">
+            <label for="captcha-text">Captcha:</label>
+            <div id="captcha-container" class="captcha-box">
+                <div id="c_default_ctl00_leftcolumn_loginuser_logincaptcha_CaptchaImage" class="captcha-image-box">
+                    {{ form.captcha }} 
+                </div>
+                {% if form.captcha.errors %}
+                    <div class="error">{{ form.captcha.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        <button type="submit" id="ctl00_leftColumn_LoginUser_LoginButton">Iniciar</button>
+    </form>
+
+    <div class="info-links">
+        <center>
+            <p><a href="{% url 'register' %}">¿No tienes cuenta? Registrate</a></p>
+        </center>
+        <p><a href="https://denunciasegura.ipn.mx">Ingresa a realizar tu denuncia segura</a></p>
+        <p><a href="https://www.ipn.mx/defensoria/orientacion-queja/queja.html">¿Necesitas orientación o
+                levantar una queja?</a></p>
+        <p>Ahora que has concluido tu inscripción, es importante que obtengas tu Número de Seguridad Social
+            (NSS). Si no cuentas con uno, ingresa a:
+            <a href="https://www.gob.mx/afiliate">Afíliate aquí</a>
+        </p>
+        <p>Para mayor información puedes escribir a este correo electrónico:
+            <a href="mailto:afiliacionimss@ipn.mx">afiliacionimss@ipn.mx</a>
+        </p>
+    </div>
+</section>
+{% endblock content %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% load static %}
+
+<h2>Boleta: {{ request.user.boleta }}</h2>
+<h2>Nombre: {{ request.user.nombre }} {{ request.user.apellido }}</h2>
+<table>
+    <thead style="text-transform: uppercase; font-weight: bold;">
+        <tr>
+            <td>CARRERA:</td>
+            <td>PLAN:</td>
+            <td>NO MAT:</td>
+            <td>MATERIA:</td>
+            <td>TURNO:</td>
+            <td></td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for asignacion in asignaciones %}
+        <tr>
+            <td>{{ asignacion.carrera }}</td>
+            <td>{{ asignacion.periodo }}</td>
+            <td>{{ asignacion.no_materia }}</td>
+            <td>{{ asignacion.materia }}</td>
+            <td>{{ asignacion.turno }}</td>
+            <td><a href="{% url 'ETS' asignacion.no_materia %}">Ver alumnos</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock content %}

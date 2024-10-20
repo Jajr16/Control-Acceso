@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAES - IPN</title>
+    <link rel="stylesheet" href="{% static 'css/Default.css' %}">
+    <link rel="stylesheet" href="{% static 'css/normalize.css' %}">
+</head>
+
+<body>
+    <!-- Encabezado -->
+    <header>
+        <div class="logo">
+            <a href="{% url 'home' %}"><img src="{% static 'img/LogoP.png' %}" alt="Logo IPN"></a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#">Inicio</a></li>
+                <li><a href="#">Reglamento</a></li>
+                <li><a href="#">Ayuda</a></li>
+                <li><a href="#">Recuperar Contraseña</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main>
+        {% block content %}
+
+        {% endblock content %}
+    </main>
+
+    <!-- Pie de página -->
+    <footer>
+        <p>&copy; 2024 SAES - IPN</p>
+        <p>Enlaces: <a href="#">IPN</a> | <a href="#">Gobierno</a> | <a href="#">Trámites</a></p>
+    </footer>
+</body>
+
+</html>

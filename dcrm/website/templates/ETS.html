@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Alumnos inscritos en {{ materia }} (ETS)</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Boleta</th>
+            <th>Nombre</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for alumno in alumnos %}
+        <tr>
+            <td>{{ alumno.boletaAlm.boleta }}</td>
+            <td>{{ alumno.boletaAlm.nombre }} {{ alumno.boletaAlm.apellido }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock content %}
