@@ -1,0 +1,128 @@
+% !TeX root = proyecto.tex
+
+%=========================================================
+\chapter{Modelo del Negocio}	
+\label{cap:reqSist}
+
+\cdtInstrucciones{Introduzca el capítulo describiendo el contenido del mismo, su organización y propósito.}
+
+%----------------------------------------------------------
+\section{Actores del sistema}
+
+	\cdtInstrucciones{En esta sección describa a los actores del sistema.}
+	
+	%---------------------------------------------------------
+	\begin{Usuario}{\hypertarget{A.NombreDelUsuario}{\subsection{Nombre del usuario}}}{
+			Descripción del usuario: su puesto
+		}
+		\item[Responsabilidades:] \cdtEmpty
+		\begin{itemize}
+			\item Listar todas las responsabilidades y actividades dentro de la empresa.
+			\item ...
+		\end{itemize}
+		
+		\item[Perfil:] \cdtEmpty
+		\begin{itemize}
+			\item Describa el perfil del puesto: cursos, experiencia,habilidades blandas, escolaridad, certificaciones, etc.
+			\item ...
+		\end{itemize}
+		\item[Procesos en los que participa:] \cdtEmpty
+		\begin{itemize}
+			\item Liste los procesos en los que participa.
+			\item PC-V01 Aprobar las ordenes de compra al mayoreo.
+			\item ...
+		\end{itemize}
+		\item[Área:] Indique el nombre del área a la que pertenece dentro de la organización
+		\item[Cantidad aproximada:] Cantidad aproximada de personas que participan con este rol en el negocio.
+		\item[Horario actividad:] En qué horario se espera que utilice el sistema. 
+	\end{Usuario}
+	
+%---------------------------------------------------------
+\section{Términos del Negocio}
+\label{sec:terminosDeNegocio}
+
+\cdtInstrucciones{En esta sección describa todos los términos del negocio que aparecen en la especificación del sistema.}
+	
+\begin{description}
+	% Ejemplo de un término literal.
+	\item[\hypertarget{tAutomovil}{Automóvil:}] ({\em es un tipo de \hyperlink{tVehiculo}{Vehículo}}) De cuatro ruedas con capacidad de 5 a 9 personas. 
+	% Ejemplo de un término de entidad
+	\item[\hypertarget{tCliente}{Cliente:}] Se refiere a todas las personas físicas y morales que \hyperlink{tRenta}{rentan} o han rentado un \hyperlink{tVehiculo}{vehículo}.
+	
+	\item[\hypertarget{tDirector}{Director:}] ({\em es un tipo de \hyperlink{tEmpleado}{Empleado}}) Es el empleado que tiene mayor rango de todos y no tiene superior, a diferencia de los demás.	
+	\item[\hypertarget{tEmpleado}{Empleado:}] Se refiere a cualquier persona que labore en la empresa.
+	
+	\item[\hypertarget{tChecador}{Checador:}] ({\em Reloj asociado al atributo:} Hora de entrada y salida de un \hyperlink{tEmpleado}{empleado}. {\em Frecuencia de lectura:} Una vez al día para la entrada y otra para la salida durante los días laborales.
+	
+	\item[\hypertarget{tMotocicleta}{Motocicleta:}] ({\em es un tipo de {tVehiculo}{Vehículo}}) De dos ruedas con capacidad para una personas. 
+
+	\item[\hypertarget{tRenta}{Renta:}] Se refiere al servicio que ofrece la empresa para prestar \hyperlink{tVehiculo}{vehículos} a los \hyperlink{tCliente}{clientes} por un tiempo definido.
+	
+	\item[\hypertarget{tVehiculo}{Vehiculo:}] Se refiere a los automóviles y motocicletas que la empresa usa para dar el servicio de renta a los \hyperlink{tCliente}{clientes}.
+	
+%	\brTermSensor{tVelocimetro}{Velocímetro:}{Velocidad de un Vehículo.}{Kilometros/hora.}{Constantemente siempre que el \cdtRef{tVehiculo}{vehículo} esté encendido.}
+\end{description}
+
+%----------------------------------------------------------
+\section{Modelo del dominio del problema}
+\label{sec:hechosDeNegocio}
+
+\cdtInstrucciones{En esta sección describa todas las entidades del negocio y sus relaciones.}
+
+	El modelo del dominio del problema se muestra en la figura~\ref{fig:modeloDeDominio}, a continuación se describen cada una de las entidades y sus relaciones.
+	
+\begin{figure}[htpb!]
+	\begin{center}
+		\includegraphics[angle=90,width=.95\textwidth]{images/modeloDelDominioDelProblema}
+		\caption{Modelo del dominio del problema}
+		\label{fig:modeloDeDominio}
+	\end{center}
+\end{figure}
+
+\begin{cdtEntidad}{Alumno}{Alumno}
+	\brAttr{registro}{Registro}{Id}{Número de registro utilizado para identificar un alumno}{Sí}
+	\brAttr{nombre}{Nombre}{Palabra Corta}
+		{Nombre o nombres del alumno.}{Sí}
+	\brAttr{primerApellido}{Primer apellido}{Palabra Corta}
+		{Primer apellido del alumno.}{Sí}
+	\brAttr{segundoApellido}{Segundo apellido}{Palabra Corta}
+		{Segundo apellido del alumno.}{No}
+	\brAttr{CURP}{CURP}{CURP}
+		{CURP del alumno.}{Sí}
+	\brAttr{nacimiento}{Nacimiento}{Fecha}
+		{Fecha de nacimiento del alumno.}{Sí}
+	\brAttr{genero}{Género}{Domicilio}
+		{Género del alumno.}{No}
+	\brAttr{telefono}{Teléfono}{Telefono}
+		{Teléfono para contactar al alumno.}{Sí}
+	\brAttr{correo}{Correo}{Correo}
+		{Correo del alumno para enviar información académica y escolar y para recuperación de clave de acceso.}{Sí}
+	\cdtEntityRelSection
+	\brRel{\brRelComposition}{Domicilio}{Un \hyperlink{Alumno}{Alumno} reside en un \hyperlink{Domicilio}{Domicilio}}	
+	\brRel{\brRelAgregation}{Grupo}{Un \hyperlink{Alumno}{Alumno} toma un \hyperlink{Curso}{Curso}}	
+\end{cdtEntidad}
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+\begin{cdtEntidad}{AlumnoExtranjero}{Alumno Extranjero}%{}
+	\brAttr{numeroResidente}{Numero de residente}{Id}{Número de registro dado por la Secretaría de Relaciones Exteriores a los extranjeros.}{Si}
+	\brAttr{paisOrigen}{Pais origen}{\hyperlink{Pais}{País}}
+		{País de origen del alumno extranjero.}{Sí}
+	\cdtEntityRelSection
+	\brRel{\brRelAgregation}{País}{Un \hyperlink{Alumno}{Alumno} es originario de un \hyperlink{Pais}{Pais}}	
+	\brRel{\brRelGeneralization}{Alumno}{Un \hyperlink{AlumnoExtranjero}{Alumno Extranjero} es un  \hyperlink{Alumno}{Alumno}}	
+	\brRel{\brRelParticipation}{Alumno}{Un \hyperlink{AlumnoExtranjero}{Alumno Extranjero} es un  \hyperlink{Alumno}{Alumno}}	
+\end{cdtEntidad}
+
+%---------------------------------------------------------
+\section{Modelado de Reglas de negocio}
+
+
+\input{3-1-reglas}
+
+
+\section{Máquinas de estado}
+
+\input{3-2-estados.tex}
+
+
+
