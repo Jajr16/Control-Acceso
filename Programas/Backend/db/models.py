@@ -2,11 +2,10 @@ from sqlalchemy import *
 from sqlalchemy.orm import relationship
 from db.session import Base
 
-
 class UnidadAcademica(Base):
     __tablename__ = "UnidadAcademica"
 
-    idEscuela = Column(Integer, primary_key=True, index=True)
+    idEscuela = Column(Integer, primary_key=True, index=True, autoincrement=True)
     Nombre = Column(String(200), index=True, nullable=False)
 
     # Relación con EscuelaPrograma
@@ -148,7 +147,7 @@ class CargoDocente(Base):
 class Turno(Base):
     __tablename__ = "Turno"
     
-    idTurno = Column(Integer, primary_key=True, index=True)
+    idTurno = Column(Integer, primary_key=True, index=True, autoincrement=True)
     Nombre = Column(String(10), nullable=False, index=True)
     
     turnoPS = relationship("PersonalSeguridad", back_populates="turnoSeguridad")
@@ -222,7 +221,7 @@ class UnidadAprendizaje(Base):
 class ETS(Base):
     __tablename__ = "ETS"
     
-    idETS = Column(Integer, primary_key=True, index=True)
+    idETS = Column(Integer, primary_key=True, index=True, autoincrement=True)
     idPeriodo = Column(Integer, ForeignKey("periodoETS.idPeriodo", onupdate="CASCADE", ondelete="CASCADE"), nullable=False, index=True)
     Turno = Column(Integer, ForeignKey("Turno.idTurno"), nullable=False)
     Fecha = Column(DateTime, nullable=False, index=True)

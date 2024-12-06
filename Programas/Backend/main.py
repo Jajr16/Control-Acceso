@@ -1,11 +1,11 @@
 from fastapi import FastAPI
-# from api.routes import router
+from api import api_router  
 from db.session import init_db
 
 app = FastAPI()
 
 # Registrar rutas
-# app.include_router(router)
+app.include_router(api_router)
 
 # Inicializar la base de datos
 @app.on_event("startup")
