@@ -3,7 +3,8 @@ from datetime import date, datetime
 from typing import Optional
 
 from .Turno import TurnoResponse
-from .SalonETS import SalonETSResponse
+from .Salon import SalonBase
+# from .SalonETS import SalonETSResponse
     
 ######### PERIODO ETS ###########
 class periodoETSBase(BaseModel):
@@ -26,17 +27,22 @@ class ETSBase(BaseModel):
     idPeriodo: str
     Turno: str
     Fecha: datetime
-    Cupo: int
-    idUA: str 
-    Duracion: int
     
     class Config:
         orm_mode = True
     
 
 class ETSCreate(ETSBase):
-    pass
-
+    Cupo: int
+    idUA: str 
+    Duracion: int
+    
+    class Config:
+        orm_mode = True
 
 class ETSResponse(ETSBase):
-    pass
+    idETS: int
+    ProgramaAcademico: Optional[str]
+    
+    class Config:
+        orm_mode = True
