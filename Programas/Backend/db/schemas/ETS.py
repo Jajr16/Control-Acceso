@@ -42,7 +42,7 @@ class ETSCreate(ETSBase):
 
 class ETSResponse(ETSBase):
     idETS: int
-    ProgramaAcademico: Optional[str]
+    UnidadAprendizaje: Optional[str]
     
     class Config:
         orm_mode = True

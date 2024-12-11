@@ -79,9 +79,7 @@ fun LoginScreen(navController: NavController) {
 
 
                     navController.navigate("Menu")
-
-                    }
-
+                }
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(

@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 
-
 class ProgramaAcademicoBase(BaseModel):
     Nombre: str
     Descripcion: str

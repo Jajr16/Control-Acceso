@@ -19,6 +19,6 @@ data class Ets(
 )
 
 data class SalonETSResponse(
-    val Salon: Salon,
-    val ETS: Ets
+    val ETS: Ets,
+    val Salones: List<Salon>
 )

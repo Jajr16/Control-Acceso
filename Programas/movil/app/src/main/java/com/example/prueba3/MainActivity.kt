@@ -4,6 +4,7 @@ import Pantallas.Camara
 import Pantallas.CreateAccountScreen
 import Pantallas.ETSInscriptionProcessScreen
 import Pantallas.EtsCardButton
+import Pantallas.EtsDetailScreen
 import Pantallas.EtsListScreen
 import Pantallas.LoginScreen
 import Pantallas.QRScannerScreen
@@ -38,6 +39,14 @@ class MainActivity : ComponentActivity() {
                 composable("scanQr") { QRScannerScreen(navController) }
                 composable("info") { ETSInscriptionProcessScreen(navController) }
                 composable("CrearCuenta") { CreateAccountScreen(navController) }
+
+                composable(
+                    route = "unicETSDetail/{idETS}",
+                    arguments = listOf(navArgument("idETS" ) { type = NavType.IntType})
+                    ) { backStackEntry ->
+                    val idETS = backStackEntry.arguments?.getInt("idETS") ?: 0
+                    EtsDetailScreen(navController, idETS)
+                }
 
                 composable(
                     route = "etsDetail/{ETS}/{Periodo}/{Turno}/{PA}/{Fecha}",

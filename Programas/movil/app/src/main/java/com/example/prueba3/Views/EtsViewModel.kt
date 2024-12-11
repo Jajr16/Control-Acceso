@@ -1,4 +1,4 @@
-package com.example.prueba3
+package com.example.prueba3.Views
 
 import com.example.prueba3.Clases.ListadoETS
 import RetroFit.RetrofitInstance
@@ -19,7 +19,7 @@ class EtsViewModel : ViewModel() {
     private fun fetchEtsList() {
         viewModelScope.launch {
             try {
-                val response = RetrofitInstance.api.getEtsList()
+                val response = RetrofitInstance.ETSapi.getEtsList()
                 _etsList.value = response
             } catch (e: Exception) {
                 // Maneja los errores aquí

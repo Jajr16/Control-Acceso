@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from db.models import SalonETS, Salon, ETS
-from db.schemas.SalonETS import SalonETSCreate, SalonETSResponse
+from db.schemas.SalonETS import ETSWithSalonsResponse, SalonETSCreate, SalonETSResponse
 from db.session import get_db
 
 router = APIRouter(prefix="/SalonETS", tags=["SalonETS"])
@@ -40,6 +40,42 @@ def get_all_salon_ets(db: Session = Depends(get_db)):
     
     return response
 
+@router.get("/{ETSid}", response_model=ETSWithSalonsResponse)
+def getSalonETS(ETSid: int, db: Session = Depends(get_db)):
+    ets = db.query(ETS).filter(ETS.idETS == ETSid).first()
+    if not ets:
+        raise HTTPException(status_code=404, detail="ETS no encontrado")
+    
+    relaciones = db.query(SalonETS).filter(SalonETS.idETS == ETSid).all()
+    if not relaciones:
+        raise HTTPException(status_code=404, detail="No hay relaciones ETS-Salón registradas")
+    
+    # Construir respuesta enriquecida
+    salones = [
+        {
+            "numSalon": salon.numSalon,
+            "Edificio": salon.Edificio,
+            "Piso": salon.Piso,
+            "tipoSalon": salon.salonType.Tipo
+        }
+        for rel in relaciones
+        if (salon := db.query(Salon).filter(Salon.numSalon == rel.numSalon).first())
+    ]
+    
+    return {
+        "ETS": {
+            "tipoETS": ets.periodo.Tipo,
+            "idETS": ets.idETS,
+            "idPeriodo": ets.periodo.Periodo,
+            "Turno": ets.turno.Nombre,
+            "Fecha": ets.Fecha,
+            "Cupo": ets.Cupo,
+            "idUA": ets.UAETS.programaAcademico.Nombre,
+            "Duracion": ets.Duracion
+        },
+        "Salones": salones
+    }
+
 # Asignar un salón a un ETS
 @router.post("/", response_model=SalonETSResponse)
 def create_salon_ets(data: SalonETSCreate, db: Session = Depends(get_db)):
@@ -58,6 +94,7 @@ def create_salon_ets(data: SalonETSCreate, db: Session = Depends(get_db)):
         SalonETS.numSalon == data.numSalon,
         SalonETS.idETS == data.idETS
     ).first()
+    
     if existing:
         raise HTTPException(status_code=400, detail="La relación ETS-Salón ya existe")
     

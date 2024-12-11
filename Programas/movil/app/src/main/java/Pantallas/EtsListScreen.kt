@@ -27,9 +27,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.prueba3.EtsViewModel
+import com.example.prueba3.Views.EtsViewModel
 
-@Composable
+    @Composable
     fun EtsListScreen(navController: NavController, viewModel: EtsViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
         val etsList by viewModel.etsList.collectAsState()
 
@@ -56,7 +56,7 @@ import com.example.prueba3.EtsViewModel
                             idPeriodo = ets.idPeriodo,
                             Turno = ets.Turno,
                             Fecha = ets.Fecha,
-                            ProgramaAcademico = ets.ProgramaAcademico
+                            UnidadAprendizaje = ets.UnidadAprendizaje
                         )
                     }
                 }
@@ -71,20 +71,14 @@ fun EtsCardButton(
     idPeriodo: String,
     Turno: String,
     Fecha: String,
-    ProgramaAcademico: String
+    UnidadAprendizaje: String
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
             .clickable {
-                val encodedETS = Uri.encode(idETS.toString())
-                val encodedPeriod = Uri.encode(idPeriodo)
-                val encodeTurno = Uri.encode(Turno)
-                val encodedFecha = Uri.encode(Fecha)
-                val encodedPA = Uri.encode(ProgramaAcademico)
-
-                navController.navigate("etsDetail/$encodedETS/$encodedPeriod/$encodeTurno/$encodedPA/$encodedFecha")
+                navController.navigate("unicETSDetail/$idETS")
             },
         shape = RoundedCornerShape(8.dp),
         border = BorderStroke(1.dp, Color.Black),
@@ -96,7 +90,7 @@ fun EtsCardButton(
             modifier = Modifier
                 .padding(16.dp)
         ) {
-            Text(text = "Unidad Académica: $ProgramaAcademico", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Unidad de Aprendizaje: $UnidadAprendizaje", style = MaterialTheme.typography.bodyLarge)
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "Periodo: $idPeriodo", style = MaterialTheme.typography.bodyLarge)
             Spacer(modifier = Modifier.height(8.dp))
