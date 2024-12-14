@@ -86,7 +86,7 @@ class Usuario(Base):
     __tablename__ = "Usuario"
     
     Usuario = Column(String(18), primary_key=True, index=True)
-    Password = Column(String(50), nullable=False)
+    Password = Column(String(100), nullable=False)
     TipoU = Column(Integer, ForeignKey("TipoUsuario.idTU"), nullable=False)
     CURP = Column(
         String(18),
