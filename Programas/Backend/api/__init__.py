@@ -7,6 +7,8 @@ from .ETS import router as ETSRouter
 from .periodoETS import router as periodoETSRouter
 from .UnidadAprendizaje import router as unidadAprendizajeRouter 
 from .Login import router as LoginRouter
+from .Inscripciones import router as inscripcionRouter
+
 
 api_router = APIRouter()
 
@@ -18,3 +20,4 @@ api_router.include_router(unidadAprendizajeRouter)
 api_router.include_router(ETSRouter)
 api_router.include_router(periodoETSRouter)
 api_router.include_router(LoginRouter)
+api_router.include_router(inscripcionRouter)

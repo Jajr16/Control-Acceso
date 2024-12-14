@@ -13,7 +13,6 @@ class UnidadAcademica(Base):
     # Relación con Persona
     personas = relationship("Persona", back_populates="unidadAcademica", lazy="joined")
 
-
 class ProgramaAcademico(Base):
     __tablename__ = "ProgramaAcademico"
 
@@ -68,7 +67,7 @@ class Persona(Base):
     Sexo = Column(Integer, ForeignKey("Sexo.idSexo"), nullable=False)
     idEscuela = Column(Integer, ForeignKey("UnidadAcademica.idEscuela"), nullable=False)
 
-    sexo = relationship("Sexo", back_populates="personas")
+    sexo = relationship("Sexo", back_populates="personas", lazy="joined")
     unidadAcademica = relationship("UnidadAcademica", back_populates="personas", lazy="joined")
     personalAcademico = relationship("PersonalAcademico", back_populates="persona", lazy="joined")
     personalSeguridad = relationship("PersonalSeguridad", back_populates="persona", lazy="joined")
@@ -273,7 +272,6 @@ class InscripcionETS(Base):
     ets = relationship("ETS", back_populates="alumno", lazy="joined")
     alumno = relationship("Alumno", back_populates="nets", lazy="joined")
     insETSAlumno = relationship("AsistenciaInscripcion", back_populates="alumnoAsistencia", primaryjoin="and_(InscripcionETS.Boleta==AsistenciaInscripcion.InscripcionETSBoleta, InscripcionETS.idETS==AsistenciaInscripcion.InscripcionETSIdETS)", lazy="joined")
-    insETSETS = relationship("AsistenciaInscripcion", back_populates="ETSAsistencia", primaryjoin="and_(InscripcionETS.Boleta==AsistenciaInscripcion.InscripcionETSBoleta, InscripcionETS.idETS==AsistenciaInscripcion.InscripcionETSIdETS)", lazy="joined")
     
 class Aplica(Base):
     __tablename__ = "Aplica"
@@ -310,10 +308,92 @@ class AsistenciaInscripcion(Base):
         primaryjoin="and_(AsistenciaInscripcion.InscripcionETSBoleta == InscripcionETS.Boleta, AsistenciaInscripcion.InscripcionETSIdETS == InscripcionETS.idETS)",
         lazy="joined"
     )
-
-    ETSAsistencia = relationship(
-        "InscripcionETS",
-        back_populates="insETSETS",
-        primaryjoin="and_(AsistenciaInscripcion.InscripcionETSBoleta == InscripcionETS.Boleta, AsistenciaInscripcion.InscripcionETSIdETS == InscripcionETS.idETS)",
-        lazy="joined"
+    
+################# INSERTAR VALORES PREDETERMINADOS ####################
+def insertUA(target, connection, **kwargs):
+    connection.execute(
+        UnidadAcademica.__table__.insert(),
+        [
+            {"idEscuela": 1, "Nombre": "ESCA"},
+        ]
     )
+    
+def insertPA(target, connection, **kwargs):
+    connection.execute(
+        ProgramaAcademico.__table__.insert(),
+        [
+            {"idPA": "ISC-2024", "Nombre": "Ingeniería en Sistemas Computacionales", "Descripcion": "Caca"},
+        ]
+    )
+
+def insertEscuelaPrograma(target, connection, **kwargs):
+    connection.execute(
+        EscuelaPrograma.__table__.insert(),
+        [
+            {"idPA": "ISC-2024", "Nombre": "Ingeniería en Sistemas Computacionales", "Descripcion": "Caca"},
+        ]
+    )
+    
+def insertSexo(target, connection, **kwargs):
+    connection.execute(
+        Sexo.__table__.insert(),
+        [
+            {"idSexo": 1, "Nombre": "Masculino"},
+            {"idSexo": 2, "Nombre": "Femenino"},
+        ]
+    )
+    
+def insertPersona(target, connection, **kwargs):
+    connection.execute(
+        Persona.__table__.insert(),
+        [
+            {"CURP": "1", "Nombre": "José Alfredo", "ApellidoP": "Jiménez", "ApellidoM": "Rodríguez", "Sexo": 1, "idEscuela": 1},
+            {"CURP": "2", "Nombre": "Alejandra", "ApellidoP": "De la cruz", "ApellidoM": "De la cruz", "Sexo": 2, "idEscuela": 1},
+            {"CURP": "3", "Nombre": "Luis Antonio", "ApellidoP": "Flores", "ApellidoM": "Esquivel", "Sexo": 1, "idEscuela": 1},
+            {"CURP": "4", "Nombre": "Daniel", "ApellidoP": "Huertas", "ApellidoM": "Ramírez", "Sexo": 1, "idEscuela": 1}
+        ]
+    )
+    
+def insertTipoU(target, connection, **kwargs):
+    connection.execute(
+        TipoUsuario.__table__.insert(),
+        [
+            {"idTU": 1, "Tipo": "Alumno"},
+            {"idTU": 2, "Tipo": "Docente"},
+        ]
+    )
+    
+def insertUsuario(target, connection, **kwargs):
+    connection.execute(
+        Usuario.__table__.insert(),
+        [
+            {"Usuario": "Alfredo", "Password": "123", "TipoU": 1, "CURP": "1"},
+        ]
+    )
+    
+def insertAlumno(target, connection, **kwargs):
+    connection.execute(
+        Alumno.__table__.insert(),
+        [
+            {"Boleta": "2022325410", "CURP": "1", "CorreoI": "1@gmail.com", "idPA": "ISC-2024"},
+        ]
+    )
+    
+def insertperiodoETS(target, connection, **kwargs):
+    connection.execute(
+        periodoETS.__table__.insert(),
+        [
+            {"idPeriodo": 1, "Periodo": "2023", "Tipo": "O", "Fecha_Inicio": "2024-12-10", "Fecha_Fin": "2024-12-10"},
+        ]
+    )
+
+
+event.listen(UnidadAcademica.__table__, 'after_create', insertUA)
+event.listen(ProgramaAcademico.__table__, 'after_create', insertPA)
+event.listen(EscuelaPrograma.__table__, 'after_create', insertEscuelaPrograma)
+event.listen(Sexo.__table__, 'after_create', insertSexo)
+event.listen(Persona.__table__, 'after_create', insertPersona)
+event.listen(TipoUsuario.__table__, 'after_create', insertTipoU)
+event.listen(Usuario.__table__, 'after_create', insertUsuario)
+event.listen(Alumno.__table__, 'after_create', insertAlumno)
+event.listen(periodoETS.__table__, 'after_create', insertperiodoETS)
