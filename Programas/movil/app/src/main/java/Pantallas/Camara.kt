@@ -1,11 +1,20 @@
 package Pantallas
 
+import RetroFit.ApiRed
+import RetroFit.RetrofitInstanceRed
 import android.Manifest
+import android.content.Context
+import android.net.Uri
 import android.os.Environment
+import android.provider.MediaStore
+import android.util.Log
 import android.view.ViewGroup
+import android.view.WindowInsetsAnimation
+import android.widget.Toast
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,12 +34,27 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.example.prueba3.R
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.android.gms.common.api.Response
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 import java.util.concurrent.Executor
 
@@ -73,7 +97,9 @@ fun Camara( navController: NavController) {
             FloatingActionButton(
                 onClick = {
                     val executor = ContextCompat.getMainExecutor(context)
-                    tomarFoto(camaraController, executor, directorio)
+                    tomarFoto(camaraController, executor) { bytes ->
+                        enviarFotoAlServidor(bytes, context)
+                    }
                 }
             ) {
                 Icon(
@@ -82,6 +108,7 @@ fun Camara( navController: NavController) {
                     contentDescription = ""
                 )
             }
+
         },
         floatingActionButtonPosition = FabPosition.Center
     ) {
@@ -128,22 +155,60 @@ fun CamaraComposable(
 private fun tomarFoto(
     camaraController: LifecycleCameraController,
     executor: Executor,
-    directorio: File
+    enviarFotoAlServidor: (ByteArray) -> Unit
 ) {
-    val image = File.createTempFile("img_", ".jpg", directorio)
-    val outputDirectory = ImageCapture.OutputFileOptions.Builder(image).build()
     camaraController.takePicture(
-        outputDirectory,
         executor,
-        object : ImageCapture.OnImageSavedCallback {
-            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                println(outputFileResults.savedUri)
+        object : ImageCapture.OnImageCapturedCallback() {
+            override fun onCaptureSuccess(image: ImageProxy) {
+                val buffer = image.planes[0].buffer
+                val bytes = ByteArray(buffer.remaining())
+                buffer.get(bytes)
+                image.close()
+
+                // Llamada para enviar la foto al servidor
+                enviarFotoAlServidor(bytes)
             }
 
             override fun onError(exception: ImageCaptureException) {
-                println()
+                println("Error al capturar imagen: ${exception.message}")
             }
-
         }
     )
 }
+
+fun enviarFotoAlServidor(bytes: ByteArray, context: Context) {
+    // Prepara la imagen como MultipartBody
+    val imageFile = bytes.toRequestBody("image/jpeg".toMediaTypeOrNull(), 0, bytes.size)
+    val multipartBody = MultipartBody.Part.createFormData("image", "foto.jpg", imageFile)
+
+    val retrofitInstance = RetrofitInstanceRed.instance
+
+    // Lanza una coroutine para enviar la imagen
+    GlobalScope.launch(Dispatchers.IO) {
+        try {
+            // Llamada al servidor usando Retrofit
+            val response = retrofitInstance.uploadImage(multipartBody)
+
+            // Manejo de la respuesta con 'status' y 'detalles'
+            withContext(Dispatchers.Main) {
+                Toast.makeText(
+                    context,
+                    "Respuesta del servidor: ${response.status} - ${response.detalles}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+}
+
+
+
+
+
+
+

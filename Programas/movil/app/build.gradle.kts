@@ -68,6 +68,10 @@ dependencies {
     implementation (libs.androidx.navigation.compose.v273)
 
     implementation(libs.retrofit)
+
+    implementation(libs.converter.gson)
+    implementation(libs.logging.interceptor)
+    implementation(libs.okhttp)
     //noinspection UseTomlInstead
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 

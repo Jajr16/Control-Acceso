@@ -6,7 +6,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
-    private const val BASE_URL = "http://192.168.1.71:8000/" // Cambia esta URL al dominio real.
+    private const val BASE_URL = "http://192.168.100.6/" // Cambia esta URL al dominio real.
 
     val ETSapi: EtsApi by lazy {
         Retrofit.Builder()
