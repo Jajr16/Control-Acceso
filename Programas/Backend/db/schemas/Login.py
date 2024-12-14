@@ -1,23 +1,15 @@
-from pydantic import BaseModel, constr
-from datetime import date, datetime
-from typing import Optional
+from pydantic import BaseModel
 
-######### LOGIN ###########
-class LoginBase(BaseModel):
-    
+# Login Request: Datos que envía el cliente
+class LoginRequest(BaseModel):
     Usuario: str
     Contraseña: str
-    # Tipo_Usuario: str
-    # CURP: str
-    
+
     class Config:
         orm_mode = True
 
-# class LoginCreate(LoginBase):
-#     pass
-
-class LoginResponse(LoginBase):
-
+# Login Response: Datos que devuelve el servidor
+class LoginResponse(BaseModel):
     Error_code: int
     Message: str
 

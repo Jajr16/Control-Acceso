@@ -110,15 +110,6 @@ fun LoginScreen(
             Text("Iniciar Sesión")
         }
 
-        if (errorMessage.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = errorMessage,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(
@@ -130,6 +121,15 @@ fun LoginScreen(
             )
         ) {
             Text("Crear Cuenta")
+        }
+
+        if (errorMessage.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }

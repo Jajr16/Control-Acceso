@@ -7,30 +7,25 @@
     import retrofit2.converter.gson.GsonConverterFactory
 
     object RetrofitInstance {
-        private const val BASE_URL = "http://192.168.56.1:8000/" // Cambia esta URL al dominio real.
+        private const val BASE_URL = "http://192.168.1.67:8000/" // Cambia esta URL al dominio real.
 
-        val LoginApi: LoginApi by lazy {
+        private val retrofit: Retrofit by lazy {
             Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
-                .create(LoginApi::class.java)
+        }
+
+        val loginApi: LoginApi by lazy {
+            retrofit.create(LoginApi::class.java)
         }
 
         val ETSapi: EtsApi by lazy {
-            Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-                .create(EtsApi::class.java)
+            retrofit.create(EtsApi::class.java)
         }
 
         val ETSListapi: EtsInfoApi by lazy {
-            Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-                .create(EtsInfoApi::class.java)
+            retrofit.create(EtsInfoApi::class.java)
         }
     }
 

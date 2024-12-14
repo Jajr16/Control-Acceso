@@ -4,6 +4,7 @@ import com.example.prueba3.Clases.LoginResponse
 import RetroFit.RetrofitInstance
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.prueba3.Clases.LoginRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -18,7 +19,7 @@ class LoginViewModel : ViewModel() {
     fun login(username: String, password: String) {
         viewModelScope.launch {
             try {
-                val response = RetrofitInstance.LoginApi.login(LoginResponse(username, password, 0, ""))
+                val response = RetrofitInstance.loginApi.login(LoginRequest(username, password))
                 if (response.isSuccessful && response.body() != null) {
                     _loginResponse.value = response.body()
                 } else {
