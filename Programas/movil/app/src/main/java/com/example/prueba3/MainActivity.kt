@@ -6,10 +6,13 @@ import Pantallas.ETSInscriptionProcessScreen
 import Pantallas.EtsCardButton
 import Pantallas.EtsDetailScreen
 import Pantallas.EtsListScreen
+import Pantallas.EtsListScreenAlumno
 import Pantallas.LoginScreen
 import Pantallas.QRScannerScreen
-import Pantallas.WelcomeScreen
+import Pantallas.WelcomeScreenDocente
+import Pantallas.WelcomeScreenAlumno
 import PantallasTT.NotificationsScreen
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,6 +22,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.prueba3.Views.LoginViewModel
 import java.lang.Integer.parseInt
 
 
@@ -27,15 +31,21 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val sharedPreferences = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+        val loginViewModel = LoginViewModel(sharedPreferences)
+
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
+
             NavHost(navController = navController, startDestination = "login"){
-                composable("login") { LoginScreen(navController) }
+                composable("login") { LoginScreen(navController, loginViewModel) }
                 composable("camara") { Camara(navController)}
                 composable("notificaciones") { NotificationsScreen(navController)}
-                composable("Menu") { WelcomeScreen(navController) }
+                composable("Menu") { WelcomeScreenDocente(navController) }
+                composable("Menu Alumno") { WelcomeScreenAlumno(navController) }
                 composable("LETS") { EtsListScreen(navController) }
+                composable("LETSA") { EtsListScreenAlumno(navController) }
                 composable("scanQr") { QRScannerScreen(navController) }
                 composable("info") { ETSInscriptionProcessScreen(navController) }
                 composable("CrearCuenta") { CreateAccountScreen(navController) }
@@ -49,7 +59,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable(
-                    route = "etsDetail/{ETS}/{Periodo}/{Turno}/{PA}/{Fecha}",
+                    route = "etsDetail/{ETS}/{Periodo}/{Turno}/{Fecha}/{PA}",
                     arguments = listOf(
                         navArgument("ETS") { type = NavType.StringType },
                         navArgument("Periodo") { type = NavType.StringType },
@@ -70,7 +80,7 @@ class MainActivity : ComponentActivity() {
                     val PA = backStackEntry.arguments?.getString("PA") ?: ""
                     val Fecha = backStackEntry.arguments?.getString("Fecha") ?: ""
 
-                    EtsCardButton(navController, parsedETS, Periodo,Turno,PA,Fecha)
+                    EtsCardButton(navController, parsedETS, Periodo,Turno, Fecha,PA)
                     }
                 }
         }

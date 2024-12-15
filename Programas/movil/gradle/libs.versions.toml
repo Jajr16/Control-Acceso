@@ -32,6 +32,7 @@ ui = "1.7.5"
 visionCommon = "17.3.0"
 playServicesMlkitFaceDetection = "17.1.0"
 playServicesMlkitBarcodeScanning = "18.3.1"
+uiTestAndroid = "1.7.5"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
@@ -75,6 +76,7 @@ ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 vision-common = { group = "com.google.mlkit", name = "vision-common", version.ref = "visionCommon" }
 play-services-mlkit-face-detection = { group = "com.google.android.gms", name = "play-services-mlkit-face-detection", version.ref = "playServicesMlkitFaceDetection" }
 play-services-mlkit-barcode-scanning = { group = "com.google.android.gms", name = "play-services-mlkit-barcode-scanning", version.ref = "playServicesMlkitBarcodeScanning" }
+androidx-ui-test-android = { group = "androidx.compose.ui", name = "ui-test-android", version.ref = "uiTestAndroid" }
 
 
 [plugins]

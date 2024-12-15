@@ -3,7 +3,8 @@ package com.example.prueba3.Clases
 data class LoginResponse(
     val Usuario: String,
     val Error_code: Int,
-    val Message: String
+    val Message: String,
+    val Rol: String
 )
 
 data class LoginRequest(

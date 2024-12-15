@@ -48,14 +48,14 @@ fun EtsDetailScreen(
     ) { padding ->
         if (isLoading) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Cargando...",
-                    style = MaterialTheme.typography.bodyLarge
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(padding),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Cargando...",
+                            style = MaterialTheme.typography.bodyLarge
                 )
             }
         } else if (etsDetail != null) {

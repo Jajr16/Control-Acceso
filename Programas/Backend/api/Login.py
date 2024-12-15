@@ -22,7 +22,7 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         error_code = 404
         message = "Usuario no encontrado"
         return LoginResponse(
-            Usuario=None, Error_code=error_code, Message=message
+            Usuario=None, Error_code=error_code, Message=message, Rol=None
         )
 
     # Verificar la contraseña usando bcrypt
@@ -30,12 +30,13 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         error_code = 401
         message = "Contraseña incorrecta"
         return LoginResponse(
-            Usuario=None, Error_code=error_code, Message=message
+            Usuario=None, Error_code=error_code, Message=message, Rol=None
         )
 
     # Retornar respuesta exitosa
     return LoginResponse(
         Usuario=usuario.Usuario,
+        Rol=usuario.tipoUser.Tipo,
         Error_code=error_code,
         Message=message
     )

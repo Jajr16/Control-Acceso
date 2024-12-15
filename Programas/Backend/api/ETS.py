@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from db.models import ETS, periodoETS, Turno, UnidadAprendizaje
+from db.models import ETS, periodoETS, Turno, UnidadAprendizaje, InscripcionETS
 from db.schemas.ETS import ETSCreate, ETSResponse
 from db.session import get_db
 
@@ -20,6 +20,25 @@ def get_ETS(db: Session = Depends(get_db)):
             "Turno": ets.turno.Nombre,
             "Fecha": ets.Fecha,
             "UnidadAprendizaje": ets.UAETS.Nombre
+        }
+        for ets in unidades
+    ]
+    return ETS_response
+
+@router.get("/InscripcionAlumno/{usuario}", response_model=list[ETSResponse])
+def get_ETS(usuario: str, db: Session = Depends(get_db)):
+    unidades = db.query(InscripcionETS).filter(InscripcionETS.Boleta == usuario)
+    
+    if not unidades:
+        raise HTTPException(status_code=404, detail="No hay ETS guardados")
+    
+    ETS_response = [
+        {
+            "idETS": ets.ets.idETS,
+            "idPeriodo": ets.ets.periodo.Periodo,
+            "Turno": ets.ets.turno.Nombre,
+            "Fecha": ets.ets.Fecha,
+            "UnidadAprendizaje": ets.ets.UAETS.Nombre
         }
         for ets in unidades
     ]

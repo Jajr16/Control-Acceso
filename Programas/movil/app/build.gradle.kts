@@ -90,6 +90,7 @@ dependencies {
     implementation(libs.vision.common)
     implementation(libs.play.services.mlkit.face.detection)
     implementation(libs.play.services.mlkit.barcode.scanning)
+    implementation(libs.androidx.ui.test.android)
     testImplementation(libs.junit)
     implementation(libs.material3)
     androidTestImplementation(libs.androidx.junit)

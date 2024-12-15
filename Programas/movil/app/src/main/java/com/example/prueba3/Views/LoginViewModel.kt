@@ -1,5 +1,6 @@
 package com.example.prueba3.Views
 
+import android.content.SharedPreferences
 import com.example.prueba3.Clases.LoginResponse
 import RetroFit.RetrofitInstance
 import androidx.lifecycle.ViewModel
@@ -9,12 +10,25 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(private val sharedPreferences: SharedPreferences) : ViewModel() {
+
     private val _loginResponse = MutableStateFlow<LoginResponse?>(null)
     val loginResponse: StateFlow<LoginResponse?> = _loginResponse
 
     private val _loginError = MutableStateFlow<String?>(null)
     val loginError: StateFlow<String?> = _loginError
+
+    fun saveUserName(username: String) {
+        val editor = sharedPreferences.edit()
+        editor.putString("username", username)  // Guardamos el nombre de usuario
+        editor.apply()
+    }
+
+    fun saveUserRole(role: String) {
+        val editor = sharedPreferences.edit()
+        editor.putString("userRole", role)
+        editor.apply()
+    }
 
     fun login(username: String, password: String) {
         viewModelScope.launch {

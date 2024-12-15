@@ -1,5 +1,6 @@
 package Pantallas
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -31,21 +32,34 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun LoginScreen(
     navController: NavController,
-    viewModel: LoginViewModel = viewModel()
+    loginViewModel: LoginViewModel
 ) {
     var boleta by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
 
-    val loginResponse = viewModel.loginResponse.collectAsState().value
-    val loginError = viewModel.loginError.collectAsState().value
+    val loginResponse = loginViewModel.loginResponse.collectAsState().value
+    val loginError = loginViewModel.loginError.collectAsState().value
 
     LaunchedEffect(loginResponse) {
         loginResponse?.let {
             if (it.Error_code == 0) {
-                navController.navigate("Menu") {
-                    popUpTo(navController.graph.startDestinationId)
-                    launchSingleTop = true
+
+                loginViewModel.saveUserName(it.Usuario)
+                loginViewModel.saveUserRole(it.Rol)
+
+                val sharedPreferences = navController.context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+                val userRole = sharedPreferences.getString("userRole", null)
+
+                when (userRole) {
+                    "Alumno" -> navController.navigate("Menu Alumno") {
+                        popUpTo(navController.graph.startDestinationId)
+                        launchSingleTop = true
+                    }
+                    else -> navController.navigate("Menu") {
+                        popUpTo(navController.graph.startDestinationId)
+                        launchSingleTop = true
+                    }
                 }
             } else {
                 errorMessage = it.Message
@@ -98,7 +112,7 @@ fun LoginScreen(
                 if (boleta.isEmpty() || password.isEmpty()) {
                     errorMessage = "Por favor, completa todos los campos."
                 } else {
-                    viewModel.login(boleta, password)
+                    loginViewModel.login(boleta, password)
                 }
             },
             modifier = Modifier.fillMaxWidth(),

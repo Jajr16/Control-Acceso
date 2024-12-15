@@ -56,7 +56,6 @@ def getOneInscription(ETSid: int, db: Session = Depends(get_db)):
     return response
 
 
-
 # Asignar un salón a un ETS
 @router.post("/", response_model=InscripcionResponse)
 def createInscripcion(data: InscripcionCreate, db: Session = Depends(get_db)):
