@@ -19,6 +19,16 @@ class InscripcionResponse(InscripcionBase):
     Sexo: str
     Correo: str
     Carrera: str
+    Aceptado: bool  # Agregar el campo Aceptado
     
     class Config:
         orm_mode = True
+
+class UpdateAceptadoRequest(BaseModel):
+    Boleta: str
+    idETS: int
+    aceptado: bool  # El nuevo valor para el campo Aceptado
+    
+    class Config:
+        orm_mode = True
+

@@ -16,6 +16,9 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     error_code = 0
     message = "Login exitoso"
 
+    print(Usuario.Usuario)
+    print(Usuario.Password)
+
     # Buscar el usuario en la base de datos
     usuario = db.query(Usuario).filter(Usuario.Usuario == login_data.Usuario).first()
     if not usuario:

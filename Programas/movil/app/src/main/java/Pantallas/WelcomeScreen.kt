@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -68,48 +69,47 @@ fun WelcomeScreen(navController: NavController) {
 
             // Botones organizados en dos filas
             item {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp), // Espacio entre filas
-                    modifier = Modifier.fillMaxWidth()
+                Box(
+                    modifier = Modifier.fillMaxWidth(), // Asegura que el Box ocupe todo el ancho
+                    contentAlignment = Alignment.Center // Centra el contenido dentro del Box
                 ) {
-                    // Primera fila de botones
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(16.dp), // Espacio entre filas
+                        horizontalAlignment = Alignment.CenterHorizontally, // Centra los botones en la columna
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        OptionButton(
-                            title = "Reconocimiento Facial",
-                            icon = Icons.Default.Face,
-                            onClick = { navController.navigate("camara") },
-                            modifier = Modifier.weight(1f)
-                        )
+                        // Primera fila de botones
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center // Centra los botones dentro de la fila
+                        ) {
+                            OptionButton(
+                                title = "Escanear Código QR",
+                                icon = ImageVector.vectorResource(id = R.drawable.qrc),
+                                onClick = { navController.navigate("scanQr") },
+                                modifier = Modifier.size(150.dp) // Tamaño fijo
+                            )
+                        }
 
-                        OptionButton(
-                            title = "Escanear Código QR",
-                            icon = ImageVector.vectorResource(id = R.drawable.qrc),
-                            onClick = { navController.navigate("scanQr") },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
+                        // Segunda fila de botones
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center // Centra los botones dentro de la fila
+                        ) {
+                            OptionButton(
+                                title = "Información de acceso",
+                                icon = Icons.Default.Info,
+                                onClick = { navController.navigate("info") },
+                                modifier = Modifier.size(150.dp) // Tamaño fijo
+                            )
 
-                    // Segunda fila de botones
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        OptionButton(
-                            title = "Información de acceso",
-                            icon = Icons.Default.Info,
-                            onClick = { navController.navigate("info") },
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        OptionButton(
-                            title = "ETS",
-                            icon = ImageVector.vectorResource(id = R.drawable.exam),
-                            onClick = { navController.navigate("LETS") },
-                            modifier = Modifier.weight(1f)
-                        )
+                            OptionButton(
+                                title = "ETS",
+                                icon = ImageVector.vectorResource(id = R.drawable.exam),
+                                onClick = { navController.navigate("LETS") },
+                                modifier = Modifier.size(150.dp) // Tamaño fijo
+                            )
+                        }
                     }
                 }
             }
@@ -127,7 +127,6 @@ fun OptionButton(
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .aspectRatio(1f) // Asegura que el botón sea cuadrado
             .clip(RoundedCornerShape(20.dp))
             .background(Color(0xFFF5F5F5))
             .clickable(onClick = onClick)
@@ -152,3 +151,4 @@ fun OptionButton(
         }
     }
 }
+
