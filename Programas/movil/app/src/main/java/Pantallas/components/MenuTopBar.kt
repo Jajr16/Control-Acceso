@@ -18,79 +18,96 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
+import java.io.File
 
 
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun MenuTopBar(navController: NavController, title: String) {
-        var menuExpanded by remember { mutableStateOf(false) }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MenuTopBar(navController: NavController, title: String) {
+    var menuExpanded by remember { mutableStateOf(false) }
 
-        val sharedPreferences = navController.context
-            .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
-        val userRole = sharedPreferences.getString("userRole", null)
+    val sharedPreferences = navController.context
+        .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+    val userRole = sharedPreferences.getString("userRole", null)
 
-        // Barra superior con el color morado
-        TopAppBar(
-            title = { Text(text = title) },
-            actions = {
-                IconButton(onClick = { menuExpanded = !menuExpanded }) {
-                    Icon(
-                        imageVector = Icons.Filled.MoreVert,
-                        contentDescription = "Menú",
-                        tint = Color.White
-                    )
-                }
-                // Menú desplegable
-                DropdownMenu(
-                    expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false }
-                ) {
+    // Barra superior con el color morado
+    TopAppBar(
+        title = { Text(text = title) },
+        actions = {
+            IconButton(onClick = { menuExpanded = !menuExpanded }) {
+                Icon(
+                    imageVector = Icons.Filled.MoreVert,
+                    contentDescription = "Menú",
+                    tint = Color.White
+                )
+            }
+            // Menú desplegable
+            DropdownMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { menuExpanded = false }
+            ) {
 
-                    when (userRole) {
-                        "Alumno" -> DropdownMenuItem(
-                            text = { Text("Inicio") },
-                            onClick = {
-                                menuExpanded = false
-                                navController.navigate("Menu Alumno") {
-                                    popUpTo(navController.graph.startDestinationId) { inclusive = true } // Limpia historial
-                                    launchSingleTop = true // Asegura una sola instancia de la pantalla
-                                }
-                            }
-                        )
-                        else -> DropdownMenuItem(
-                            text = { Text("Inicio") },
-                            onClick = {
-                                menuExpanded = false
-                                navController.navigate("Menu") {
-                                    popUpTo(navController.graph.startDestinationId) { inclusive = true } // Limpia historial
-                                    launchSingleTop = true // Asegura una sola instancia de la pantalla
-                                }
-                            }
-                        )
-                    }
-
-                    DropdownMenuItem(
-                        text = { Text("Cerrar Sesión") },
+                when (userRole) {
+                    "Alumno" -> DropdownMenuItem(
+                        text = { Text("Inicio") },
                         onClick = {
                             menuExpanded = false
-
-                            val editor = sharedPreferences.edit()
-                            editor.clear()
-                            editor.apply()
-
-                            navController.navigate("login") {
-                                popUpTo("login") { inclusive = true } // Limpia todo el historial
-                                launchSingleTop = true // Evita múltiples instancias de "login"
+                            navController.navigate("Menu Alumno") {
+                                popUpTo(navController.graph.startDestinationId) { inclusive = true } // Limpia historial
+                                launchSingleTop = true // Asegura una sola instancia de la pantalla
+                            }
+                        }
+                    )
+                    else -> DropdownMenuItem(
+                        text = { Text("Inicio") },
+                        onClick = {
+                            menuExpanded = false
+                            navController.navigate("Menu") {
+                                popUpTo(navController.graph.startDestinationId) { inclusive = true } // Limpia historial
+                                launchSingleTop = true // Asegura una sola instancia de la pantalla
                             }
                         }
                     )
                 }
-            },
-            // Usamos el nuevo color de TopAppBar
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color(0xFF6c1d45), // Color morado para la barra
-                titleContentColor = Color.White // Texto blanco
-            )
-        )
-    }
 
+                DropdownMenuItem(
+                    text = { Text("Cerrar Sesión") },
+                    onClick = {
+                        menuExpanded = false
+
+                        // Limpiar caché y preferencias
+                        clearCache(navController.context)
+
+                        val editor = sharedPreferences.edit()
+                        editor.remove("userRole")
+                        editor.clear()
+                        editor.apply()
+
+                        navController.navigate("login") {
+                            popUpTo("login") { inclusive = true } // Limpia todo el historial
+                            launchSingleTop = true // Evita múltiples instancias de "login"
+                        }
+                    }
+                )
+            }
+        },
+        // Usamos el nuevo color de TopAppBar
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color(0xFF6c1d45), // Color morado para la barra
+            titleContentColor = Color.White // Texto blanco
+        )
+    )
+}
+
+fun clearCache(context: Context) {
+    try {
+        val dir: File = context.cacheDir
+        val children: Array<String> = dir.list() ?: return
+        for (child in children) {
+            val file = File(dir, child)
+            file.delete()
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}

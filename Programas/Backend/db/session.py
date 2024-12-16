@@ -10,8 +10,12 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 def init_db():
-    from db.models import UnidadAcademica, ProgramaAcademico, EscuelaPrograma
-    Base.metadata.create_all(bind=engine)
+    try:
+        from db.models import UnidadAcademica, ProgramaAcademico, EscuelaPrograma
+        Base.metadata.create_all(bind=engine)
+        print("Conexión a la base de datos establecida")
+    except Exception as e:
+        print(f"Error al conectar a la base de datos: {e}")
 
 def get_db():
     db = SessionLocal()

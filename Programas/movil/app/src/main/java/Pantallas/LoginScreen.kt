@@ -1,5 +1,6 @@
 package Pantallas
 
+import Pantallas.components.clearCache
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.prueba3.Views.LoginViewModel
 import androidx.compose.runtime.collectAsState
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun LoginScreen(
@@ -38,7 +38,8 @@ fun LoginScreen(
     var boleta by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
-    var userRole: String? = null
+
+    clearCache(navController.context)
 
     val loginResponse = loginViewModel.loginResponse.collectAsState().value
     val loginError = loginViewModel.loginError.collectAsState().value
@@ -46,16 +47,28 @@ fun LoginScreen(
     LaunchedEffect(loginResponse) {
         loginResponse?.let {
             val sharedPreferences = navController.context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
-            userRole = sharedPreferences.getString("userRole", null)
+            val userRole = sharedPreferences.getString("userRole", null)
+            val editor = sharedPreferences.edit()
+            editor.remove("userRole")
 
             if (it.Error_code == 0) {
                 loginViewModel.saveUserName(it.Usuario)
                 loginViewModel.saveUserRole(it.Rol)
+
                 if (userRole != null) {
                     when (userRole) {
-                        "Alumno" -> navController.navigate("Menu Alumno")
-                        "Personal Seguridad" -> navController.navigate("Menu")
-                        "Docente" -> navController.navigate("Menu")
+                        "Alumno" -> navController.navigate("Menu Alumno") {
+                            popUpTo(navController.graph.startDestinationId)
+                            launchSingleTop = true
+                        }
+                        "Personal Seguridad" -> navController.navigate("Menu"){
+                            popUpTo(navController.graph.startDestinationId)
+                            launchSingleTop = true
+                        }
+                        "Docente" -> navController.navigate("Menu"){
+                            popUpTo(navController.graph.startDestinationId)
+                            launchSingleTop = true
+                        }
 
                         else -> errorMessage = "Rol inválido"
                     }
