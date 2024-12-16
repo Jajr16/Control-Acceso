@@ -44,21 +44,22 @@ fun LoginScreen(
     LaunchedEffect(loginResponse) {
         loginResponse?.let {
             if (it.Error_code == 0) {
-
                 loginViewModel.saveUserName(it.Usuario)
                 loginViewModel.saveUserRole(it.Rol)
 
                 val sharedPreferences = navController.context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
                 val userRole = sharedPreferences.getString("userRole", null)
 
-                when (userRole) {
-                    "Alumno" -> navController.navigate("Menu Alumno") {
-                        popUpTo(navController.graph.startDestinationId)
-                        launchSingleTop = true
-                    }
-                    else -> navController.navigate("Menu") {
-                        popUpTo(navController.graph.startDestinationId)
-                        launchSingleTop = true
+                if (userRole != null) {
+                    when (userRole) {
+                        "Alumno" -> navController.navigate("Menu Alumno") {
+                            popUpTo("login") { inclusive = true }
+                            launchSingleTop = true
+                        }
+                        else -> navController.navigate("Menu") {
+                            popUpTo("login") { inclusive = true }
+                            launchSingleTop = true
+                        }
                     }
                 }
             } else {

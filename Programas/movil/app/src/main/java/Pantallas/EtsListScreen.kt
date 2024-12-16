@@ -1,6 +1,7 @@
 package Pantallas
 
-import android.net.Uri
+import Pantallas.components.MenuTopBar
+import Pantallas.components.ValidateSession
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,10 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.prueba3.Views.EtsViewModel
 
-    @Composable
-    fun EtsListScreen(navController: NavController, viewModel: EtsViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
-        val etsList by viewModel.etsList.collectAsState()
-
+@Composable
+fun EtsListScreen(navController: NavController, viewModel: EtsViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+    val etsList by viewModel.etsList.collectAsState()
+    ValidateSession(navController = navController) {
         Scaffold(
             topBar = { MenuTopBar(navController = navController, title = "ETS") }
         ) { padding ->
@@ -63,6 +64,7 @@ import com.example.prueba3.Views.EtsViewModel
             }
         }
     }
+}
 
 @Composable
 fun EtsCardButton(

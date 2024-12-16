@@ -1,4 +1,4 @@
-package Pantallas
+package Pantallas.components
 
 import android.content.Context
 import androidx.compose.material.icons.Icons
@@ -68,14 +68,12 @@ import androidx.navigation.NavController
                         onClick = {
                             menuExpanded = false
 
-                            val editor = sharedPreferences.edit()
-                            editor.clear()
-                            editor.apply()
-
                             navController.navigate("login") {
-                                // Limpia el historial de navegación
-                                popUpTo(navController.graph.startDestinationId) { inclusive = true }
-                                launchSingleTop = true
+                                popUpTo(0) { inclusive = false } // Limpia todo el historial
+                                launchSingleTop = true // Evita múltiples instancias de "login"
+                                val editor = sharedPreferences.edit()
+                                editor.clear()
+                                editor.apply()
                             }
                         }
                     )

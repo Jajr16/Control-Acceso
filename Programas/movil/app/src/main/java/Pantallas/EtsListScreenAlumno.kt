@@ -1,7 +1,8 @@
 package Pantallas
 
+import Pantallas.components.MenuTopBar
+import Pantallas.components.ValidateSession
 import android.content.Context
-import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,11 +34,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.prueba3.Views.EtsViewModel
 
-    @Composable
-    fun EtsListScreenAlumno(navController: NavController,
-                            viewModel: EtsViewModel = androidx
-                                .lifecycle.viewmodel.compose.viewModel()
-    ) {
+@Composable
+fun EtsListScreenAlumno(navController: NavController,
+                        viewModel: EtsViewModel = androidx
+                            .lifecycle.viewmodel.compose.viewModel()
+) {
+    ValidateSession(navController = navController) {
         val etsInscritos by viewModel.etsInscritos.collectAsState()
         val isLoading by remember { viewModel.loadingState }.collectAsState()
 
@@ -45,7 +47,7 @@ import com.example.prueba3.Views.EtsViewModel
             .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
         val username = sharedPreferences.getString("username", "") ?: ""
 
-        LaunchedEffect (username) {
+        LaunchedEffect(username) {
             viewModel.fetchETSInscritos(username)
         }
 
@@ -99,6 +101,7 @@ import com.example.prueba3.Views.EtsViewModel
             }
         }
     }
+}
 
 @Composable
 fun EtsACardButton(

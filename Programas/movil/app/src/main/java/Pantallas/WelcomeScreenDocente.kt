@@ -1,5 +1,7 @@
 package Pantallas
 
+import Pantallas.components.MenuTopBar
+import Pantallas.components.ValidateSession
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,71 +35,73 @@ import com.example.prueba3.R
 
 @Composable
 fun WelcomeScreenDocente(navController: NavController) {
-    Scaffold(
-        topBar = { MenuTopBar(navController = navController, title = "Bienvenido Docente") }
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            item {
-                Text(
-                    text = "Bienvenido Usuario.",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-                Text(
-                    text = "¿Qué deseas hacer?",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(bottom = 32.dp)
-                )
-            }
+    ValidateSession(navController = navController) {
+        Scaffold(
+            topBar = { MenuTopBar(navController = navController, title = "Bienvenido Docente") }
+        ) { padding ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                item {
+                    Text(
+                        text = "Bienvenido Usuario.",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    Text(
+                        text = "¿Qué deseas hacer?",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(bottom = 32.dp)
+                    )
+                }
 
-            // Botones organizados en dos filas
-            item {
-                Box(
-                    modifier = Modifier.fillMaxWidth(), // Asegura que el Box ocupe todo el ancho
-                    contentAlignment = Alignment.Center // Centra el contenido dentro del Box
-                ) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(16.dp), // Espacio entre filas
-                        horizontalAlignment = Alignment.CenterHorizontally, // Centra los botones en la columna
-                        modifier = Modifier.fillMaxWidth()
+                // Botones organizados en dos filas
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(), // Asegura que el Box ocupe todo el ancho
+                        contentAlignment = Alignment.Center // Centra el contenido dentro del Box
                     ) {
-                        // Primera fila de botones
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center // Centra los botones dentro de la fila
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(16.dp), // Espacio entre filas
+                            horizontalAlignment = Alignment.CenterHorizontally, // Centra los botones en la columna
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            OptionButton(
-                                title = "Escanear Código QR",
-                                icon = ImageVector.vectorResource(id = R.drawable.qrc),
-                                onClick = { navController.navigate("scanQr") },
-                                modifier = Modifier.size(150.dp) // Tamaño fijo
-                            )
-                        }
+                            // Primera fila de botones
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center // Centra los botones dentro de la fila
+                            ) {
+                                OptionButton(
+                                    title = "Escanear Código QR",
+                                    icon = ImageVector.vectorResource(id = R.drawable.qrc),
+                                    onClick = { navController.navigate("scanQr") },
+                                    modifier = Modifier.size(150.dp) // Tamaño fijo
+                                )
+                            }
 
-                        // Segunda fila de botones
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center // Centra los botones dentro de la fila
-                        ) {
-                            OptionButton(
-                                title = "Información de acceso",
-                                icon = Icons.Default.Info,
-                                onClick = { navController.navigate("info") },
-                                modifier = Modifier.size(150.dp) // Tamaño fijo
-                            )
+                            // Segunda fila de botones
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center // Centra los botones dentro de la fila
+                            ) {
+                                OptionButton(
+                                    title = "Información de acceso",
+                                    icon = Icons.Default.Info,
+                                    onClick = { navController.navigate("info") },
+                                    modifier = Modifier.size(150.dp) // Tamaño fijo
+                                )
 
-                            OptionButton(
-                                title = "ETS",
-                                icon = ImageVector.vectorResource(id = R.drawable.exam),
-                                onClick = { navController.navigate("LETS") },
-                                modifier = Modifier.size(150.dp) // Tamaño fijo
-                            )
+                                OptionButton(
+                                    title = "ETS",
+                                    icon = ImageVector.vectorResource(id = R.drawable.exam),
+                                    onClick = { navController.navigate("LETS") },
+                                    modifier = Modifier.size(150.dp) // Tamaño fijo
+                                )
+                            }
                         }
                     }
                 }
@@ -105,39 +109,37 @@ fun WelcomeScreenDocente(navController: NavController) {
         }
     }
 }
-
-@Composable
-fun OptionButton(
-    title: String,
-    icon: ImageVector,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(Color(0xFFF5F5F5))
-            .clickable(onClick = onClick)
-            .padding(8.dp)
+    @Composable
+    fun OptionButton(
+        title: String,
+        icon: ImageVector,
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = modifier
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color(0xFFF5F5F5))
+                .clickable(onClick = onClick)
+                .padding(8.dp)
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = title,
-                modifier = Modifier.size(48.dp),
-                tint = Color(0xFF6c1d45)
-            )
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 8.dp)
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    modifier = Modifier.size(48.dp),
+                    tint = Color(0xFF6c1d45)
+                )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
         }
     }
-}
-

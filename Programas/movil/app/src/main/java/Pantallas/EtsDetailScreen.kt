@@ -1,5 +1,7 @@
 package Pantallas
 
+import Pantallas.components.MenuTopBar
+import Pantallas.components.ValidateSession
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.prueba3.Clases.SalonETSResponse
 import com.example.prueba3.Views.EtsInfoViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,114 +38,123 @@ fun EtsDetailScreen(
     idETS: Int,
     viewModel: EtsInfoViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
-    // Escuchar los datos del ViewModel
-    val etsDetail by remember { viewModel.etsDetailState }.collectAsState()
-    val isLoading by remember { viewModel.loadingState }.collectAsState()
+    ValidateSession(navController = navController) {
+        // Escuchar los datos del ViewModel
+        val etsDetail by remember { viewModel.etsDetailState }.collectAsState()
+        val isLoading by remember { viewModel.loadingState }.collectAsState()
 
-    val sharedPreferences = navController.context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
-    val userRole = sharedPreferences.getString("userRole", null)
+        val sharedPreferences =
+            navController.context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+        val userRole = sharedPreferences.getString("userRole", null)
 
-    // Ejecutar la solicitud a la API cuando se cargue la pantalla
-    LaunchedEffect(idETS) {
-        viewModel.fetchEtsDetail(idETS)
-    }
-
-    // Mostrar contenido basado en el estado
-    Scaffold(
-        topBar = {
-            Column {
-                // Barra superior con el título
-                MenuTopBar(navController = navController, title = "Detalles del ETS")
-            }
+        // Ejecutar la solicitud a la API cuando se cargue la pantalla
+        LaunchedEffect(idETS) {
+            viewModel.fetchEtsDetail(idETS)
         }
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            if (isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Cargando...",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            } else if (etsDetail != null) {
-                val ets = etsDetail!!.ETS
-                val salones = etsDetail!!.Salones
 
-                // Lista deslizante de ETS
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    item {
-                        StyledCard(title = "Tipo de ETS", content = if (ets.tipoETS == "O") "Ordinario" else "Especial")
-                    }
-                    item {
-                        StyledCard(title = "Periodo", content = ets.idPeriodo)
-                    }
-                    item {
-                        StyledCard(title = "Fecha", content = ets.Fecha)
-                    }
-                    item {
-                        StyledCard(title = "Turno", content = ets.Turno)
-                    }
-                    item {
-                        StyledCard(title = "Cupo", content = ets.Cupo.toString())
-                    }
-                    item {
-                        StyledCard(title = "Unidad Académica", content = ets.idUA)
-                    }
-                    item {
-                        StyledCard(title = "Duración", content = ets.Duracion.toString())
-                    }
-
-                    // Mostrar salones
-                    salones.take(3).forEach { salon -> // Limita a 3 salones
-                        item {
-                            StyledCard(title = "Número de salón", content = salon.numSalon.toString())
-                        }
-                        item {
-                            StyledCard(title = "Tipo de salón", content = salon.tipoSalon)
-                        }
-                    }
-                }
-
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "La asignación del salón sigue pendiente",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
+        // Mostrar contenido basado en el estado
+        Scaffold(
+            topBar = {
+                Column {
+                    // Barra superior con el título
+                    MenuTopBar(navController = navController, title = "Detalles del ETS")
                 }
             }
-            if (userRole != "Alumno") {
-                // Botón fijo en la parte inferior
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 16.dp)
-                ) {
-                    Button(
-                        onClick = {
-                            navController.navigate("ListaAlumnos/$idETS")
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6c1d45))
+        ) { padding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Ir a la lista de alumnos", color = Color.White)
+                        Text(
+                            text = "Cargando...",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                } else if (etsDetail != null) {
+                    val ets = etsDetail!!.ETS
+                    val salones = etsDetail!!.Salones
+
+                    // Lista deslizante de ETS
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        item {
+                            StyledCard(
+                                title = "Tipo de ETS",
+                                content = if (ets.tipoETS == "O") "Ordinario" else "Especial"
+                            )
+                        }
+                        item {
+                            StyledCard(title = "Periodo", content = ets.idPeriodo)
+                        }
+                        item {
+                            StyledCard(title = "Fecha", content = ets.Fecha)
+                        }
+                        item {
+                            StyledCard(title = "Turno", content = ets.Turno)
+                        }
+                        item {
+                            StyledCard(title = "Cupo", content = ets.Cupo.toString())
+                        }
+                        item {
+                            StyledCard(title = "Unidad Académica", content = ets.idUA)
+                        }
+                        item {
+                            StyledCard(title = "Duración", content = ets.Duracion.toString())
+                        }
+
+                        // Mostrar salones
+                        salones.take(3).forEach { salon -> // Limita a 3 salones
+                            item {
+                                StyledCard(
+                                    title = "Número de salón",
+                                    content = salon.numSalon.toString()
+                                )
+                            }
+                            item {
+                                StyledCard(title = "Tipo de salón", content = salon.tipoSalon)
+                            }
+                        }
+                    }
+
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "La asignación del salón sigue pendiente",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+                if (userRole != "Alumno") {
+                    // Botón fijo en la parte inferior
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 16.dp)
+                    ) {
+                        Button(
+                            onClick = {
+                                navController.navigate("ListaAlumnos/$idETS")
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6c1d45))
+                        ) {
+                            Text(text = "Ir a la lista de alumnos", color = Color.White)
+                        }
                     }
                 }
             }

@@ -1,5 +1,7 @@
 package Pantallas
 
+import Pantallas.components.MenuTopBar
+import Pantallas.components.ValidateSession
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -44,60 +46,62 @@ import com.google.mlkit.vision.common.InputImage
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun QRScannerScreen(navController: NavController) {
-    val permissions = rememberMultiplePermissionsState(
-        permissions = listOf(
-            Manifest.permission.CAMERA
+    ValidateSession(navController = navController) {
+        val permissions = rememberMultiplePermissionsState(
+            permissions = listOf(
+                Manifest.permission.CAMERA
+            )
         )
-    )
 
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val cameraController = remember { LifecycleCameraController(context) }
-    var qrCodeResult by remember { mutableStateOf<String?>(null) }
-    val qrScannerOptions = BarcodeScannerOptions.Builder()
-        .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
-        .build()
-    val qrScanner = BarcodeScanning.getClient(qrScannerOptions)
+        val context = LocalContext.current
+        val lifecycleOwner = LocalLifecycleOwner.current
+        val cameraController = remember { LifecycleCameraController(context) }
+        var qrCodeResult by remember { mutableStateOf<String?>(null) }
+        val qrScannerOptions = BarcodeScannerOptions.Builder()
+            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+            .build()
+        val qrScanner = BarcodeScanning.getClient(qrScannerOptions)
 
-    LaunchedEffect(Unit) {
-        permissions.launchMultiplePermissionRequest()
-    }
+        LaunchedEffect(Unit) {
+            permissions.launchMultiplePermissionRequest()
+        }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = { MenuTopBar(navController = navController, title = "Escanea código QR") }
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentAlignment = Alignment.Center
-        ) {
-            if (permissions.allPermissionsGranted) {
-                QRScannerComposable(
-                    cameraController = cameraController,
-                    lifecycleOwner = lifecycleOwner,
-                    qrScanner = qrScanner,
-                    onQrCodeDetected = { result ->
-                        qrCodeResult = result.displayValue
-                        result.displayValue?.let { url ->
-                            openWebPage(context, url)
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = { MenuTopBar(navController = navController, title = "Escanea código QR") }
+        ) { padding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                if (permissions.allPermissionsGranted) {
+                    QRScannerComposable(
+                        cameraController = cameraController,
+                        lifecycleOwner = lifecycleOwner,
+                        qrScanner = qrScanner,
+                        onQrCodeDetected = { result ->
+                            qrCodeResult = result.displayValue
+                            result.displayValue?.let { url ->
+                                openWebPage(context, url)
+                            }
                         }
-                    }
-                )
+                    )
 
-                // Cuadro en el centro para marcar el área de escaneo
-                Box(
-                    modifier = Modifier
-                        .size(200.dp)
-                        .border(
-                            width = 2.dp,
-                            color = Color(0xFF800040), // Color del borde (personalizable)
-                            shape = RoundedCornerShape(8.dp) // Bordes redondeados
-                        )
-                )
-            } else {
-                Text(text = "Permisos de cámara requeridos")
+                    // Cuadro en el centro para marcar el área de escaneo
+                    Box(
+                        modifier = Modifier
+                            .size(200.dp)
+                            .border(
+                                width = 2.dp,
+                                color = Color(0xFF800040), // Color del borde (personalizable)
+                                shape = RoundedCornerShape(8.dp) // Bordes redondeados
+                            )
+                    )
+                } else {
+                    Text(text = "Permisos de cámara requeridos")
+                }
             }
         }
     }
