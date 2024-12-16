@@ -3,6 +3,7 @@ package Pantallas
 import RetroFit.ApiRed
 import RetroFit.RetrofitInstanceRed
 import android.Manifest
+import android.app.AlertDialog
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
@@ -19,6 +20,12 @@ import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Button
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -31,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
@@ -57,6 +65,17 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 import java.util.concurrent.Executor
+
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -210,6 +229,13 @@ fun enviarFotoAlServidor(bytes: ByteArray, boleta: String, context: Context) {
         }
     }
 }
+
+
+
+
+
+
+
 
 
 

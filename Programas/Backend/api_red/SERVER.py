@@ -15,13 +15,16 @@ def upload_image():
     
     # Guarda la imagen en el servidor
     image = request.files['image']
-    image_path = os.path.join(UPLOAD_FOLDER, secure_filename(image.filename))
-    image.save(image_path)
     
     # Recupera la boleta enviada desde el cliente
     boleta = request.form.get('boleta')  # Lee la boleta como string del form-data
     if not boleta:
         return jsonify({"error": "No boleta provided"}), 400
+    
+    # Usar la boleta como nombre del archivo
+    image_filename = secure_filename(f"{boleta}.jpg")  # Asigna un nombre de archivo basado en la boleta
+    image_path = os.path.join(UPLOAD_FOLDER, image_filename)
+    image.save(image_path)
     
     # Imprime la boleta en consola
     print(f"Boleta recibida: {boleta}")
@@ -37,4 +40,5 @@ def upload_image():
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
+
 
