@@ -51,14 +51,20 @@ import androidx.navigation.NavController
                             text = { Text("Inicio") },
                             onClick = {
                                 menuExpanded = false
-                                navController.navigate("Menu Alumno")
+                                navController.navigate("Menu Alumno") {
+                                    popUpTo(navController.graph.startDestinationId) { inclusive = true } // Limpia historial
+                                    launchSingleTop = true // Asegura una sola instancia de la pantalla
+                                }
                             }
                         )
                         else -> DropdownMenuItem(
                             text = { Text("Inicio") },
                             onClick = {
                                 menuExpanded = false
-                                navController.navigate("Menu")
+                                navController.navigate("Menu") {
+                                    popUpTo(navController.graph.startDestinationId) { inclusive = true } // Limpia historial
+                                    launchSingleTop = true // Asegura una sola instancia de la pantalla
+                                }
                             }
                         )
                     }
@@ -68,12 +74,13 @@ import androidx.navigation.NavController
                         onClick = {
                             menuExpanded = false
 
+                            val editor = sharedPreferences.edit()
+                            editor.clear()
+                            editor.apply()
+
                             navController.navigate("login") {
-                                popUpTo(0) { inclusive = false } // Limpia todo el historial
+                                popUpTo("login") { inclusive = true } // Limpia todo el historial
                                 launchSingleTop = true // Evita múltiples instancias de "login"
-                                val editor = sharedPreferences.edit()
-                                editor.clear()
-                                editor.apply()
                             }
                         }
                     )

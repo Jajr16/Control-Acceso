@@ -31,7 +31,7 @@ import com.example.prueba3.R
 fun WelcomeScreenAlumno(navController: NavController) {
     ValidateSession (navController = navController) {
         Scaffold(
-            topBar = { MenuTopBar(navController = navController, title = "Bienvenido Alumno") }
+            topBar = { MenuTopBar(navController = navController, title = "Bienvenido") }
         ) { padding ->
             // Contenedor principal centrado
             Column(

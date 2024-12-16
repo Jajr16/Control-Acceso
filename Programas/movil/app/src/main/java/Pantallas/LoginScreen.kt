@@ -34,39 +34,39 @@ fun LoginScreen(
     navController: NavController,
     loginViewModel: LoginViewModel
 ) {
+
     var boleta by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
+    var userRole: String? = null
 
     val loginResponse = loginViewModel.loginResponse.collectAsState().value
     val loginError = loginViewModel.loginError.collectAsState().value
 
     LaunchedEffect(loginResponse) {
         loginResponse?.let {
+            val sharedPreferences = navController.context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+            userRole = sharedPreferences.getString("userRole", null)
+
             if (it.Error_code == 0) {
                 loginViewModel.saveUserName(it.Usuario)
                 loginViewModel.saveUserRole(it.Rol)
-
-                val sharedPreferences = navController.context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
-                val userRole = sharedPreferences.getString("userRole", null)
-
                 if (userRole != null) {
                     when (userRole) {
-                        "Alumno" -> navController.navigate("Menu Alumno") {
-                            popUpTo("login") { inclusive = true }
-                            launchSingleTop = true
-                        }
-                        else -> navController.navigate("Menu") {
-                            popUpTo("login") { inclusive = true }
-                            launchSingleTop = true
-                        }
+                        "Alumno" -> navController.navigate("Menu Alumno")
+                        "Personal Seguridad" -> navController.navigate("Menu")
+                        "Docente" -> navController.navigate("Menu")
+
+                        else -> errorMessage = "Rol inválido"
                     }
-                }
             } else {
-                errorMessage = it.Message
+                if (it.Message != "Login exitoso") {
+                    errorMessage = it.Message
+                }
             }
         }
     }
+}
 
     LaunchedEffect(loginError) {
         loginError?.let {

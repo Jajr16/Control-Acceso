@@ -37,7 +37,7 @@ import com.example.prueba3.R
 fun WelcomeScreenDocente(navController: NavController) {
     ValidateSession(navController = navController) {
         Scaffold(
-            topBar = { MenuTopBar(navController = navController, title = "Bienvenido Docente") }
+            topBar = { MenuTopBar(navController = navController, title = "Bienvenido") }
         ) { padding ->
             LazyColumn(
                 modifier = Modifier

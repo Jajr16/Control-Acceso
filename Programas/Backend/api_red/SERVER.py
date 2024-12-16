@@ -4,7 +4,7 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = r'D:\Envios'  # Carpeta donde se guardarán las imágenes
+UPLOAD_FOLDER = r'.\\images'  # Carpeta donde se guardarán las imágenes
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route('/upload/', methods=['POST'])

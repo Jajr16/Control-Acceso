@@ -23,6 +23,7 @@ class InscripcionResponse(InscripcionBase):
     
     class Config:
         orm_mode = True
+        
 
 class UpdateAceptadoRequest(BaseModel):
     Boleta: str
@@ -31,4 +32,5 @@ class UpdateAceptadoRequest(BaseModel):
     
     class Config:
         orm_mode = True
+
 
