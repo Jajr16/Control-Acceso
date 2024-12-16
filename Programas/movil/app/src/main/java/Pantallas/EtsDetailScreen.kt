@@ -1,5 +1,6 @@
 package Pantallas
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +41,9 @@ fun EtsDetailScreen(
     val etsDetail by remember { viewModel.etsDetailState }.collectAsState()
     val isLoading by remember { viewModel.loadingState }.collectAsState()
 
+    val sharedPreferences = navController.context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+    val userRole = sharedPreferences.getString("userRole", null)
+
     // Ejecutar la solicitud a la API cuando se cargue la pantalla
     LaunchedEffect(idETS) {
         viewModel.fetchEtsDetail(idETS)
@@ -51,12 +55,88 @@ fun EtsDetailScreen(
             Column {
                 // Barra superior con el título
                 MenuTopBar(navController = navController, title = "Detalles del ETS")
-                // Botón centrado en la parte superior
+            }
+        }
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            if (isLoading) {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
+                        .fillMaxSize(),
                     contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Cargando...",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            } else if (etsDetail != null) {
+                val ets = etsDetail!!.ETS
+                val salones = etsDetail!!.Salones
+
+                // Lista deslizante de ETS
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    item {
+                        StyledCard(title = "Tipo de ETS", content = if (ets.tipoETS == "O") "Ordinario" else "Especial")
+                    }
+                    item {
+                        StyledCard(title = "Periodo", content = ets.idPeriodo)
+                    }
+                    item {
+                        StyledCard(title = "Fecha", content = ets.Fecha)
+                    }
+                    item {
+                        StyledCard(title = "Turno", content = ets.Turno)
+                    }
+                    item {
+                        StyledCard(title = "Cupo", content = ets.Cupo.toString())
+                    }
+                    item {
+                        StyledCard(title = "Unidad Académica", content = ets.idUA)
+                    }
+                    item {
+                        StyledCard(title = "Duración", content = ets.Duracion.toString())
+                    }
+
+                    // Mostrar salones
+                    salones.take(3).forEach { salon -> // Limita a 3 salones
+                        item {
+                            StyledCard(title = "Número de salón", content = salon.numSalon.toString())
+                        }
+                        item {
+                            StyledCard(title = "Tipo de salón", content = salon.tipoSalon)
+                        }
+                    }
+                }
+
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "La asignación del salón sigue pendiente",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+            if (userRole != "Alumno") {
+                // Botón fijo en la parte inferior
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 16.dp)
                 ) {
                     Button(
                         onClick = {
@@ -66,78 +146,7 @@ fun EtsDetailScreen(
                     ) {
                         Text(text = "Ir a la lista de alumnos", color = Color.White)
                     }
-
                 }
-            }
-        }
-    ) { padding ->
-        if (isLoading) {
-            Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(padding),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Cargando...",
-                            style = MaterialTheme.typography.bodyLarge
-                )
-            }
-        } else if (etsDetail != null) {
-            val ets = etsDetail!!.ETS
-            val salones = etsDetail!!.Salones
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                item {
-                    StyledCard(title = "Tipo de ETS", content = if (ets.tipoETS == "O") "Ordinario" else "Especial")
-                }
-                item {
-                    StyledCard(title = "Periodo", content = ets.idPeriodo)
-                }
-                item {
-                    StyledCard(title = "Fecha", content = ets.Fecha)
-                }
-                item {
-                    StyledCard(title = "Turno", content = ets.Turno)
-                }
-                item {
-                    StyledCard(title = "Cupo", content = ets.Cupo.toString())
-                }
-                item {
-                    StyledCard(title = "Unidad Académica", content = ets.idUA)
-                }
-                item {
-                    StyledCard(title = "Duración", content = ets.Duracion.toString())
-                }
-
-                // Mostrar salones
-                salones.forEach { salon ->
-                    item {
-                        StyledCard(title = "Número de salón", content = salon.numSalon.toString())
-                    }
-                    item {
-                        StyledCard(title = "Tipo de salón", content = salon.tipoSalon)
-                    }
-                }
-            }
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "La asignación del salón sigue pendiente",
-                    style = MaterialTheme.typography.bodyLarge
-                )
             }
         }
     }

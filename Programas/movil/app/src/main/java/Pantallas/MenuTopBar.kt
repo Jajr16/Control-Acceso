@@ -1,5 +1,6 @@
 package Pantallas
 
+import android.content.Context
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
@@ -24,6 +25,10 @@ import androidx.navigation.NavController
     fun MenuTopBar(navController: NavController, title: String) {
         var menuExpanded by remember { mutableStateOf(false) }
 
+        val sharedPreferences = navController.context
+            .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+        val userRole = sharedPreferences.getString("userRole", null)
+
         // Barra superior con el color morado
         TopAppBar(
             title = { Text(text = title) },
@@ -40,18 +45,38 @@ import androidx.navigation.NavController
                     expanded = menuExpanded,
                     onDismissRequest = { menuExpanded = false }
                 ) {
-                    DropdownMenuItem(
-                        text = { Text("Inicio") },
-                        onClick = {
-                            menuExpanded = false
-                            navController.navigate("Menu")
-                        }
-                    )
+
+                    when (userRole) {
+                        "Alumno" -> DropdownMenuItem(
+                            text = { Text("Inicio") },
+                            onClick = {
+                                menuExpanded = false
+                                navController.navigate("Menu Alumno")
+                            }
+                        )
+                        else -> DropdownMenuItem(
+                            text = { Text("Inicio") },
+                            onClick = {
+                                menuExpanded = false
+                                navController.navigate("Menu")
+                            }
+                        )
+                    }
+
                     DropdownMenuItem(
                         text = { Text("Cerrar Sesión") },
                         onClick = {
                             menuExpanded = false
-                            navController.navigate("login")
+
+                            val editor = sharedPreferences.edit()
+                            editor.clear()
+                            editor.apply()
+
+                            navController.navigate("login") {
+                                // Limpia el historial de navegación
+                                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                                launchSingleTop = true
+                            }
                         }
                     )
                 }

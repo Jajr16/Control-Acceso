@@ -31,78 +31,74 @@ import java.lang.Integer.parseInt
 
 class MainActivity : ComponentActivity() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
 
-        val sharedPreferences = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
-        val loginViewModel = LoginViewModel(sharedPreferences)
+    val sharedPreferences = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+    val loginViewModel = LoginViewModel(sharedPreferences)
 
-        enableEdgeToEdge()
-        setContent {
-            val navController = rememberNavController()
+    enableEdgeToEdge()
+    setContent {
+        val navController = rememberNavController()
+        val alumnosViewModel: AlumnosViewModel = viewModel()
 
-            NavHost(navController = navController, startDestination = "login"){
-                composable("login") { LoginScreen(navController, loginViewModel) }
-                composable("camara") { Camara(navController)}
-                composable("notificaciones") { NotificationsScreen(navController)}
-                composable("Menu") { WelcomeScreenDocente(navController) }
-                composable("Menu Alumno") { WelcomeScreenAlumno(navController) }
-            val alumnosViewModel: AlumnosViewModel = viewModel()
-            NavHost(navController = navController, startDestination = "login") {
-                composable("login") { LoginScreen(navController) }
-                composable("camara/{boleta}/{idETS}") { backStackEntry ->
-                    val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
-                    val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
-                    Camara(navController, boleta, idETS)
-                }
-                composable("notificaciones") { NotificationsScreen(navController) }
-                composable("Menu") { WelcomeScreen(navController) }
-                composable("LETS") { EtsListScreen(navController) }
-                composable("LETSA") { EtsListScreenAlumno(navController) }
-                composable("scanQr") { QRScannerScreen(navController) }
-                composable("info") { ETSInscriptionProcessScreen(navController) }
-                composable("CrearCuenta") { CreateAccountScreen(navController) }
+        NavHost(navController = navController, startDestination = "login") {
 
-                composable("ListaAlumnos/{idETS}") { backStackEntry ->
-                    val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
-                    ListaAlumnosScreen(navController, idETS, alumnosViewModel) // Pasar el ViewModel
-                }
+            composable("login") { LoginScreen(navController, loginViewModel) }
+            composable("camara/{boleta}/{idETS}") { backStackEntry ->
+                val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
+                val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
+                Camara(navController, boleta, idETS)
+            }
+            composable("notificaciones") { NotificationsScreen(navController) }
+            composable("Menu") { WelcomeScreenDocente(navController) }
+            composable("Menu Alumno") { WelcomeScreenAlumno(navController) }
+            composable("LETS") { EtsListScreen(navController) }
+            composable("LETSA") { EtsListScreenAlumno(navController) }
+            composable("scanQr") { QRScannerScreen(navController) }
+            composable("info") { ETSInscriptionProcessScreen(navController) }
+            composable("CrearCuenta") { CreateAccountScreen(navController) }
 
-
-                composable(
-                    route = "unicETSDetail/{idETS}",
-                    arguments = listOf(navArgument("idETS") { type = NavType.IntType })
-                ) { backStackEntry ->
-                    val idETS = backStackEntry.arguments?.getInt("idETS") ?: 0
-                    EtsDetailScreen(navController, idETS)
-                }
-
-                composable(
-                    route = "etsDetail/{ETS}/{Periodo}/{Turno}/{Fecha}/{PA}",
-                    arguments = listOf(
-                        navArgument("ETS") { type = NavType.StringType },
-                        navArgument("Periodo") { type = NavType.StringType },
-                        navArgument("Turno") { type = NavType.StringType },
-                        navArgument("PA") { type = NavType.StringType },
-                        navArgument("Fecha") { type = NavType.StringType }
-                    )
-                ) { backStackEntry ->
-                    val ETS = backStackEntry.arguments?.getString("ETS") ?: ""
-                    val parsedETS = try {
-                        parseInt(ETS)
-                    } catch (e: NumberFormatException) {
-                        0 // o algún valor predeterminado
-                    }
-                    val Periodo = backStackEntry.arguments?.getString("Periodo") ?: ""
-                    val Turno = backStackEntry.arguments?.getString("Turno") ?: ""
-                    val PA = backStackEntry.arguments?.getString("PA") ?: ""
-                    val Fecha = backStackEntry.arguments?.getString("Fecha") ?: ""
-
-                    EtsCardButton(navController, parsedETS, Periodo,Turno, Fecha,PA)
-                    }
-                }
+            composable("ListaAlumnos/{idETS}") { backStackEntry ->
+                val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
+                ListaAlumnosScreen(navController, idETS, alumnosViewModel) // Pasar el ViewModel
             }
 
+
+            composable(
+                route = "unicETSDetail/{idETS}",
+                arguments = listOf(navArgument("idETS") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val idETS = backStackEntry.arguments?.getInt("idETS") ?: 0
+                EtsDetailScreen(navController, idETS)
+            }
+
+            composable(
+                route = "etsDetail/{ETS}/{Periodo}/{Turno}/{Fecha}/{PA}",
+                arguments = listOf(
+                    navArgument("ETS") { type = NavType.StringType },
+                    navArgument("Periodo") { type = NavType.StringType },
+                    navArgument("Turno") { type = NavType.StringType },
+                    navArgument("PA") { type = NavType.StringType },
+                    navArgument("Fecha") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val ETS = backStackEntry.arguments?.getString("ETS") ?: ""
+                val parsedETS = try {
+                    parseInt(ETS)
+                } catch (e: NumberFormatException) {
+                    0 // o algún valor predeterminado
+                }
+                val Periodo = backStackEntry.arguments?.getString("Periodo") ?: ""
+                val Turno = backStackEntry.arguments?.getString("Turno") ?: ""
+                val PA = backStackEntry.arguments?.getString("PA") ?: ""
+                val Fecha = backStackEntry.arguments?.getString("Fecha") ?: ""
+
+                EtsCardButton(navController, parsedETS, Periodo,Turno, Fecha,PA)
+                }
+            }
         }
+
     }
 }
+

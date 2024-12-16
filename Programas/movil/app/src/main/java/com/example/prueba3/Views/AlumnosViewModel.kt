@@ -13,14 +13,20 @@ class AlumnosViewModel : ViewModel() {
     private val _alumnosList = MutableStateFlow<List<AlumnosInfo>>(emptyList())
     val alumnosList: StateFlow<List<AlumnosInfo>> = _alumnosList
 
+    private val _loadingState = MutableStateFlow(true)
+    val loadingState: StateFlow<Boolean> = _loadingState
+
     // Función para obtener los datos de alumnos
     fun fetchAlumno(ETSid: String) {
         viewModelScope.launch {
             try {
+                _loadingState.value = true
                 val alumnos = RetrofitInstance.alumnosApi.getAlumnoList(ETSid)
                 _alumnosList.value = alumnos // Actualizamos la lista de alumnos
             } catch (e: Exception) {
                 _alumnosList.value = emptyList() // Manejo de error
+            } finally {
+                _loadingState.value = false
             }
         }
     }

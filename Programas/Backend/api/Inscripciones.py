@@ -11,12 +11,21 @@ router = APIRouter(prefix="/inscripciones", tags=["Inscripciones"])
 def getInscripciones(db: Session = Depends(get_db)):
     inscripciones = db.query(InscripcionETS).all()
     
-    if not inscripciones:
-        raise HTTPException(status_code=404, detail="No hay inscripciones de ETS aún.")
-    
-    # Construir respuesta enriquecida
-    response = [
-        {
+    boletas = [inscripcion.Boleta for inscripcion in inscripciones]
+
+    # Paso 3: Consultar la tabla AsistenciaInscripcion para obtener el estado "Aceptado" por boleta
+    asistencias = db.query(AsistenciaInscripcion)\
+                    .filter(AsistenciaInscripcion.InscripcionETSBoleta.in_(boletas))\
+                    .all()
+
+    # Paso 4: Crear un diccionario de {Boleta: Aceptado}
+    aceptado_dict = {asistencia.InscripcionETSBoleta: asistencia.Aceptado for asistencia in asistencias}
+
+    # Paso 5: Construir la respuesta con todos los alumnos y agregar el estado "Aceptado"
+    response = []
+    for inscripcion in inscripciones:
+        estado_aceptado = aceptado_dict.get(inscripcion.Boleta, False)  # Default a False si no se encuentra
+        response.append({
             "idETS": inscripcion.idETS,
             "Boleta": inscripcion.Boleta,
             "CURP": inscripcion.alumno.CURP,
@@ -25,11 +34,10 @@ def getInscripciones(db: Session = Depends(get_db)):
             "ApellidoM": inscripcion.alumno.persona.ApellidoM,
             "Sexo": inscripcion.alumno.persona.sexo.Nombre,
             "Correo": inscripcion.alumno.CorreoI,
-            "Carrera": inscripcion.alumno.carrera.Nombre 
-        }
-        for inscripcion in inscripciones 
-    ]
-    print(response)
+            "Carrera": inscripcion.alumno.carrera.Nombre,
+            "Aceptado": estado_aceptado,  # Estado "Aceptado" agregado
+        })
+    
     return response
 
 

@@ -33,7 +33,9 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ListaAlumnosScreen(navController: NavController, idETS: String, viewModel: AlumnosViewModel) {
+
     val alumnosList by viewModel.alumnosList.collectAsState()
+    val isLoading by remember { viewModel.loadingState }.collectAsState()
 
     // Llama al ViewModel para obtener los datos al cambiar el idETS
     LaunchedEffect(idETS) {
@@ -50,7 +52,18 @@ fun ListaAlumnosScreen(navController: NavController, idETS: String, viewModel: A
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            if (alumnosList.isNotEmpty()) {
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Cargando...",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            } else if (alumnosList.isNotEmpty()) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp)
@@ -155,7 +168,7 @@ fun ListaAlumnosScreen(navController: NavController, idETS: String, viewModel: A
             } else {
                 // Texto de carga
                 Text(
-                    text = "Cargando...",
+                    text = "No hay alumnos inscritos al ETS.",
                     modifier = Modifier.align(Alignment.Center),
                     style = MaterialTheme.typography.bodyLarge
                 )
