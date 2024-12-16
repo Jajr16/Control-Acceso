@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from db.models import InscripcionETS, Salon, ETS
-from db.schemas.Inscripciones import InscripcionResponse, InscripcionCreate
+from db.models import InscripcionETS, Salon, ETS,AsistenciaInscripcion
+from db.schemas.Inscripciones import InscripcionResponse, InscripcionCreate, UpdateAceptadoRequest
 from db.session import get_db
 
 router = APIRouter(prefix="/inscripciones", tags=["Inscripciones"])
@@ -29,18 +29,35 @@ def getInscripciones(db: Session = Depends(get_db)):
         }
         for inscripcion in inscripciones 
     ]
-    
+    print(response)
     return response
 
-@router.get("/{ETSid}", response_model=InscripcionResponse)
-def getOneInscription(ETSid: int, db: Session = Depends(get_db)):
-    inscripcion = db.query(InscripcionETS).filter(InscripcionETS.idETS == ETSid).first()
+
+@router.get("/{ETSid}", response_model=list[InscripcionResponse])
+def getAlumnoList(ETSid: int, db: Session = Depends(get_db)):
+    # Paso 1: Obtener todas las inscripciones para el ETS dado
+    inscripciones = db.query(InscripcionETS).filter(InscripcionETS.idETS == ETSid).all()
     
-    if not inscripcion:
-        raise HTTPException(status_code=404, detail="No hay inscripciones de ETS aún.")
+    if not inscripciones:
+        raise HTTPException(status_code=404, detail="No hay inscripciones para este ETS.")
     
-    # Construir respuesta enriquecida
-    response = {
+    # Paso 2: Obtener las boletas de los alumnos para el ETS dado
+    boletas = [inscripcion.Boleta for inscripcion in inscripciones]
+
+    # Paso 3: Consultar la tabla AsistenciaInscripcion para obtener el estado "Aceptado" por boleta
+    asistencias = db.query(AsistenciaInscripcion)\
+                    .filter(AsistenciaInscripcion.InscripcionETSBoleta.in_(boletas))\
+                    .filter(AsistenciaInscripcion.InscripcionETSIdETS == ETSid)\
+                    .all()
+
+    # Paso 4: Crear un diccionario de {Boleta: Aceptado}
+    aceptado_dict = {asistencia.InscripcionETSBoleta: asistencia.Aceptado for asistencia in asistencias}
+
+    # Paso 5: Construir la respuesta con todos los alumnos y agregar el estado "Aceptado"
+    response = []
+    for inscripcion in inscripciones:
+        estado_aceptado = aceptado_dict.get(inscripcion.Boleta, False)  # Default a False si no se encuentra
+        response.append({
             "idETS": inscripcion.idETS,
             "Boleta": inscripcion.Boleta,
             "CURP": inscripcion.alumno.CURP,
@@ -49,9 +66,9 @@ def getOneInscription(ETSid: int, db: Session = Depends(get_db)):
             "ApellidoM": inscripcion.alumno.persona.ApellidoM,
             "Sexo": inscripcion.alumno.persona.sexo.Nombre,
             "Correo": inscripcion.alumno.CorreoI,
-            "Carrera": inscripcion.alumno.carrera.Nombre 
-        }
-    
+            "Carrera": inscripcion.alumno.carrera.Nombre,
+            "Aceptado": estado_aceptado,  # Estado "Aceptado" agregado
+        })
     
     return response
 
@@ -96,3 +113,22 @@ def createInscripcion(data: InscripcionCreate, db: Session = Depends(get_db)):
     )
     
     return response
+
+@router.post("/updateAceptado", response_model=str)
+def update_aceptado(data: UpdateAceptadoRequest, db: Session = Depends(get_db)):
+    # Buscar la inscripción que corresponde a la boleta y idETS
+    inscripcion = db.query(AsistenciaInscripcion).filter(
+        AsistenciaInscripcion.InscripcionETSBoleta == data.Boleta,
+        AsistenciaInscripcion.InscripcionETSIdETS == data.idETS
+    ).first()
+    
+    if not inscripcion:
+        raise HTTPException(status_code=404, detail="No se encontró la inscripción.")
+    
+    # Actualizar el valor de 'Aceptado'
+    inscripcion.Aceptado = data.aceptado
+    
+    # Guardar los cambios en la base de datos
+    db.commit()
+    
+    return "Estado de aceptación actualizado con éxito."

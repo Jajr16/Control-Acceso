@@ -33,7 +33,9 @@ class LoginViewModel(private val sharedPreferences: SharedPreferences) : ViewMod
     fun login(username: String, password: String) {
         viewModelScope.launch {
             try {
+
                 val response = RetrofitInstance.loginApi.login(LoginRequest(username, password))
+
                 if (response.isSuccessful && response.body() != null) {
                     _loginResponse.value = response.body()
                 } else {

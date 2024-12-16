@@ -60,7 +60,7 @@ import java.util.concurrent.Executor
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun Camara( navController: NavController) {
+fun Camara(navController: NavController, boleta: String, idETS: String)  {
     val permissions = rememberMultiplePermissionsState(
         permissions = listOf(
             Manifest.permission.CAMERA,
@@ -98,7 +98,7 @@ fun Camara( navController: NavController) {
                 onClick = {
                     val executor = ContextCompat.getMainExecutor(context)
                     tomarFoto(camaraController, executor) { bytes ->
-                        enviarFotoAlServidor(bytes, context)
+                        enviarFotoAlServidor(bytes, boleta, context) // Envía también la boleta
                     }
                 }
             ) {
@@ -108,6 +108,7 @@ fun Camara( navController: NavController) {
                     contentDescription = ""
                 )
             }
+
 
         },
         floatingActionButtonPosition = FabPosition.Center
@@ -177,24 +178,28 @@ private fun tomarFoto(
     )
 }
 
-fun enviarFotoAlServidor(bytes: ByteArray, context: Context) {
-    // Prepara la imagen como MultipartBody
-    val imageFile = bytes.toRequestBody("image/jpeg".toMediaTypeOrNull(), 0, bytes.size)
-    val multipartBody = MultipartBody.Part.createFormData("image", "foto.jpg", imageFile)
 
-    val retrofitInstance = RetrofitInstanceRed.instance
+fun enviarFotoAlServidor(bytes: ByteArray, boleta: String, context: Context) {
+    // Obtener la instancia de Retrofit
+    val apiService = RetrofitInstanceRed.instance
 
-    // Lanza una coroutine para enviar la imagen
+    // Preparar la imagen como MultipartBody
+    val imageRequestBody = bytes.toRequestBody("image/jpeg".toMediaTypeOrNull(), 0, bytes.size)
+    val imagePart = MultipartBody.Part.createFormData("image", "foto.jpg", imageRequestBody)
+
+    // Preparar la boleta como RequestBody
+    val boletaRequestBody = boleta.toRequestBody("text/plain".toMediaTypeOrNull())
+
+    // Corutina para hacer la solicitud
     GlobalScope.launch(Dispatchers.IO) {
         try {
-            // Llamada al servidor usando Retrofit
-            val response = retrofitInstance.uploadImage(multipartBody)
+            val response = apiService.uploadImage(imagePart, boletaRequestBody)
 
-            // Manejo de la respuesta con 'status' y 'detalles'
             withContext(Dispatchers.Main) {
+                // Mostrar la respuesta del servidor
                 Toast.makeText(
                     context,
-                    "Respuesta del servidor: ${response.status} - ${response.detalles}",
+                    "Status: ${response.status}\nDetalles: ${response.detalles}",
                     Toast.LENGTH_LONG
                 ).show()
             }
@@ -205,6 +210,7 @@ fun enviarFotoAlServidor(bytes: ByteArray, context: Context) {
         }
     }
 }
+
 
 
 

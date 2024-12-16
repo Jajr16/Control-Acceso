@@ -330,7 +330,7 @@ def insertEscuelaPrograma(target, connection, **kwargs):
     connection.execute(
         EscuelaPrograma.__table__.insert(),
         [
-            {"idPA": "ISC-2024", "Nombre": "Ingeniería en Sistemas Computacionales", "Descripcion": "Caca"},
+            {"idEscuela":"1","idPA": "ISC-2024"},
         ]
     )
     
@@ -367,7 +367,7 @@ def insertUsuario(target, connection, **kwargs):
     connection.execute(
         Usuario.__table__.insert(),
         [
-            {"Usuario": "Alfredo", "Password": "123", "TipoU": 1, "CURP": "1"},
+            {"Usuario": "Alfredo", "Password": "$2b$12$KejElPRgHbWDWF2BmlukSOMb8rqEzhNSVBbgndRPbhU.YqdDxI8US", "TipoU": 1, "CURP": "1"},
         ]
     )
     
@@ -375,7 +375,7 @@ def insertAlumno(target, connection, **kwargs):
     connection.execute(
         Alumno.__table__.insert(),
         [
-            {"Boleta": "2022325410", "CURP": "1", "CorreoI": "1@gmail.com", "idPA": "ISC-2024"},
+            {"Boleta": "2022325410", "CURP": "1", "CorreoI": "1@gmail.com", "idPA": "ISC-2024","imagenCredencual":"IMG"},
         ]
     )
     
