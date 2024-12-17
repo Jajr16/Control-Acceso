@@ -140,16 +140,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Button(
-            onClick = { navController.navigate("CrearCuenta") },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF6c1d45),
-                contentColor = Color.White
-            )
-        ) {
-            Text("Crear Cuenta")
-        }
 
         if (errorMessage.isNotEmpty()) {
             Spacer(modifier = Modifier.height(16.dp))

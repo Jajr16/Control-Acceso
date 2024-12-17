@@ -7,11 +7,11 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 
 # Folder to save uploaded images
-UPLOAD_FOLDER = "uploaded_images"
+UPLOAD_FOLDER = "Backend\\uploaded_images"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Folder with known images
-DATABASE_FOLDER = "known_images"
+DATABASE_FOLDER = "Backend\\known_images"
 os.makedirs(DATABASE_FOLDER, exist_ok=True)
 
 @app.route("/upload/", methods=["POST"])
