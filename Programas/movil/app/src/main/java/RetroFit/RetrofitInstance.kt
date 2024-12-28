@@ -10,7 +10,7 @@
 
 
     object RetrofitInstance {
-        private const val BASE_URL = "http://192.168.1.103:8000/" // Cambia esta URL al dominio real.
+        private const val BASE_URL = "http://192.168.1.74:8000/" // Cambia esta URL al dominio real.
 
 
         private val retrofit: Retrofit by lazy {
