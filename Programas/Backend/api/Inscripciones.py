@@ -1,10 +1,23 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from db.models import InscripcionETS, Salon, ETS,AsistenciaInscripcion
-from db.schemas.Inscripciones import InscripcionResponse, InscripcionCreate, UpdateAceptadoRequest
+from db.schemas.Inscripciones import InscripcionResponse, InscripcionCreate, UpdateAceptadoRequest, confirmInscripcion
 from db.session import get_db
 
 router = APIRouter(prefix="/inscripciones", tags=["Inscripciones"])
+
+@router.get("/confirm/{Boleta}", response_model=confirmInscripcion)
+def confirmInscription(Boleta: int, db: Session = Depends(get_db)):
+    inscripcion = db.query(InscripcionETS).filter(InscripcionETS.Boleta == Boleta)
+    
+    if (not inscripcion):
+        return confirmInscripcion(
+            message= 0
+        )
+        
+    return confirmInscripcion(
+        message= 1
+    )
 
 # Obtener todas las relaciones ETS-Salón
 @router.get("/", response_model=list[InscripcionResponse])

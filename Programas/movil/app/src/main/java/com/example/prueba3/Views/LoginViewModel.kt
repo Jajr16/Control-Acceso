@@ -3,6 +3,7 @@ package com.example.prueba3.Views
 import android.content.SharedPreferences
 import com.example.prueba3.Clases.LoginResponse
 import RetroFit.RetrofitInstance
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.prueba3.Clases.LoginRequest
@@ -17,6 +18,14 @@ class LoginViewModel(private val sharedPreferences: SharedPreferences) : ViewMod
 
     private val _loginError = MutableStateFlow<String?>(null)
     val loginError: StateFlow<String?> = _loginError
+
+    fun getUserRole(): String? {
+        return sharedPreferences.getString("userRole", null)
+    }
+
+    fun getUserName(): String? {
+        return sharedPreferences.getString("username", null)
+    }
 
     fun saveUserName(username: String) {
         val editor = sharedPreferences.edit()

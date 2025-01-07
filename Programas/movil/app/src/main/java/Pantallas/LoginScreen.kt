@@ -3,7 +3,6 @@ package Pantallas
 import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -43,7 +41,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.prueba3.R
 
 @Composable
@@ -58,40 +55,36 @@ fun LoginScreen(
     val loginResponse = loginViewModel.loginResponse.collectAsState().value
     val loginError = loginViewModel.loginError.collectAsState().value
 
+    LaunchedEffect(Unit) {
+        loginViewModel.getUserRole()?.let { savedRole ->
+            if (savedRole != null || savedRole != "") {
+                when (savedRole) {
+                    "Alumno" -> navController.navigate("Menu Alumno") {
+                        popUpTo("login") { inclusive = true } }
+                    "Personal Seguridad", "Docente" -> navController.navigate("Menu") {
+                        popUpTo("login") { inclusive = true } }
+                }
+            }
+        }
+    }
+
     LaunchedEffect(loginResponse) {
         loginResponse?.let {
-            val sharedPreferences = navController.context.getSharedPreferences("MyAppPrefs",
-                Context.MODE_PRIVATE)
-            val userRole = sharedPreferences.getString("userRole", null)
-            val editor = sharedPreferences.edit()
-            editor.remove("userRole")
 
             if (it.Error_code == 0) {
                 loginViewModel.saveUserName(it.Usuario)
                 loginViewModel.saveUserRole(it.Rol)
 
-                if (userRole != null) {
-                    when (userRole) {
-                        "Alumno" -> navController.navigate("Menu Alumno") {
-                            popUpTo(navController.graph.startDestinationId)
-                            launchSingleTop = true
-                        }
-                        "Personal Seguridad" -> navController.navigate("Menu"){
-                            popUpTo(navController.graph.startDestinationId)
-                            launchSingleTop = true
-                        }
-                        "Docente" -> navController.navigate("Menu"){
-                            popUpTo(navController.graph.startDestinationId)
-                            launchSingleTop = true
-                        }
-
-                        else -> errorMessage = "Rol inválido"
-                    }
-                } else {
-                    if (it.Message != "Login exitoso") {
-                        errorMessage = it.Message
-                    }
+                when (it.Rol) {
+                    "Alumno" -> navController.navigate("Menu Alumno") {
+                        popUpTo(navController.graph.startDestinationId) { inclusive = true } }
+                    "Personal Seguridad", "Docente" -> navController.navigate("Menu") {
+                        popUpTo(navController.graph.startDestinationId) { inclusive = true } }
                 }
+
+                it.Rol = ""
+                it.Usuario= ""
+                it.Message = ""
             }
         }
     }
@@ -104,12 +97,12 @@ fun LoginScreen(
 
     Box(
         modifier = Modifier
-            .fillMaxSize() // Hacer que el Box ocupe toda la pantalla
-            .padding(16.dp, 0.dp, 16.dp, bottom = 70.dp) // Agregar margen para no pegarse a los bordes
+            .fillMaxSize()
+            .padding(16.dp, 0.dp, 16.dp, bottom = 70.dp) // Margen para no pegarse a los bordes
     ) {
         Image(
-            painter = painterResource(id = R.drawable.poli), // Reemplaza con el nombre de tu recurso
-            contentDescription = "Logo IPN", // Accesibilidad
+            painter = painterResource(id = R.drawable.poli),
+            contentDescription = "Logo IPN",
             modifier = Modifier
                 .fillMaxWidth(0.75f)
                 //.padding(start = 20.dp, top = 160.dp, end = 20.dp, bottom = 20.dp)
@@ -122,7 +115,7 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth() // Asegurarse de que ocupe todo el ancho
-                .background(Color.White, shape = RoundedCornerShape(30.dp)) // Fondo blanco
+                .background(Color.White, shape = RoundedCornerShape(30.dp))
                 .padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 60.dp)
                 .align(Alignment.BottomCenter)
 
@@ -210,12 +203,13 @@ fun LoginScreen(
                     textDecoration = TextDecoration.Underline,  // Subrayado para parecer un enlace
                     fontWeight = FontWeight.Bold
                 ),
-                modifier = Modifier.clickable {
-                    // Acción de navegación al hacer clic
-                    if (navController != null) {
-                        navController.navigate("screen2")
+                modifier = Modifier
+                    .clickable {
+                        // Acción de navegación al hacer clic
+                        if (navController != null) {
+                            navController.navigate("screen2")
+                        }
                     }
-                }
                     .align(Alignment.CenterHorizontally),
             )
 

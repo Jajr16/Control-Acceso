@@ -1,5 +1,6 @@
     package RetroFit
 
+    import com.example.prueba3.Clases.confirmInscripcion
     import com.example.prueba3.LoginApi
     import com.example.prueba3.EtsApi
     import com.example.prueba3.EtsInfoApi
@@ -10,7 +11,7 @@
 
 
     object RetrofitInstance {
-        private const val BASE_URL = "http://192.168.1.74:8000/" // Cambia esta URL al dominio real.
+        private const val BASE_URL = "http://192.168.1.175:8000/" // Cambia esta URL al dominio real.
 
 
         private val retrofit: Retrofit by lazy {
@@ -39,6 +40,10 @@
         // Instancia de AceptadoApi
         val aceptadoApi: AceptadoApi by lazy {
             retrofit.create(AceptadoApi::class.java)
+        }
+
+        val confirmacionInscripcion: InscripcionConfirm by lazy {
+            retrofit.create(InscripcionConfirm::class.java)
         }
 
 

@@ -1,6 +1,6 @@
 package Pantallas
 
-import Pantallas.components.MenuTopBar
+import Pantallas.components.MenuBottomBar
 import Pantallas.components.ValidateSession
 import android.content.Context
 import androidx.compose.foundation.background
@@ -32,13 +32,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.prueba3.R
+import com.example.prueba3.Views.LoginViewModel
+import com.example.prueba3.ui.theme.BlueBackground
 
 
 @Composable
-fun WelcomeScreenDocente(navController: NavController) {
+fun WelcomeScreenDocente(navController: NavController, loginViewModel: LoginViewModel) {
+
+    val userRole = loginViewModel.getUserRole()
+
     ValidateSession(navController = navController) {
         Scaffold(
-            topBar = { MenuTopBar(navController = navController, title = "Bienvenido") }
+            bottomBar = { MenuBottomBar(navController = navController, userRole) }
         ) { padding ->
             LazyColumn(
                 modifier = Modifier
@@ -84,7 +89,7 @@ fun WelcomeScreenDocente(navController: NavController) {
                                 )
                             }
 
-                            // Segunda fila de botones
+
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.Center // Centra los botones dentro de la fila
@@ -133,7 +138,7 @@ fun WelcomeScreenDocente(navController: NavController) {
                     imageVector = icon,
                     contentDescription = title,
                     modifier = Modifier.size(48.dp),
-                    tint = Color(0xFF6c1d45)
+                    tint = BlueBackground
                 )
                 Text(
                     text = title,

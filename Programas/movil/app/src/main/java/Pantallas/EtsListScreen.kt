@@ -1,6 +1,6 @@
 package Pantallas
 
-import Pantallas.components.MenuTopBar
+import Pantallas.components.MenuBottomBar
 import Pantallas.components.ValidateSession
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -29,13 +29,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.prueba3.Views.EtsViewModel
+import com.example.prueba3.Views.LoginViewModel
 
 @Composable
-fun EtsListScreen(navController: NavController, viewModel: EtsViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+fun EtsListScreen(navController: NavController,
+                  viewModel: EtsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+                  loginViewModel: LoginViewModel) {
+
+    val userRole = loginViewModel.getUserRole()
     val etsList by viewModel.etsList.collectAsState()
+
     ValidateSession(navController = navController) {
         Scaffold(
-            topBar = { MenuTopBar(navController = navController, title = "ETS") }
+            bottomBar = { MenuBottomBar(navController = navController, userRole) }
         ) { padding ->
             Column(
                 modifier = Modifier

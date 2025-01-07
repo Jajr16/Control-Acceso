@@ -1,8 +1,9 @@
 package Pantallas
 
-import Pantallas.components.MenuTopBar
+import Pantallas.components.MenuBottomBar
 import Pantallas.components.ValidateSession
 import android.content.Context
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,21 +32,23 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import com.example.prueba3.Views.LoginViewModel
+import com.example.prueba3.ui.theme.BlueBackground
 
 @Composable
 fun EtsDetailScreen(
     navController: NavController,
     idETS: Int,
-    viewModel: EtsInfoViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    viewModel: EtsInfoViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    loginViewModel: LoginViewModel
 ) {
+
+    val userRole = loginViewModel.getUserRole()
+
     ValidateSession(navController = navController) {
         // Escuchar los datos del ViewModel
         val etsDetail by remember { viewModel.etsDetailState }.collectAsState()
         val isLoading by remember { viewModel.loadingState }.collectAsState()
-
-        val sharedPreferences =
-            navController.context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
-        val userRole = sharedPreferences.getString("userRole", null)
 
         // Ejecutar la solicitud a la API cuando se cargue la pantalla
         LaunchedEffect(idETS) {
@@ -54,13 +57,21 @@ fun EtsDetailScreen(
 
         // Mostrar contenido basado en el estado
         Scaffold(
-            topBar = {
+            bottomBar = {
                 Column {
                     // Barra superior con el título
-                    MenuTopBar(navController = navController, title = "Detalles del ETS")
+                    MenuBottomBar(navController = navController, userRole)
                 }
             }
         ) { padding ->
+
+            androidx.compose.foundation.layout.Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(BlueBackground)
+                    .padding(padding)
+            )
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -136,7 +147,8 @@ fun EtsDetailScreen(
                     ) {
                         Text(
                             text = "La asignación del salón sigue pendiente",
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.White
                         )
                     }
                 }

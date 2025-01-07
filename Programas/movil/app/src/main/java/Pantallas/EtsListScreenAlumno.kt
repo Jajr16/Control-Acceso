@@ -1,9 +1,10 @@
 package Pantallas
 
-import Pantallas.components.MenuTopBar
+import Pantallas.components.MenuBottomBar
 import Pantallas.components.ValidateSession
 import android.content.Context
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,12 +34,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.prueba3.Views.EtsViewModel
+import com.example.prueba3.Views.LoginViewModel
+import com.example.prueba3.ui.theme.BlueBackground
 
 @Composable
 fun EtsListScreenAlumno(navController: NavController,
                         viewModel: EtsViewModel = androidx
-                            .lifecycle.viewmodel.compose.viewModel()
+                            .lifecycle.viewmodel.compose.viewModel(),
+                        loginViewModel: LoginViewModel
 ) {
+
+    val userRole = loginViewModel.getUserRole()
+
     ValidateSession(navController = navController) {
         val etsInscritos by viewModel.etsInscritos.collectAsState()
         val isLoading by remember { viewModel.loadingState }.collectAsState()
@@ -52,8 +59,15 @@ fun EtsListScreenAlumno(navController: NavController,
         }
 
         Scaffold(
-            topBar = { MenuTopBar(navController = navController, title = "ETS") }
+            bottomBar = { MenuBottomBar(navController = navController, userRole) }
         ) { padding ->
+
+            androidx.compose.foundation.layout.Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(BlueBackground)
+                    .padding(padding)
+            )
 
             if (isLoading) {
                 Box(
@@ -64,15 +78,23 @@ fun EtsListScreenAlumno(navController: NavController,
                 ) {
                     Text(
                         text = "Cargando...",
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.White
                     )
                 }
             } else if (etsInscritos.isEmpty()) {
-                Text(
-                    text = "No tienes ETS inscritos.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Gray
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No tienes ETS inscritos.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.White
+                    )
+                }
             } else {
                 Column(
                     modifier = Modifier

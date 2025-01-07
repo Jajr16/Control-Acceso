@@ -24,6 +24,12 @@ class InscripcionResponse(InscripcionBase):
     class Config:
         orm_mode = True
         
+class confirmInscripcion(BaseModel):
+    message: bool
+    
+    class Config:
+        orm_mode = True
+        
 
 class UpdateAceptadoRequest(BaseModel):
     Boleta: str

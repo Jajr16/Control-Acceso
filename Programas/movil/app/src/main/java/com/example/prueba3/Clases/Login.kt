@@ -1,10 +1,10 @@
 package com.example.prueba3.Clases
 
 data class LoginResponse(
-    val Usuario: String,
-    val Error_code: Int,
-    val Message: String,
-    val Rol: String
+    var Usuario: String,
+    var Error_code: Int,
+    var Message: String,
+    var Rol: String
 )
 
 data class LoginRequest(

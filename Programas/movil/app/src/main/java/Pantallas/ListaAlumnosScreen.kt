@@ -1,7 +1,7 @@
 package Pantallas
 
 
-import Pantallas.components.MenuTopBar
+import Pantallas.components.MenuBottomBar
 import Pantallas.components.ValidateSession
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -25,15 +25,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.prueba3.Views.AlumnosViewModel
+import com.example.prueba3.Views.LoginViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
-fun ListaAlumnosScreen(navController: NavController, idETS: String, viewModel: AlumnosViewModel) {
+fun ListaAlumnosScreen(navController: NavController, idETS: String, viewModel: AlumnosViewModel,
+                       loginViewModel: LoginViewModel) {
+
     ValidateSession (navController = navController) {
         val alumnosList by viewModel.alumnosList.collectAsState()
         val isLoading by remember { viewModel.loadingState }.collectAsState()
+
+        val userRole = loginViewModel.getUserRole()
 
         // Llama al ViewModel para obtener los datos al cambiar el idETS
         LaunchedEffect(idETS) {
@@ -41,8 +46,8 @@ fun ListaAlumnosScreen(navController: NavController, idETS: String, viewModel: A
         }
 
         Scaffold(
-            topBar = {
-                MenuTopBar(navController = navController, title = "Lista de Alumnos")
+            bottomBar = {
+                MenuBottomBar(navController = navController, userRole)
             }
         ) { padding ->
             Box(

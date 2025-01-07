@@ -1,6 +1,6 @@
 package Pantallas
 
-import Pantallas.components.MenuTopBar
+import Pantallas.components.MenuBottomBar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,11 +25,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.prueba3.Views.LoginViewModel
 
 @Composable
-fun ETSInscriptionProcessScreen(navController: NavController) {
+fun ETSInscriptionProcessScreen(navController: NavController, loginViewModel: LoginViewModel) {
+
+    val userRole = loginViewModel.getUserRole()
+
     Scaffold(
-        topBar = { MenuTopBar(navController = navController, title = "Instrucciones para el acceso a los ETS") }
+        bottomBar = { MenuBottomBar(navController = navController, userRole) }
     ) { padding ->
         LazyColumn(
             modifier = Modifier

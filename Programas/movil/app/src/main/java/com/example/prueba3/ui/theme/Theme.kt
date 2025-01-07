@@ -19,7 +19,8 @@ private val DarkColorScheme = darkColorScheme(
     tertiary = Pink80,
     background = BlueBackground, // Fondo azul
     surface = Container,    // Fondo para elementos como tarjetas
-    onBackground = Color.White   // Color del texto sobre el fondo azul
+    onBackground = Color.White,
+    onSurface = Color.White
 )
 
 // Esquema de colores para tema claro
@@ -29,7 +30,8 @@ private val LightColorScheme = lightColorScheme(
     tertiary = Pink40,
     background = BlueBackground, // Fondo azul
     surface = Container,    // Fondo para elementos como tarjetas
-    onBackground = Color.White   // Color del texto sobre el fondo azul
+    onBackground = Color.White,
+    onSurface = Color.White
 )
 
 

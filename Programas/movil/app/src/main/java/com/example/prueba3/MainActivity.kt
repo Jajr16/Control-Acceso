@@ -2,6 +2,7 @@ package com.example.prueba3
 
 import Pantallas.Camara
 import Pantallas.CreateAccountScreen
+import Pantallas.Calendar
 import Pantallas.ETSInscriptionProcessScreen
 import Pantallas.EtsCardButton
 import Pantallas.EtsDetailScreen
@@ -62,17 +63,19 @@ override fun onCreate(savedInstanceState: Bundle?) {
                         Camara(navController, boleta, idETS)
                     }
                     composable("notificaciones") { NotificationsScreen(navController) }
-                    composable("Menu") { WelcomeScreenDocente(navController) }
-                    composable("Menu Alumno") { WelcomeScreenAlumno(navController) }
-                    composable("LETS") { EtsListScreen(navController) }
-                    composable("LETSA") { EtsListScreenAlumno(navController) }
-                    composable("scanQr") { QRScannerScreen(navController) }
-                    composable("info") { ETSInscriptionProcessScreen(navController) }
+                    composable("Menu") { WelcomeScreenDocente(navController, loginViewModel) }
+                    composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel) }
+                    composable("LETS") { EtsListScreen(navController, loginViewModel = loginViewModel) }
+                    composable("LETSA") { EtsListScreenAlumno(navController, loginViewModel = loginViewModel) }
+                    composable("scanQr") { QRScannerScreen(navController, loginViewModel = loginViewModel) }
+                    composable("info") { ETSInscriptionProcessScreen(navController, loginViewModel) }
                     composable("CrearCuenta") { CreateAccountScreen(navController) }
+
+                    composable("Calendar") { Calendar(navController) }
 
                     composable("ListaAlumnos/{idETS}") { backStackEntry ->
                         val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
-                        ListaAlumnosScreen(navController, idETS, alumnosViewModel) // Pasar el ViewModel
+                        ListaAlumnosScreen(navController, idETS, alumnosViewModel, loginViewModel) // Pasar el ViewModel
                     }
 
 
@@ -81,7 +84,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
                         arguments = listOf(navArgument("idETS") { type = NavType.IntType })
                     ) { backStackEntry ->
                         val idETS = backStackEntry.arguments?.getInt("idETS") ?: 0
-                        EtsDetailScreen(navController, idETS)
+                        EtsDetailScreen(navController, idETS, loginViewModel = loginViewModel)
                     }
 
                     composable(

@@ -1,6 +1,6 @@
 package Pantallas
 
-import Pantallas.components.MenuTopBar
+import Pantallas.components.MenuBottomBar
 import Pantallas.components.ValidateSession
 import android.Manifest
 import android.content.Context
@@ -35,6 +35,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
+import com.example.prueba3.Views.LoginViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.mlkit.vision.barcode.BarcodeScanner
@@ -45,7 +46,10 @@ import com.google.mlkit.vision.common.InputImage
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun QRScannerScreen(navController: NavController) {
+fun QRScannerScreen(navController: NavController, loginViewModel: LoginViewModel) {
+
+    val userRole = loginViewModel.getUserRole()
+
     ValidateSession(navController = navController) {
         val permissions = rememberMultiplePermissionsState(
             permissions = listOf(
@@ -68,7 +72,7 @@ fun QRScannerScreen(navController: NavController) {
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
-            topBar = { MenuTopBar(navController = navController, title = "Escanea código QR") }
+            bottomBar = { MenuBottomBar(navController = navController, userRole) }
         ) { padding ->
             Box(
                 modifier = Modifier
