@@ -41,8 +41,8 @@ fun MenuBottomBar(navController: NavController, userRole: String?) {
         actions = {
             Box (
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 10.dp)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
             ) {
                 Row (
                     modifier = Modifier.align(Alignment.Center),
