@@ -3,6 +3,7 @@ from api import api_router
 from db.session import init_db
 from starlette.middleware.base import BaseHTTPMiddleware
 import asyncio
+from fastapi.responses import JSONResponse
 
 class TimeoutMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, timeout: int):

@@ -11,13 +11,19 @@
 
 
     object RetrofitInstance {
-        private const val BASE_URL = "http://192.168.1.175:8000/" // Cambia esta URL al dominio real.
+        private const val BASE_URL = "http://192.168.1.103:8000/" // Cambia esta URL al dominio real.
 
+        private val okHttpClient = OkHttpClient.Builder()
+            .connectTimeout(120, TimeUnit.SECONDS)  // Timeout de conexión
+            .writeTimeout(120, TimeUnit.SECONDS)    // Timeout para escritura
+            .readTimeout(120, TimeUnit.SECONDS)     // Timeout para lectura
+            .build()
 
         private val retrofit: Retrofit by lazy {
             Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
+                .client(okHttpClient)
                 .build()
         }
 
@@ -44,6 +50,10 @@
 
         val confirmacionInscripcion: InscripcionConfirm by lazy {
             retrofit.create(InscripcionConfirm::class.java)
+        }
+
+        val getCalendar : Calendario by lazy {
+            retrofit.create(Calendario::class.java)
         }
 
 

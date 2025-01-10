@@ -1,8 +1,8 @@
 package com.example.prueba3
 
 import Pantallas.Camara
+import Pantallas.CalendarScreen
 import Pantallas.CreateAccountScreen
-import Pantallas.Calendar
 import Pantallas.ETSInscriptionProcessScreen
 import Pantallas.EtsCardButton
 import Pantallas.EtsDetailScreen
@@ -15,13 +15,15 @@ import Pantallas.WelcomeScreenDocente
 import Pantallas.WelcomeScreenAlumno
 import PantallasTT.NotificationsScreen
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -33,7 +35,6 @@ import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 import com.example.prueba3.ui.theme.Prueba3Theme
 import java.lang.Integer.parseInt
-
 
 class MainActivity : ComponentActivity() {
 
@@ -71,7 +72,26 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     composable("info") { ETSInscriptionProcessScreen(navController, loginViewModel) }
                     composable("CrearCuenta") { CreateAccountScreen(navController) }
 
-                    composable("Calendar") { Calendar(navController) }
+                    composable("Calendar") { CalendarScreen(navController, loginViewModel) }
+//                    composable("Calendar") {
+//                        val intent = Intent(
+//                            Intent.ACTION_VIEW,
+//                            Uri.parse("https://www.ipn.mx/assets/files/website/docs/inicio/calendarioipn-escolarizada.pdf"))
+//                        startActivity(intent)
+//
+//                        LaunchedEffect(Unit) {
+//                            loginViewModel.getUserRole()?.let { savedRole ->
+//                                if (savedRole != null || savedRole != "") {
+//                                    when (savedRole) {
+//                                        "Alumno" -> navController.navigate("Menu Alumno") {
+//                                            popUpTo("login") { inclusive = true } }
+//                                        "Personal Seguridad", "Docente" -> navController.navigate("Menu") {
+//                                            popUpTo("login") { inclusive = true } }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
 
                     composable("ListaAlumnos/{idETS}") { backStackEntry ->
                         val idETS = backStackEntry.arguments?.getString("idETS") ?: ""

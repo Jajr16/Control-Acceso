@@ -8,6 +8,7 @@ from .periodoETS import router as periodoETSRouter
 from .UnidadAprendizaje import router as unidadAprendizajeRouter 
 from .Login import router as LoginRouter
 from .Inscripciones import router as inscripcionRouter
+from .Image import router as ImagePDF
 
 
 api_router = APIRouter()
@@ -21,3 +22,4 @@ api_router.include_router(ETSRouter)
 api_router.include_router(periodoETSRouter)
 api_router.include_router(LoginRouter)
 api_router.include_router(inscripcionRouter)
+api_router.include_router(ImagePDF)
