@@ -8,6 +8,7 @@ data class Salon(
 )
 
 data class Ets(
+    val UnidadAprendizaje: String,
     val tipoETS: String,
     val idETS: Int,
     val idPeriodo: String,

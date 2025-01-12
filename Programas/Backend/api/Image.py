@@ -4,11 +4,13 @@ from fastapi.responses import FileResponse
 import requests
 import fitz  # PyMuPDF
 import tempfile
-from db.schemas.Image import ImageMetadata
+from db.schemas.Image import DaysETS
 from db.session import get_db
+from db.models import periodoETS
 import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+import datetime
 
 # Configuración del driver Selenium
 def optionsCharge():
@@ -31,7 +33,7 @@ def getElement(element, driver):
 router = APIRouter(prefix="/ImagePDF", tags=["ImagePDF"])
 
 @router.get("/", response_class=FileResponse)
-def getCalendar(db: Session = Depends(get_db)):
+def getCalendar():
     """
     Descargar un PDF desde un enlace en la página y convertirlo en una imagen.
     Devuelve la imagen generada directamente.
@@ -89,3 +91,32 @@ def getCalendar(db: Session = Depends(get_db)):
     except requests.exceptions.RequestException as e:
         print(f"Error al realizar la solicitud HTTP: {e}")
         raise HTTPException(status_code=500, detail=f"Error en la solicitud HTTP: {str(e)}")
+
+@router.get("/TimeToETS", response_model=DaysETS)
+def getDaysETS(db: Session = Depends(get_db)):
+    año = datetime.date.today().year
+    año_abreviado = str(año)[-2:] 
+    mes = datetime.date.today().month
+    
+    periodo = ""
+    
+    if (mes >= 8 or mes <= 1):
+        periodo = f"{año_abreviado}/1" 
+    elif 2 <= mes <= 7:
+        periodo = f"{año_abreviado}/2" 
+
+    initPeriodo = db.query(periodoETS.Fecha_Inicio).filter(periodoETS.Periodo == periodo).first()
+    
+    if not initPeriodo:
+        raise HTTPException(status_code=404, detail="Hubo un error al buscar el periodo.")
+    
+    fecha_inicio = initPeriodo[0]
+
+    # Aseguramos que ambas fechas sean objetos datetime.date para la resta
+    fecha_inicio_date = fecha_inicio if isinstance(fecha_inicio, datetime.date) else datetime.datetime.strptime(fecha_inicio, "%Y-%m-%d").date()
+
+    dias = (fecha_inicio_date - datetime.date.today()).days
+    
+    texto = f"Faltan {dias} días para el periodo de ETS"
+    # Aquí se crea una instancia del modelo DaysETS pasando el texto como un argumento
+    return {"text": texto}

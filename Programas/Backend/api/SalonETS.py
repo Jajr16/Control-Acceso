@@ -64,6 +64,7 @@ def getSalonETS(ETSid: int, db: Session = Depends(get_db)):
     
     return {
         "ETS": {
+            "UnidadAprendizaje": ets.UAETS.Nombre,
             "tipoETS": ets.periodo.Tipo,
             "idETS": ets.idETS,
             "idPeriodo": ets.periodo.Periodo,

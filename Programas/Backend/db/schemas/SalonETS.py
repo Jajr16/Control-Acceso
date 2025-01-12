@@ -17,6 +17,7 @@ class SalonETSResponse(SalonETSBase):
     pass
     
 class ETSResponse(BaseModel):
+    UnidadAprendizaje: str
     tipoETS: str
     idETS: int
     idPeriodo: str

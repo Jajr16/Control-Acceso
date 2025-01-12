@@ -13,17 +13,14 @@ import Pantallas.LoginScreen
 import Pantallas.QRScannerScreen
 import Pantallas.WelcomeScreenDocente
 import Pantallas.WelcomeScreenAlumno
-import PantallasTT.NotificationsScreen
+import Pantallas.NotificationsScreen
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -32,6 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.Views.AlumnosViewModel
+import com.example.prueba3.Views.DiasETSModel
 import com.example.prueba3.ui.theme.BlueBackground
 import com.example.prueba3.ui.theme.Prueba3Theme
 import java.lang.Integer.parseInt
@@ -52,6 +50,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
     val sharedPreferences = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
     val loginViewModel = LoginViewModel(sharedPreferences)
+    val DiasETSModel = DiasETSModel()
 
     enableEdgeToEdge()
     setContent {
@@ -81,7 +80,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     composable("info") { ETSInscriptionProcessScreen(navController, loginViewModel) }
                     composable("CrearCuenta") { CreateAccountScreen(navController) }
 
-                    composable("Calendar") { CalendarScreen(navController, loginViewModel) }
+                    composable("Calendar") { CalendarScreen(navController, loginViewModel, DiasETSModel) }
 //                    composable("Calendar") {
 //                        val intent = Intent(
 //                            Intent.ACTION_VIEW,

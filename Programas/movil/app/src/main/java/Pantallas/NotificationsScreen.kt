@@ -1,4 +1,4 @@
-package PantallasTT
+package Pantallas
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
