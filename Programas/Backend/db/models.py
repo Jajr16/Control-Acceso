@@ -5,8 +5,8 @@ from db.session import Base
 class UnidadAcademica(Base):
     __tablename__ = "unidadacademica"
 
-    idEscuela = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    Nombre = Column(String(200), index=True, nullable=False)
+    id_escuela = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    nombre = Column(String(200), index=True, nullable=False)
 
     # Relación con EscuelaPrograma
     escuelaPrograma = relationship("EscuelaPrograma", back_populates="unidadAcademica", lazy="joined")
@@ -16,9 +16,9 @@ class UnidadAcademica(Base):
 class ProgramaAcademico(Base):
     __tablename__ = "programaacademico"
 
-    idPA = Column(String(20), primary_key=True, index=True)
-    Nombre = Column(String(150), nullable=False, index=True)
-    Descripcion = Column(String(200), nullable=False)
+    idpa = Column(String(20), primary_key=True, index=True)
+    nombre = Column(String(150), nullable=False, index=True)
+    descripcion = Column(String(200), nullable=False)
 
     # Relación con EscuelaPrograma
     escuelaPrograma = relationship("EscuelaPrograma", back_populates="programaAcademico", lazy="joined")
@@ -28,15 +28,15 @@ class ProgramaAcademico(Base):
 class EscuelaPrograma(Base):
     __tablename__ = "escuelaprograma"
 
-    idEscuela = Column(
+    id_escuela = Column(
         Integer,
-        ForeignKey("unidadacademica.idEscuela", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("unidadacademica.id_escuela", ondelete="CASCADE", onupdate="CASCADE"),
         primary_key=True,
         index=True,
     )
-    idPA = Column(
+    idpa = Column(
         String(20),
-        ForeignKey("programaacademico.idPA", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("programaacademico.idpa", ondelete="CASCADE", onupdate="CASCADE"),
         primary_key=True,
         index=True,
     )
@@ -50,8 +50,8 @@ class EscuelaPrograma(Base):
 class Sexo(Base):
     __tablename__ = "sexo"
 
-    idSexo = Column(Integer, primary_key=True, index=True)
-    Nombre = Column(String(9), index=True, nullable=False)
+    id_sexo = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String(9), index=True, nullable=False)
 
     # Relación con Persona
     personas = relationship("Persona", back_populates="sexo", lazy="joined")
@@ -60,12 +60,12 @@ class Sexo(Base):
 class Persona(Base):
     __tablename__ = "persona"
 
-    CURP = Column(String(18), primary_key=True, index=True)
-    Nombre = Column(String(100), nullable=False, index=True)
-    ApellidoP = Column(String(150), nullable=False, index=True)
-    ApellidoM = Column(String(150), nullable=False, index=True)
-    Sexo = Column(Integer, ForeignKey("sexo.idSexo"), nullable=False)
-    idEscuela = Column(Integer, ForeignKey("unidadacademica.idEscuela"), nullable=False)
+    curp = Column(String(18), primary_key=True, index=True)
+    nombre = Column(String(100), nullable=False, index=True)
+    apellido_p = Column(String(150), nullable=False, index=True)
+    apellido_m = Column(String(150), nullable=False, index=True)
+    sexo = Column(Integer, ForeignKey("sexo.id_sexo"), nullable=False)
+    id_escuela = Column(Integer, ForeignKey("unidadacademica.id_escuela"), nullable=False)
 
     sexo = relationship("Sexo", back_populates="personas", lazy="joined")
     unidadAcademica = relationship("UnidadAcademica", back_populates="personas", lazy="joined")
@@ -77,20 +77,20 @@ class Persona(Base):
 class TipoUsuario(Base):
     __tablename__ = "tipousuario"
     
-    idTU = Column(Integer, primary_key=True, index=True)
-    Tipo = Column(String(18), nullable=False, index=True)
+    idtu = Column(Integer, primary_key=True, index=True)
+    tipo = Column(String(18), nullable=False, index=True)
     
     tipoNombre = relationship("Usuario", back_populates="tipoUser", lazy="joined")
     
 class Usuario(Base):
     __tablename__ = "usuario"
     
-    Usuario = Column(String(18), primary_key=True, index=True)
-    Password = Column(String(100), nullable=False)
-    TipoU = Column(Integer, ForeignKey("tipousuario.idTU"), nullable=False)
-    CURP = Column(
+    usuario = Column(String(18), primary_key=True, index=True)
+    password = Column(String(100), nullable=False)
+    tipou = Column(Integer, ForeignKey("tipousuario.idtu"), nullable=False)
+    curp = Column(
         String(18),
-        ForeignKey("persona.CURP", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("persona.curp", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
         index=True,
     )
@@ -101,8 +101,8 @@ class Usuario(Base):
 class TipoPersonal(Base):
     __tablename__ = "tipopersonal"
 
-    tipoPA = Column(Integer, primary_key=True, index=True)
-    Cargo = Column(String(100), nullable=False, index=True)
+    tipopa = Column(Integer, primary_key=True, index=True)
+    cargo = Column(String(100), nullable=False, index=True)
 
     # Relación con PersonalAcademico
     personalAcademicos = relationship("PersonalAcademico", back_populates="tipoPersonal", lazy="joined")
@@ -111,15 +111,15 @@ class TipoPersonal(Base):
 class PersonalAcademico(Base):
     __tablename__ = "personalacademico"
 
-    RFC = Column(String(13), primary_key=True, index=True)
-    CURP = Column(
+    rfc = Column(String(13), primary_key=True, index=True)
+    curp = Column(
         String(18),
         ForeignKey("persona.CURP", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
         index=True,
     )
-    CorreoI = Column(String(100), nullable=False, index=True)
-    TipoPA = Column(Integer, ForeignKey("tipopersonal.tipoPA"), index=True)
+    correoi = Column(String(100), nullable=False, index=True)
+    tipopa = Column(Integer, ForeignKey("tipopersonal.tipopa"), index=True)
 
     persona = relationship("Persona", back_populates="personalAcademico", lazy="joined")
     tipoPersonal = relationship("TipoPersonal", back_populates="personalAcademicos", lazy="joined")
@@ -129,16 +129,16 @@ class PersonalAcademico(Base):
 class Cargo(Base):
     __tablename__ = "cargo"
      
-    idCargo = Column(Integer, primary_key=True, index=True)
-    Cargo = Column(String(100), nullable=False, index=True)
+    id_cargo = Column(Integer, primary_key=True, index=True)
+    cargo = Column(String(100), nullable=False, index=True)
     
     cargoDocente = relationship("CargoDocente", back_populates="nombreCargo", lazy="joined")
        
 class CargoDocente(Base):
     __tablename__ = "cargodocente"
     
-    RFC = Column(String(13), ForeignKey("personalacademico.RFC", ondelete="CASCADE", onupdate="CASCADE"), nullable=False, primary_key=True)
-    idCargo = Column(Integer, ForeignKey("cargo.idCargo"), nullable=False, primary_key=True)
+    rfc = Column(String(13), ForeignKey("personalacademico.rfc", ondelete="CASCADE", onupdate="CASCADE"), nullable=False, primary_key=True)
+    id_cargo = Column(Integer, ForeignKey("cargo.id_cargo"), nullable=False, primary_key=True)
     
     nombrePersona = relationship("PersonalAcademico", back_populates="cargoPersonalAcademico", lazy="joined")
     nombreCargo = relationship("Cargo", back_populates="cargoDocente", lazy="joined")
@@ -146,8 +146,8 @@ class CargoDocente(Base):
 class Turno(Base):
     __tablename__ = "turno"
     
-    idTurno = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    Nombre = Column(String(10), nullable=False, index=True)
+    id_turno = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    nombre = Column(String(10), nullable=False, index=True)
     
     turnoPS = relationship("PersonalSeguridad", back_populates="turnoSeguridad", lazy="joined")
     turnoETS = relationship("ETS", back_populates="turno", lazy="joined")
@@ -155,23 +155,23 @@ class Turno(Base):
 class CargoPS(Base):
     __tablename__ = "cargops"
     
-    idCargo = Column(Integer, primary_key=True, index=True)
-    Nombre = Column(String(100), nullable=False, index=True)
+    id_cargo = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String(100), nullable=False, index=True)
     
     cargoPS = relationship("PersonalSeguridad", back_populates="cargoSeguridad", lazy="joined")
 
 class PersonalSeguridad(Base):
     __tablename__ = "personalseguridad"
     
-    CURP = Column(
+    curp = Column(
         String(18),
-        ForeignKey("persona.CURP", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("persona.curp", ondelete="CASCADE", onupdate="CASCADE"),
         primary_key=True,
         nullable=False,
         index=True,
     )
-    Turno = Column(Integer, ForeignKey("turno.idTurno"), nullable=False)
-    Cargo = Column(Integer, ForeignKey("cargops.idCargo"), nullable=False)
+    turno = Column(Integer, ForeignKey("turno.id_turno"), nullable=False)
+    cargo = Column(Integer, ForeignKey("cargops.id_cargo"), nullable=False)
     
     persona = relationship("Persona", back_populates="personalSeguridad", lazy="joined")
     turnoSeguridad = relationship("Turno", back_populates="turnoPS", lazy="joined")
@@ -180,16 +180,16 @@ class PersonalSeguridad(Base):
 class Alumno(Base):
     __tablename__ = "alumno"
     
-    Boleta = Column(String(15), primary_key=True, index=True)
-    CURP = Column(
+    boleta = Column(String(15), primary_key=True, index=True)
+    curp = Column(
         String(18),
         ForeignKey("persona.CURP", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
         index=True,
     )
-    CorreoI = Column(String(100), nullable=False, index=True)
-    idPA = Column(String(20), ForeignKey("programaacademico.idPA"), nullable=False)
-    imagenCredencial = Column(String(200), nullable=False, index=True)
+    correoi = Column(String(100), nullable=False, index=True)
+    idpa = Column(String(20), ForeignKey("programaacademico.idpa"), nullable=False)
+    imagen_credencial = Column(String(200), nullable=False, index=True)
     
     carrera = relationship("ProgramaAcademico", back_populates="alumnoCarrera", lazy="joined")
     persona = relationship("Persona", back_populates="Alumno", lazy="joined")
@@ -198,21 +198,21 @@ class Alumno(Base):
 class periodoETS(Base):
     __tablename__ = "periodoets"
     
-    idPeriodo = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    Periodo = Column(String(20), nullable=False, index=False)
-    Tipo = Column(CHAR, nullable=False)
-    Fecha_Inicio = Column(Date, nullable=False)
-    Fecha_Fin = Column(Date, nullable=False)
+    id_periodo = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    periodo = Column(String(20), nullable=False, index=False)
+    tipo = Column(CHAR, nullable=False)
+    fecha_inicio = Column(Date, nullable=False)
+    fecha_fin = Column(Date, nullable=False)
     
     nombrePeriodo = relationship("ETS", back_populates="periodo", lazy="joined")
     
 class UnidadAprendizaje(Base):
     __tablename__ = "unidadaprendizaje"
     
-    idUA = Column(String(20), primary_key=True, index=True)
-    Nombre = Column(String(150), index=True, nullable=False)
-    Descripcion = Column(String(200), nullable=False)
-    idPA = Column(String(20), ForeignKey("programaacademico.idPA", ondelete="CASCADE", onupdate="CASCADE"), index=True, nullable=False)
+    idua = Column(String(20), primary_key=True, index=True)
+    nombre = Column(String(150), index=True, nullable=False)
+    descripcion = Column(String(200), nullable=False)
+    idpa = Column(String(20), ForeignKey("programaacademico.idpa", ondelete="CASCADE", onupdate="CASCADE"), index=True, nullable=False)
     
     programaAcademico = relationship("ProgramaAcademico", back_populates="nombrePrograma", lazy="joined")
     nombreUA = relationship("ETS", back_populates="UAETS", lazy="joined")
@@ -220,13 +220,13 @@ class UnidadAprendizaje(Base):
 class ETS(Base):
     __tablename__ = "ets"
     
-    idETS = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    idPeriodo = Column(Integer, ForeignKey("periodoets.idPeriodo", onupdate="CASCADE", ondelete="CASCADE"), nullable=False, index=True)
-    Turno = Column(Integer, ForeignKey("turno.idTurno"), nullable=False)
-    Fecha = Column(DateTime, nullable=False, index=True)
-    Cupo = Column(Integer, nullable=False)
-    idUA = Column(String(20), ForeignKey("unidadaprendizaje.idUA", ondelete="CASCADE", onupdate="CASCADE"), nullable=False, index=True)
-    Duracion = Column(Integer, nullable=False)
+    idets = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id_periodo = Column(Integer, ForeignKey("periodoets.id_periodo", onupdate="CASCADE", ondelete="CASCADE"), nullable=False, index=True)
+    turno = Column(Integer, ForeignKey("turno.id_turno"), nullable=False)
+    fecha = Column(DateTime, nullable=False, index=True)
+    cupo = Column(Integer, nullable=False)
+    idua = Column(String(20), ForeignKey("unidadaprendizaje.idua", ondelete="CASCADE", onupdate="CASCADE"), nullable=False, index=True)
+    duracion = Column(Integer, nullable=False)
     
     periodo = relationship("periodoETS", back_populates="nombrePeriodo", lazy="joined")
     turno = relationship("Turno", back_populates="turnoETS", lazy="joined")
@@ -238,18 +238,18 @@ class ETS(Base):
 class TipoSalon(Base):
     __tablename__ = "tiposalon"
     
-    idTS = Column(Integer, primary_key=True, index=True)
-    Tipo = Column(String(11), nullable=False, index=True)
+    idts = Column(Integer, primary_key=True, index=True)
+    tipo = Column(String(11), nullable=False, index=True)
     
     nts = relationship("Salon", back_populates="salonType", lazy="joined")
     
 class Salon(Base):
     __tablename__ = "salon"
     
-    numSalon = Column(Integer, primary_key=True, index=True)
-    Edificio = Column(Integer, nullable=False, index=True)
-    Piso = Column(Integer, nullable=False, index=True)
-    tipoSalon = Column(Integer, ForeignKey("tiposalon.idTS"), nullable=False, index=True)
+    num_salon = Column(Integer, primary_key=True, index=True)
+    edificio = Column(Integer, nullable=False, index=True)
+    piso = Column(Integer, nullable=False, index=True)
+    tipo_salon = Column(Integer, ForeignKey("tiposalon.idts"), nullable=False, index=True)
     
     salonType = relationship("TipoSalon", back_populates="nts", lazy="joined")
     ets = relationship("SalonETS", back_populates="salon", lazy="joined")
@@ -257,8 +257,8 @@ class Salon(Base):
 class SalonETS(Base):
     __tablename__ = "salonets"
     
-    numSalon = Column(Integer, ForeignKey("salon.numSalon", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
-    idETS = Column(Integer, ForeignKey("ets.idETS", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
+    num_salon = Column(Integer, ForeignKey("salon.num_salon", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
+    idets = Column(Integer, ForeignKey("ets.idets", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
     
     salon = relationship("Salon", back_populates="ets", lazy="joined")
     ets = relationship("ETS", back_populates="salon", lazy="joined")
@@ -266,8 +266,8 @@ class SalonETS(Base):
 class InscripcionETS(Base):
     __tablename__ = "inscripcionets"
     
-    Boleta = Column(String(15), ForeignKey("alumno.Boleta", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
-    idETS = Column(Integer, ForeignKey("ets.idETS", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
+    Boleta = Column(String(15), ForeignKey("alumno.boleta", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
+    idETS = Column(Integer, ForeignKey("ets.idets", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
     
     ets = relationship("ETS", back_populates="alumno", lazy="joined")
     alumno = relationship("Alumno", back_populates="nets", lazy="joined")
@@ -277,7 +277,7 @@ class Aplica(Base):
     __tablename__ = "aplica"
     
     idETS = Column(Integer, ForeignKey("ets.idETS", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
-    DocenteRFC = Column(String(13), ForeignKey("personalacademico.RFC", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
+    docente_rfc = Column(String(13), ForeignKey("personalacademico.rfc", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
     Titular = Column(Boolean, nullable=False)
     
     docenteaplicador = relationship("ETS", back_populates="AplicarETS", lazy="joined")
@@ -287,16 +287,16 @@ class AsistenciaInscripcion(Base):
     __tablename__ = "asistenciainscripcion"
     
     FechaAsistencia = Column(DateTime, primary_key=True, index=True)
-    InscripcionETSBoleta = Column(String(15), primary_key=True, index=True)
-    InscripcionETSIdETS = Column(Integer, primary_key=True, index=True)
-    Asistio = Column(Boolean, nullable=False, default=False)
-    ResultadoRN = Column(Boolean, nullable=False, default=False)
-    Aceptado = Column(Boolean, nullable=False, default=False)
+    inscripcionets_boleta = Column(String(15), primary_key=True, index=True)
+    inscripcionets_idets = Column(Integer, primary_key=True, index=True)
+    asistio = Column(Boolean, nullable=False, default=False)
+    resultado_rn = Column(Boolean, nullable=False, default=False)
+    aceptado = Column(Boolean, nullable=False, default=False)
     
     __table_args__ = (
         ForeignKeyConstraint(
-            ['InscripcionETSBoleta', 'InscripcionETSIdETS'],
-            ['inscripcionets.Boleta', 'inscripcionets.idETS'],
+            ['inscripcionets_boleta', 'inscripcionets_idets'],
+            ['inscripcionets.boleta', 'inscripcionets.idets'],
             ondelete="CASCADE",
             onupdate="CASCADE"
         ),
@@ -305,7 +305,7 @@ class AsistenciaInscripcion(Base):
     alumnoAsistencia = relationship(
         "InscripcionETS",
         back_populates="insETSAlumno",
-        primaryjoin="and_(AsistenciaInscripcion.InscripcionETSBoleta == InscripcionETS.Boleta, AsistenciaInscripcion.InscripcionETSIdETS == InscripcionETS.idETS)",
+        primaryjoin="and_(asistenciainscripcion.inscripcionets_boleta == inscripcionets.boleta, asistenciainscripcion.inscripcionets_idets == inscripcionets.idets)",
         lazy="joined"
     )
     
@@ -446,13 +446,3 @@ def inicializar_base_datos(session):
     insertUsuario(None, session)
     insertAlumno(None, session)
     insertperiodoETS(None, session)
-
-# event.listen(UnidadAcademica.__table__, 'after_create', insertUA)
-# event.listen(ProgramaAcademico.__table__, 'after_create', insertPA)
-# event.listen(EscuelaPrograma.__table__, 'after_create', insertEscuelaPrograma)
-# event.listen(Sexo.__table__, 'after_create', insertSexo)
-# event.listen(Persona.__table__, 'after_create', insertPersona)
-# event.listen(TipoUsuario.__table__, 'after_create', insertTipoU)
-# event.listen(Usuario.__table__, 'after_create', insertUsuario)
-# event.listen(Alumno.__table__, 'after_create', insertAlumno)
-# event.listen(periodoETS.__table__, 'after_create', insertperiodoETS)
