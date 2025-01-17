@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -63,7 +64,6 @@ fun EtsDetailScreen(
         Scaffold(
             bottomBar = {
                 Column {
-                    // Barra superior con el título
                     MenuBottomBar(navController = navController, userRole)
                 }
             }
@@ -78,8 +78,8 @@ fun EtsDetailScreen(
                 Column (
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        .fillMaxWidth()
                         .padding(top = 70.dp)
+                        .align(Alignment.CenterHorizontally)
                 ) {
                     Text(
                         text = "Detalles del ETS",
@@ -124,54 +124,82 @@ fun EtsDetailScreen(
                         val ets = etsDetail!!.ETS
                         val salones = etsDetail!!.Salones
 
-                        // Lista deslizante de ETS
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            item {
-                                StyledCard(
-                                    title = "Unidad de Aprendizaje", content = ets.UnidadAprendizaje
-                                )
-                            }
-                            item {
-                                StyledCard(
-                                    title = "Tipo de ETS",
-                                    content = if (ets.tipoETS == "O") "Ordinario" else "Especial"
-                                )
-                            }
-                            item {
-                                StyledCard(title = "Periodo", content = ets.idPeriodo)
-                            }
-                            item {
-                                StyledCard(title = "Fecha", content = ets.Fecha)
-                            }
-                            item {
-                                StyledCard(title = "Turno", content = ets.Turno)
-                            }
-                            item {
-                                StyledCard(title = "Cupo", content = ets.Cupo.toString())
-                            }
-                            item {
-                                StyledCard(title = "Unidad Académica", content = ets.idUA)
-                            }
-                            item {
-                                StyledCard(title = "Duración", content = ets.Duracion.toString())
-                            }
-
-                            // Mostrar salones
-                            salones.take(3).forEach { salon -> // Limita a 3 salones
+                        Column {
+                            // Lista deslizante de ETS
+                            LazyColumn(
+                                modifier = Modifier
+                                    .weight(2f)
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
                                 item {
                                     StyledCard(
-                                        title = "Número de salón",
-                                        content = salon.numSalon.toString()
+                                        title = "Unidad de Aprendizaje", content = ets.UnidadAprendizaje
                                     )
                                 }
                                 item {
-                                    StyledCard(title = "Tipo de salón", content = salon.tipoSalon)
+                                    StyledCard(
+                                        title = "Tipo de ETS",
+                                        content = if (ets.tipoETS == "O") "Ordinario" else "Especial"
+                                    )
+                                }
+                                item {
+                                    StyledCard(title = "Periodo", content = ets.idPeriodo)
+                                }
+                                item {
+                                    StyledCard(title = "Fecha", content = ets.Fecha)
+                                }
+                                item {
+                                    StyledCard(title = "Turno", content = ets.Turno)
+                                }
+                                item {
+                                    StyledCard(title = "Cupo", content = ets.Cupo.toString())
+                                }
+                                item {
+                                    StyledCard(title = "Unidad Académica", content = ets.idUA)
+                                }
+                                item {
+                                    StyledCard(title = "Duración", content = ets.Duracion.toString())
+                                }
+                            }
+
+                            LazyColumn(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                item {
+                                    Column {
+                                        Text(
+                                            text = "Salon(es) Asignado(s)",
+                                            style = MaterialTheme.typography.titleLarge,
+                                            modifier = Modifier.padding(bottom = 16.dp)
+                                                .align(Alignment.CenterHorizontally),
+                                            color = Color.White,
+                                            textAlign = TextAlign.Center
+                                        )
+
+                                        Divider(
+                                            modifier = Modifier
+                                                .padding(vertical = 8.dp)
+                                                .width(300.dp),
+                                            thickness = 1.dp,
+                                            color = Color.White
+                                        )
+                                    }
+                                }
+
+                                // Mostrar salones
+                                salones.take(3).forEach { salon -> // Limita a 3 salones
+                                    item {
+                                        SalonCard(
+                                            numSalon = salon.numSalon,
+                                            tipoSalon = salon.tipoSalon
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -215,6 +243,54 @@ fun EtsDetailScreen(
         }
     }
 }
+
+@Composable
+fun SalonCard(numSalon: String, tipoSalon: String) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp), // Márgenes de cada tarjeta
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp), // Elevación con Material 3
+        shape = RoundedCornerShape(8.dp) // Bordes redondeados
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp), // Espaciado interno
+            verticalArrangement = Arrangement.spacedBy(8.dp) // Espaciado entre filas
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Número de salón:",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = numSalon.toString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.End
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Tipo de salón:",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = tipoSalon,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.End
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
 fun StyledCard(title: String, content: String) {

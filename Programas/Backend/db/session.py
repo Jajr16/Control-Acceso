@@ -13,10 +13,15 @@ def init_db():
     try:
         from db.models import UnidadAcademica, ProgramaAcademico, EscuelaPrograma
         Base.metadata.create_all(bind=engine)
+        
+        db = SessionLocal()
+        from db.models import inicializar_base_datos
+        inicializar_base_datos(db)
+        
         print("Conexión a la base de datos establecida")
     except Exception as e:
         print(f"Error al conectar a la base de datos: {e}")
-
+    
 def get_db():
     db = SessionLocal()
     try:
