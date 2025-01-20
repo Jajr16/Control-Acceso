@@ -17,10 +17,10 @@ def get_Salon(db: Session = Depends(get_db)):
     # Transformamos los salones para incluir el nombre del tipo de salón
     salones_response = [
         {
-            "numSalon": salon.numSalon,
-            "Edificio": salon.Edificio,
-            "Piso": salon.Piso,
-            "tipoSalon": salon.salonType.Tipo  # Extraemos el nombre del tipo
+            "numSalon": salon.num_salon,
+            "Edificio": salon.edificio,
+            "Piso": salon.piso,
+            "tipoSalon": salon.salonType.tipo  # Extraemos el nombre del tipo
         }
         for salon in salones
     ]
@@ -29,7 +29,7 @@ def get_Salon(db: Session = Depends(get_db)):
 
 @router.post("/", response_model=SalonResponse)
 def create_Salon(data: SalonCreate, db: Session = Depends(get_db)):
-    tipo_salon = db.query(TipoSalon).filter(TipoSalon.Tipo == data.tipo).first()
+    tipo_salon = db.query(TipoSalon).filter(TipoSalon.tipo == data.tipo).first()
     
     if not tipo_salon:
         raise HTTPException(status_code=404, detail=f"El tipo de salón '{data.tipo}' no existe")
@@ -38,17 +38,17 @@ def create_Salon(data: SalonCreate, db: Session = Depends(get_db)):
         numSalon = data.numSalon,
         Edificio = data.Edificio,
         Piso = data.Piso,
-        tipoSalon = tipo_salon.idTS,
+        tipoSalon = tipo_salon.idts,
     )
     db.add(nuevoSalon)
     db.commit()
     db.refresh(nuevoSalon)
     
     salon_response = {
-        "numSalon": nuevoSalon.numSalon,
-        "Edificio": nuevoSalon.Edificio,
-        "Piso": nuevoSalon.Piso,
-        "tipoSalon": tipo_salon.Tipo
+        "numSalon": nuevoSalon.num_salon,
+        "Edificio": nuevoSalon.edificio,
+        "Piso": nuevoSalon.piso,
+        "tipoSalon": tipo_salon.tipo
     }
     
     return salon_response

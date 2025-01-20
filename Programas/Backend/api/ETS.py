@@ -15,11 +15,11 @@ def get_ETS(db: Session = Depends(get_db)):
     
     ETS_response = [
         {
-            "idETS": ets.idETS,
-            "idPeriodo": ets.periodo.Periodo,
-            "Turno": ets.turno.Nombre,
-            "Fecha": ets.Fecha,
-            "UnidadAprendizaje": ets.UAETS.Nombre
+            "idETS": ets.idets,
+            "idPeriodo": ets.periodo.periodo,
+            "Turno": ets.id_turno.nombre,
+            "Fecha": ets.fecha,
+            "UnidadAprendizaje": ets.UAETS.nombre
         }
         for ets in unidades
     ]
@@ -27,18 +27,18 @@ def get_ETS(db: Session = Depends(get_db)):
 
 @router.get("/InscripcionAlumno/{usuario}", response_model=list[ETSResponse])
 def get_ETS(usuario: str, db: Session = Depends(get_db)):
-    unidades = db.query(InscripcionETS).filter(InscripcionETS.Boleta == usuario)
+    unidades = db.query(InscripcionETS).filter(InscripcionETS.boleta == usuario)
     
     if not unidades:
         raise HTTPException(status_code=404, detail="No hay ETS guardados")
     
     ETS_response = [
         {
-            "idETS": ets.ets.idETS,
-            "idPeriodo": ets.ets.periodo.Periodo,
-            "Turno": ets.ets.turno.Nombre,
-            "Fecha": ets.ets.Fecha,
-            "UnidadAprendizaje": ets.ets.UAETS.Nombre
+            "idETS": ets.ets.idets,
+            "idPeriodo": ets.ets.periodo.periodo,
+            "Turno": ets.ets.id_turno.nombre,
+            "Fecha": ets.ets.fecha,
+            "UnidadAprendizaje": ets.ets.UAETS.nombre
         }
         for ets in unidades
     ]
@@ -46,12 +46,12 @@ def get_ETS(usuario: str, db: Session = Depends(get_db)):
 
 @router.post("/", response_model=ETSResponse)
 def create_ETS(data: ETSCreate, db: Session = Depends(get_db)):
-    periodo = db.query(periodoETS).filter(periodoETS.Periodo == data.idPeriodo).first()
+    periodo = db.query(periodoETS).filter(periodoETS.periodo == data.idPeriodo).first()
     if not periodo:
         raise HTTPException(status_code=404, detail=f"Periodo {data.idPeriodo} no encontrado")
     
     # Buscar el Turno por nombre
-    turno = db.query(Turno).filter(Turno.Nombre == data.Turno).first()
+    turno = db.query(Turno).filter(Turno.nombre == data.Turno).first()
     if not turno:
         raise HTTPException(status_code=404, detail=f"Turno {data.Turno} no encontrado")
     
@@ -62,11 +62,11 @@ def create_ETS(data: ETSCreate, db: Session = Depends(get_db)):
     
     # Crear el nuevo objeto ETS con los ids encontrados
     nueva_unidad = ETS(
-        idPeriodo=periodo.idPeriodo,  
-        Turno=turno.idTurno,         
+        idPeriodo=periodo.id_periodo,  
+        Turno=turno.id_turno,         
         Fecha=data.Fecha,
         Cupo=data.Cupo,
-        idUA=unidad_aprendizaje.idUA,
+        idUA=unidad_aprendizaje.idua,
         Duracion=data.Duracion
     )
     
