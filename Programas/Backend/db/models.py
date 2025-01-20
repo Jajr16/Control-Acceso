@@ -330,7 +330,7 @@ def insertPA(target, connection, **kwargs):
         {"idpa": "IIA-2024", "nombre": "Ingeniería en Inteligencia Artificial", "descripcion": "Caca"},
     ]
     for programa in programas:
-        existente = session.query(ProgramaAcademico).filter_by(idPA=programa["idpa"]).first()
+        existente = session.query(ProgramaAcademico).filter_by(idpa=programa["idpa"]).first()
         if existente:
             existente.nombre = programa["nombre"]
             existente.descripcion = programa["descripcion"]
@@ -340,7 +340,7 @@ def insertPA(target, connection, **kwargs):
 
 def insertEscuelaPrograma(target, connection, **kwargs):
     session = connection
-    registro = session.query(EscuelaPrograma).filter_by(idEscuela=1, idPA="ISC-2024").first()
+    registro = session.query(EscuelaPrograma).filter_by(id_escuela=1, idpa="ISC-2024").first()
     if not registro:
         session.add(EscuelaPrograma(id_escuela=1, idpa="ISC-2024"))
     session.commit()
@@ -386,7 +386,7 @@ def insertTipoU(target, connection, **kwargs):
         {"idtu": 2, "tipo": "Docente"},
     ]
     for tipo in tipos:
-        existente = session.query(TipoUsuario).filter_by(idTU=tipo["idtu"]).first()
+        existente = session.query(TipoUsuario).filter_by(idtu=tipo["idtu"]).first()
         if existente:
             existente.tipo = tipo["tipo"]
         else:
@@ -400,7 +400,7 @@ def insertUsuario(target, connection, **kwargs):
         {"usuario": "2022630467", "password": "$2b$12$KejElPRgHbWDWF2BmlukSOMb8rqEzhNSVBbgndRPbhU.YqdDxI8US", "tipou": 1, "curp": "2"},
     ]
     for usuario in usuarios:
-        existente = session.query(Usuario).filter_by(Usuario=usuario["usuario"]).first()
+        existente = session.query(Usuario).filter_by(usuario=usuario["usuario"]).first()
         if existente:
             existente.password = usuario["password"]
             existente.tipou = usuario["tipou"]
