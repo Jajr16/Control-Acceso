@@ -133,7 +133,6 @@ fun CalendarScreen(navController: NavController, loginViewModel: LoginViewModel,
                                 Button(
                                     onClick = {
                                         diasETSModel.getDays()
-
                                     },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color.White,

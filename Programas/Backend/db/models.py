@@ -430,14 +430,104 @@ def insertperiodoETS(target, connection, **kwargs):
     session = connection
     periodo = session.query(periodoETS).filter_by(id_periodo=1).first()
     if periodo:
-        periodo.periodo = "2023"
+        periodo.periodo = "25/1"
         periodo.tipo = "O"
         periodo.fecha_inicio = "2024-12-10"
         periodo.fecha_fin = "2024-12-10"
     else:
-        session.add(periodoETS(id_periodo=1, periodo="2023", tipo="O", fecha_inicio="2024-12-10", fecha_fin="2024-12-10"))
+        session.add(periodoETS(id_periodo=1, periodo="25/1", tipo="O", fecha_inicio="2024-12-10", fecha_fin="2024-12-10"))
+    session.commit()
+    
+def insertTurno(target, connection, **kwargs):
+    session = connection
+
+    # Verificar si el turno ya existe antes de agregarlo
+    if not session.query(Turno).filter_by(id_turno=1).first():
+        session.add(Turno(id_turno=1, nombre="Matutino"))
+    
+    if not session.query(Turno).filter_by(id_turno=2).first():
+        session.add(Turno(id_turno=2, nombre="Vespertino"))
+    
     session.commit()
 
+def insertUAprendizaje(target, connection, **kwargs):
+    session = connection
+
+    # Verificar si las unidades de aprendizaje ya existen
+    if not session.query(UnidadAprendizaje).filter_by(idua="PDI-IIA").first():
+        session.add(UnidadAprendizaje(idua="PDI-IIA", nombre="Programación Digital de Imágenes", descripcion="Una materia", idpa="IIA-2024"))
+    
+    if not session.query(UnidadAprendizaje).filter_by(idua="BBD-ISC").first():
+        session.add(UnidadAprendizaje(idua="BBD-ISC", nombre="BigData", descripcion="Una materia", idpa="ISC-2024"))
+    
+    if not session.query(UnidadAprendizaje).filter_by(idua="BD-IIA").first():
+        session.add(UnidadAprendizaje(idua="BD-IIA", nombre="Bases de Datos", descripcion="Una materia", idpa="IIA-2024"))
+    
+    session.commit()
+
+def insertETS(target, connection, **kwargs):
+    session = connection
+
+    # Verificar si las ETS ya existen
+    if not session.query(ETS).filter_by(idets=1).first():
+        session.add(ETS(idets=1, id_periodo=1, turno=1, fecha="2024-10-04", cupo=20, idua="PDI-IIA", duracion=2))
+
+    if not session.query(ETS).filter_by(idets=2).first():
+        session.add(ETS(idets=2, id_periodo=1, turno=1, fecha="2024-10-04", cupo=20, idua="BBD-ISC", duracion=2))
+
+    if not session.query(ETS).filter_by(idets=3).first():
+        session.add(ETS(idets=3, id_periodo=1, turno=1, fecha="2024-10-04", cupo=20, idua="BD-IIA", duracion=2))
+    
+    session.commit()
+
+def insertInscripciones(target, connection, **kwargs):
+    session = connection
+    # Verificar si la inscripción ya existe
+    inscripcion = session.query(InscripcionETS).filter_by(boleta="2022630467").first()
+    if not inscripcion:
+        session.add(InscripcionETS(boleta="2022630467", idets=1))
+        session.add(InscripcionETS(boleta="2022630467", idets=2))
+        session.add(InscripcionETS(boleta="2022630467", idets=3))
+    session.commit()
+
+def insertTipoSalon(target, connection, **kwargs):
+    session = connection
+
+    # Verificar si los tipos de salón ya existen
+    if not session.query(TipoSalon).filter_by(idts=1).first():
+        session.add(TipoSalon(idts=1, tipo="Laboratorio"))
+    
+    if not session.query(TipoSalon).filter_by(idts=2).first():
+        session.add(TipoSalon(idts=2, tipo="Normal"))
+    
+    session.commit()
+
+def insertSalones(target, connection, **kwargs):
+    session = connection
+
+    # Verificar si los salones ya existen
+    if not session.query(Salon).filter_by(num_salon=4108).first():
+        session.add(Salon(num_salon=4108, edificio=4, piso=1, tipo_salon=1))
+    
+    if not session.query(Salon).filter_by(num_salon=3210).first():
+        session.add(Salon(num_salon=3210, edificio=3, piso=2, tipo_salon=1))
+    
+    session.commit()
+
+def insertSalonETS(target, connection, **kwargs):
+    session = connection
+
+    # Verificar si los salones de ETS ya existen
+    if not session.query(SalonETS).filter_by(num_salon=4108, idets=1).first():
+        session.add(SalonETS(num_salon=4108, idets=1))
+    
+    if not session.query(SalonETS).filter_by(num_salon=3210, idets=2).first():
+        session.add(SalonETS(num_salon=3210, idets=2))
+    
+    if not session.query(SalonETS).filter_by(num_salon=4108, idets=2).first():
+        session.add(SalonETS(num_salon=4108, idets=2))
+    
+    session.commit()
 
 
 def inicializar_base_datos(session):
@@ -450,3 +540,10 @@ def inicializar_base_datos(session):
     insertUsuario(None, session)
     insertAlumno(None, session)
     insertperiodoETS(None, session)
+    insertTurno(None, session)
+    insertUAprendizaje(None, session)
+    insertETS(None, session)
+    insertInscripciones(None, session)
+    insertTipoSalon(None, session)
+    insertSalones(None, session)
+    insertSalonETS(None, session)

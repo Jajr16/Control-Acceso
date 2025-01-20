@@ -104,8 +104,9 @@ def getDaysETS(db: Session = Depends(get_db)):
         periodo = f"{año_abreviado}/1" 
     elif 2 <= mes <= 7:
         periodo = f"{año_abreviado}/2" 
-
+    print(periodo)
     initPeriodo = db.query(periodoETS.fecha_inicio).filter(periodoETS.periodo == periodo).first()
+    print(initPeriodo)
     
     if not initPeriodo:
         raise HTTPException(status_code=404, detail="Hubo un error al buscar el periodo.")
