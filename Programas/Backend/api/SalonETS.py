@@ -17,24 +17,24 @@ def get_all_salon_ets(db: Session = Depends(get_db)):
     # Construir respuesta enriquecida
     response = []
     for rel in relaciones:
-        salon = db.query(Salon).filter(Salon.numSalon == rel.numSalon).first()
-        ets = db.query(ETS).filter(ETS.idETS == rel.idETS).first()
+        salon = db.query(Salon).filter(Salon.num_salon == rel.num_salon).first()
+        ets = db.query(ETS).filter(ETS.idets == rel.idETS).first()
         response.append({
             "Salon": {
-                "numSalon": salon.numSalon,
-                "Edificio": salon.Edificio,
-                "Piso": salon.Piso,
-                "tipoSalon": salon.salonType.Tipo
+                "numSalon": salon.num_salon,
+                "Edificio": salon.edificio,
+                "Piso": salon.piso,
+                "tipoSalon": salon.salonType.tipo
             },
             "ETS": {
-                "tipoETS": ets.periodo.Tipo,
-                "idETS": ets.idETS,
-                "idPeriodo": ets.periodo.Periodo,
-                "Turno": ets.turno.Nombre,
-                "Fecha": ets.Fecha,
-                "Cupo": ets.Cupo,
-                "idUA": ets.UAETS.Nombre,
-                "Duracion": ets.Duracion
+                "tipoETS": ets.periodo.tipo,
+                "idETS": ets.idets,
+                "idPeriodo": ets.periodo.periodo,
+                "Turno": ets.turno.nombre,
+                "Fecha": ets.fecha,
+                "Cupo": ets.cupo,
+                "idUA": ets.UAETS.nombre,
+                "Duracion": ets.duracion
             }
         })
     
@@ -42,37 +42,37 @@ def get_all_salon_ets(db: Session = Depends(get_db)):
 
 @router.get("/{ETSid}", response_model=ETSWithSalonsResponse)
 def getSalonETS(ETSid: int, db: Session = Depends(get_db)):
-    ets = db.query(ETS).filter(ETS.idETS == ETSid).first()
+    ets = db.query(ETS).filter(ETS.idets == ETSid).first()
     if not ets:
         raise HTTPException(status_code=404, detail="ETS no encontrado")
     
-    relaciones = db.query(SalonETS).filter(SalonETS.idETS == ETSid).all()
+    relaciones = db.query(SalonETS).filter(SalonETS.idets == ETSid).all()
     if not relaciones:
         raise HTTPException(status_code=404, detail="No hay relaciones ETS-Salón registradas")
     
     # Construir respuesta enriquecida
     salones = [
         {
-            "numSalon": salon.numSalon,
-            "Edificio": salon.Edificio,
-            "Piso": salon.Piso,
-            "tipoSalon": salon.salonType.Tipo
+            "numSalon": salon.num_salon,
+            "Edificio": salon.edificio,
+            "Piso": salon.piso,
+            "tipoSalon": salon.salonType.tipo
         }
         for rel in relaciones
-        if (salon := db.query(Salon).filter(Salon.numSalon == rel.numSalon).first())
+        if (salon := db.query(Salon).filter(Salon.num_salon == rel.num_salon).first())
     ]
     
     return {
         "ETS": {
-            "UnidadAprendizaje": ets.UAETS.Nombre,
-            "tipoETS": ets.periodo.Tipo,
-            "idETS": ets.idETS,
-            "idPeriodo": ets.periodo.Periodo,
-            "Turno": ets.turno.Nombre,
-            "Fecha": ets.Fecha,
-            "Cupo": ets.Cupo,
-            "idUA": ets.UAETS.programaAcademico.Nombre,
-            "Duracion": ets.Duracion
+            "UnidadAprendizaje": ets.UAETS.nombre,
+            "tipoETS": ets.periodo.tipo,
+            "idETS": ets.idets,
+            "idPeriodo": ets.periodo.periodo,
+            "Turno": ets.turno.mombre,
+            "Fecha": ets.fecha,
+            "Cupo": ets.cupo,
+            "idUA": ets.UAETS.programaAcademico.nombre,
+            "Duracion": ets.duracion
         },
         "Salones": salones
     }
@@ -81,19 +81,19 @@ def getSalonETS(ETSid: int, db: Session = Depends(get_db)):
 @router.post("/", response_model=SalonETSResponse)
 def create_salon_ets(data: SalonETSCreate, db: Session = Depends(get_db)):
     # Validar el ETS
-    ets = db.query(ETS).filter(ETS.idETS == data.idETS).first()
+    ets = db.query(ETS).filter(ETS.idets == data.idETS).first()
     if not ets:
         raise HTTPException(status_code=404, detail=f"ETS con ID {data.idETS} no encontrado")
     
     # Validar el salón
-    salon = db.query(Salon).filter(Salon.numSalon == data.numSalon).first()
+    salon = db.query(Salon).filter(Salon.num_salon == data.numSalon).first()
     if not salon:
         raise HTTPException(status_code=404, detail=f"Salón con número {data.numSalon} no encontrado")
     
     # Validar si la relación ya existe
     existing = db.query(SalonETS).filter(
-        SalonETS.numSalon == data.numSalon,
-        SalonETS.idETS == data.idETS
+        SalonETS.num_salon == data.numSalon,
+        SalonETS.idets == data.idETS
     ).first()
     
     if existing:
@@ -111,19 +111,19 @@ def create_salon_ets(data: SalonETSCreate, db: Session = Depends(get_db)):
     # Respuesta enriquecida
     return {
         "Salon": {
-            "numSalon": salon.numSalon,
-            "Edificio": salon.Edificio,
-            "Piso": salon.Piso,
-            "tipoSalon": salon.salonType.Tipo
+            "numSalon": salon.num_salon,
+            "Edificio": salon.edificio,
+            "Piso": salon.piso,
+            "tipoSalon": salon.salonType.tipo
         },
         "ETS": {
-            "tipoETS": ets.periodo.Tipo,
-            "idETS": ets.idETS,
-            "idPeriodo": ets.periodo.Periodo,
-            "Turno": ets.turno.Nombre,
-            "Fecha": ets.Fecha,
-            "Cupo": ets.Cupo,
-            "idUA": ets.UAETS.Nombre,
-            "Duracion": ets.Duracion
+            "tipoETS": ets.periodo.tipo,
+            "idETS": ets.idets,
+            "idPeriodo": ets.periodo.periodo,
+            "Turno": ets.turno.nombre,
+            "Fecha": ets.fecha,
+            "Cupo": ets.cupo,
+            "idUA": ets.UAETS.nombre,
+            "Duracion": ets.duracion
         }
     }

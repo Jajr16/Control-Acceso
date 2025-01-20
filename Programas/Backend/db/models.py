@@ -54,7 +54,7 @@ class Sexo(Base):
     nombre = Column(String(9), index=True, nullable=False)
 
     # Relación con Persona
-    personas = relationship("Persona", back_populates="sexo", lazy="joined")
+    personas = relationship("Persona", back_populates="id_sexo", lazy="joined")
 
 
 class Persona(Base):
@@ -67,7 +67,7 @@ class Persona(Base):
     sexo = Column(Integer, ForeignKey("sexo.id_sexo"), nullable=False)
     id_escuela = Column(Integer, ForeignKey("unidadacademica.id_escuela"), nullable=False)
 
-    sexo = relationship("Sexo", back_populates="personas", lazy="joined")
+    id_sexo = relationship("Sexo", back_populates="personas", lazy="joined")
     unidadAcademica = relationship("UnidadAcademica", back_populates="personas", lazy="joined")
     personalAcademico = relationship("PersonalAcademico", back_populates="persona", lazy="joined")
     personalSeguridad = relationship("PersonalSeguridad", back_populates="persona", lazy="joined")
@@ -114,7 +114,7 @@ class PersonalAcademico(Base):
     rfc = Column(String(13), primary_key=True, index=True)
     curp = Column(
         String(18),
-        ForeignKey("persona.CURP", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("persona.curp", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
         index=True,
     )
@@ -128,12 +128,12 @@ class PersonalAcademico(Base):
     
 class Cargo(Base):
     __tablename__ = "cargo"
-     
+    
     id_cargo = Column(Integer, primary_key=True, index=True)
     cargo = Column(String(100), nullable=False, index=True)
     
     cargoDocente = relationship("CargoDocente", back_populates="nombreCargo", lazy="joined")
-       
+    
 class CargoDocente(Base):
     __tablename__ = "cargodocente"
     
@@ -150,7 +150,7 @@ class Turno(Base):
     nombre = Column(String(10), nullable=False, index=True)
     
     turnoPS = relationship("PersonalSeguridad", back_populates="turnoSeguridad", lazy="joined")
-    turnoETS = relationship("ETS", back_populates="turno", lazy="joined")
+    id_turnoETS = relationship("ETS", back_populates="id_turno", lazy="joined")
     
 class CargoPS(Base):
     __tablename__ = "cargops"
@@ -183,7 +183,7 @@ class Alumno(Base):
     boleta = Column(String(15), primary_key=True, index=True)
     curp = Column(
         String(18),
-        ForeignKey("persona.CURP", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("persona.curp", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
         index=True,
     )
@@ -229,7 +229,7 @@ class ETS(Base):
     duracion = Column(Integer, nullable=False)
     
     periodo = relationship("periodoETS", back_populates="nombrePeriodo", lazy="joined")
-    turno = relationship("Turno", back_populates="turnoETS", lazy="joined")
+    id_turno = relationship("Turno", back_populates="id_turnoETS", lazy="joined")
     UAETS = relationship("UnidadAprendizaje", back_populates="nombreUA", lazy="joined")
     salon = relationship("SalonETS", back_populates="ets", lazy="joined")
     alumno = relationship("InscripcionETS", back_populates="ets", lazy="joined")
@@ -266,19 +266,23 @@ class SalonETS(Base):
 class InscripcionETS(Base):
     __tablename__ = "inscripcionets"
     
-    Boleta = Column(String(15), ForeignKey("alumno.boleta", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
-    idETS = Column(Integer, ForeignKey("ets.idets", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
+    boleta = Column(String(15), ForeignKey("alumno.boleta", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
+    idets = Column(Integer, ForeignKey("ets.idets", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
     
     ets = relationship("ETS", back_populates="alumno", lazy="joined")
     alumno = relationship("Alumno", back_populates="nets", lazy="joined")
-    insETSAlumno = relationship("AsistenciaInscripcion", back_populates="alumnoAsistencia", primaryjoin="and_(InscripcionETS.Boleta==AsistenciaInscripcion.InscripcionETSBoleta, InscripcionETS.idETS==AsistenciaInscripcion.InscripcionETSIdETS)", lazy="joined")
+    insETSAlumno = relationship(
+        "AsistenciaInscripcion", 
+        back_populates="alumnoAsistencia", 
+        primaryjoin="and_(InscripcionETS.boleta == AsistenciaInscripcion.inscripcionets_boleta, InscripcionETS.idets == AsistenciaInscripcion.inscripcionets_idets)", 
+        lazy="joined")
     
 class Aplica(Base):
     __tablename__ = "aplica"
     
-    idETS = Column(Integer, ForeignKey("ets.idETS", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
+    idets = Column(Integer, ForeignKey("ets.idets", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
     docente_rfc = Column(String(13), ForeignKey("personalacademico.rfc", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, index=True)
-    Titular = Column(Boolean, nullable=False)
+    titular = Column(Boolean, nullable=False)
     
     docenteaplicador = relationship("ETS", back_populates="AplicarETS", lazy="joined")
     ETSAplicado = relationship("PersonalAcademico", back_populates="ETSaAplicar", lazy="joined")
@@ -286,7 +290,7 @@ class Aplica(Base):
 class AsistenciaInscripcion(Base):
     __tablename__ = "asistenciainscripcion"
     
-    FechaAsistencia = Column(DateTime, primary_key=True, index=True)
+    fecha_asistencia = Column(DateTime, primary_key=True, index=True)
     inscripcionets_boleta = Column(String(15), primary_key=True, index=True)
     inscripcionets_idets = Column(Integer, primary_key=True, index=True)
     asistio = Column(Boolean, nullable=False, default=False)
@@ -305,31 +309,31 @@ class AsistenciaInscripcion(Base):
     alumnoAsistencia = relationship(
         "InscripcionETS",
         back_populates="insETSAlumno",
-        primaryjoin="and_(asistenciainscripcion.inscripcionets_boleta == inscripcionets.boleta, asistenciainscripcion.inscripcionets_idets == inscripcionets.idets)",
+        primaryjoin="and_(AsistenciaInscripcion.inscripcionets_boleta == InscripcionETS.boleta, AsistenciaInscripcion.inscripcionets_idets == InscripcionETS.idets)",
         lazy="joined"
     )
     
 ################# INSERTAR VALORES PREDETERMINADOS ####################
 def insertUA(target, connection, **kwargs):
     session = connection
-    unidad = session.query(UnidadAcademica).filter_by(idEscuela=1).first()
+    unidad = session.query(UnidadAcademica).filter_by(id_escuela=1).first()
     if unidad:
-        unidad.Nombre = "ESCA"  # Actualiza los datos si ya existe
+        unidad.nombre = "ESCA"  # Actualiza los datos si ya existe
     else:
-        session.add(UnidadAcademica(idEscuela=1, Nombre="ESCA"))  # Inserta si no existe
+        session.add(UnidadAcademica(id_escuela=1, nombre="ESCA"))  # Inserta si no existe
     session.commit()
 
 def insertPA(target, connection, **kwargs):
     session = connection
     programas = [
-        {"idPA": "ISC-2024", "Nombre": "Ingeniería en Sistemas Computacionales", "Descripcion": "Caca"},
-        {"idPA": "IIA-2024", "Nombre": "Ingeniería en Inteligencia Artificial", "Descripcion": "Caca"},
+        {"idpa": "ISC-2024", "nombre": "Ingeniería en Sistemas Computacionales", "descripcion": "Caca"},
+        {"idpa": "IIA-2024", "nombre": "Ingeniería en Inteligencia Artificial", "descripcion": "Caca"},
     ]
     for programa in programas:
-        existente = session.query(ProgramaAcademico).filter_by(idPA=programa["idPA"]).first()
+        existente = session.query(ProgramaAcademico).filter_by(idPA=programa["idpa"]).first()
         if existente:
-            existente.Nombre = programa["Nombre"]
-            existente.Descripcion = programa["Descripcion"]
+            existente.nombre = programa["nombre"]
+            existente.descripcion = programa["descripcion"]
         else:
             session.add(ProgramaAcademico(**programa))
     session.commit()
@@ -338,19 +342,19 @@ def insertEscuelaPrograma(target, connection, **kwargs):
     session = connection
     registro = session.query(EscuelaPrograma).filter_by(idEscuela=1, idPA="ISC-2024").first()
     if not registro:
-        session.add(EscuelaPrograma(idEscuela=1, idPA="ISC-2024"))
+        session.add(EscuelaPrograma(id_escuela=1, idpa="ISC-2024"))
     session.commit()
 
 def insertSexo(target, connection, **kwargs):
     session = connection
     sexos = [
-        {"idSexo": 1, "Nombre": "Masculino"},
-        {"idSexo": 2, "Nombre": "Femenino"},
+        {"id_sexo": 1, "nombre": "Masculino"},
+        {"id_sexo": 2, "nombre": "Femenino"},
     ]
     for sexo in sexos:
-        existente = session.query(Sexo).filter_by(idSexo=sexo["idSexo"]).first()
+        existente = session.query(Sexo).filter_by(id_sexo=sexo["id_sexo"]).first()
         if existente:
-            existente.Nombre = sexo["Nombre"]
+            existente.nombre = sexo["nombre"]
         else:
             session.add(Sexo(**sexo))
     session.commit()
@@ -358,19 +362,19 @@ def insertSexo(target, connection, **kwargs):
 def insertPersona(target, connection, **kwargs):
     session = connection
     personas = [
-        {"CURP": "1", "Nombre": "José Alfredo", "ApellidoP": "Jiménez", "ApellidoM": "Rodríguez", "Sexo": 1, "idEscuela": 1},
-        {"CURP": "2", "Nombre": "Alejandra", "ApellidoP": "De la cruz", "ApellidoM": "De la cruz", "Sexo": 2, "idEscuela": 1},
-        {"CURP": "3", "Nombre": "Luis Antonio", "ApellidoP": "Flores", "ApellidoM": "Esquivel", "Sexo": 1, "idEscuela": 1},
-        {"CURP": "4", "Nombre": "Daniel", "ApellidoP": "Huertas", "ApellidoM": "Ramírez", "Sexo": 1, "idEscuela": 1},
+        {"curp": "1", "nombre": "José Alfredo", "apellido_p": "Jiménez", "apellido_m": "Rodríguez", "sexo": 1, "id_escuela": 1},
+        {"curp": "2", "nombre": "Alejandra", "apellido_p": "De la cruz", "apellido_m": "De la cruz", "sexo": 2, "id_escuela": 1},
+        {"curp": "3", "nombre": "Luis Antonio", "apellido_p": "Flores", "apellido_m": "Esquivel", "sexo": 1, "id_escuela": 1},
+        {"curp": "4", "nombre": "Daniel", "apellido_p": "Huertas", "apellido_m": "Ramírez", "sexo": 1, "id_escuela": 1},
     ]
     for persona in personas:
-        existente = session.query(Persona).filter_by(CURP=persona["CURP"]).first()
+        existente = session.query(Persona).filter_by(curp=persona["curp"]).first()
         if existente:
-            existente.Nombre = persona["Nombre"]
-            existente.ApellidoP = persona["ApellidoP"]
-            existente.ApellidoM = persona["ApellidoM"]
-            existente.Sexo = persona["Sexo"]
-            existente.idEscuela = persona["idEscuela"]
+            existente.nombre = persona["nombre"]
+            existente.apellido_p = persona["apellido_p"]
+            existente.apellido_m = persona["apellido_m"]
+            existente.sexo = persona["sexo"]
+            existente.id_escuela = persona["id_escuela"]
         else:
             session.add(Persona(**persona))
     session.commit()
@@ -378,13 +382,13 @@ def insertPersona(target, connection, **kwargs):
 def insertTipoU(target, connection, **kwargs):
     session = connection
     tipos = [
-        {"idTU": 1, "Tipo": "Alumno"},
-        {"idTU": 2, "Tipo": "Docente"},
+        {"idtu": 1, "tipo": "Alumno"},
+        {"idtu": 2, "tipo": "Docente"},
     ]
     for tipo in tipos:
-        existente = session.query(TipoUsuario).filter_by(idTU=tipo["idTU"]).first()
+        existente = session.query(TipoUsuario).filter_by(idTU=tipo["idtu"]).first()
         if existente:
-            existente.Tipo = tipo["Tipo"]
+            existente.tipo = tipo["tipo"]
         else:
             session.add(TipoUsuario(**tipo))
     session.commit()
@@ -392,15 +396,15 @@ def insertTipoU(target, connection, **kwargs):
 def insertUsuario(target, connection, **kwargs):
     session = connection
     usuarios = [
-        {"Usuario": "Alfredo", "Password": "$2b$12$KejElPRgHbWDWF2BmlukSOMb8rqEzhNSVBbgndRPbhU.YqdDxI8US", "TipoU": 1, "CURP": "1"},
-        {"Usuario": "2022630467", "Password": "$2b$12$KejElPRgHbWDWF2BmlukSOMb8rqEzhNSVBbgndRPbhU.YqdDxI8US", "TipoU": 1, "CURP": "2"},
+        {"usuario": "Alfredo", "password": "$2b$12$KejElPRgHbWDWF2BmlukSOMb8rqEzhNSVBbgndRPbhU.YqdDxI8US", "tipou": 1, "curp": "1"},
+        {"usuario": "2022630467", "password": "$2b$12$KejElPRgHbWDWF2BmlukSOMb8rqEzhNSVBbgndRPbhU.YqdDxI8US", "tipou": 1, "curp": "2"},
     ]
     for usuario in usuarios:
-        existente = session.query(Usuario).filter_by(Usuario=usuario["Usuario"]).first()
+        existente = session.query(Usuario).filter_by(Usuario=usuario["usuario"]).first()
         if existente:
-            existente.Password = usuario["Password"]
-            existente.TipoU = usuario["TipoU"]
-            existente.CURP = usuario["CURP"]
+            existente.password = usuario["password"]
+            existente.tipou = usuario["tipou"]
+            existente.curp = usuario["curp"]
         else:
             session.add(Usuario(**usuario))
     session.commit()
@@ -408,30 +412,30 @@ def insertUsuario(target, connection, **kwargs):
 def insertAlumno(target, connection, **kwargs):
     session = connection
     alumnos = [
-        {"Boleta": "2022325410", "CURP": "1", "CorreoI": "1@gmail.com", "idPA": "ISC-2024", "imagenCredencual": "IMG"},
-        {"Boleta": "2022630467", "CURP": "2", "CorreoI": "2@gmail.com", "idPA": "IIA-2024", "imagenCredencual": "IMG"},
+        {"boleta": "2022325410", "curp": "1", "correoi": "1@gmail.com", "idpa": "ISC-2024", "imagen_credencial": "IMG"},
+        {"boleta": "2022630467", "curp": "2", "correoi": "2@gmail.com", "idpa": "IIA-2024", "imagen_credencial": "IMG"},
     ]
     for alumno in alumnos:
-        existente = session.query(Alumno).filter_by(Boleta=alumno["Boleta"]).first()
+        existente = session.query(Alumno).filter_by(boleta=alumno["boleta"]).first()
         if existente:
-            existente.CURP = alumno["CURP"]
-            existente.CorreoI = alumno["CorreoI"]
-            existente.idPA = alumno["idPA"]
-            existente.imagenCredencual = alumno["imagenCredencual"]
+            existente.curp = alumno["curp"]
+            existente.correoi = alumno["correoi"]
+            existente.idpa = alumno["idpa"]
+            existente.imagen_credencial = alumno["imagen_credencial"]
         else:
             session.add(Alumno(**alumno))
     session.commit()
 
 def insertperiodoETS(target, connection, **kwargs):
     session = connection
-    periodo = session.query(periodoETS).filter_by(idPeriodo=1).first()
+    periodo = session.query(periodoETS).filter_by(id_periodo=1).first()
     if periodo:
-        periodo.Periodo = "2023"
-        periodo.Tipo = "O"
-        periodo.Fecha_Inicio = "2024-12-10"
-        periodo.Fecha_Fin = "2024-12-10"
+        periodo.periodo = "2023"
+        periodo.tipo = "O"
+        periodo.fecha_inicio = "2024-12-10"
+        periodo.fecha_fin = "2024-12-10"
     else:
-        session.add(periodoETS(idPeriodo=1, Periodo="2023", Tipo="O", Fecha_Inicio="2024-12-10", Fecha_Fin="2024-12-10"))
+        session.add(periodoETS(id_periodo=1, periodo="2023", tipo="O", fecha_inicio="2024-12-10", fecha_fin="2024-12-10"))
     session.commit()
 
 
