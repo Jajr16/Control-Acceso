@@ -50,25 +50,30 @@ END;
 $$;
 
 -- FUNCIÓN PARA EL LISTADO DE ETS
-CREATE OR REPLACE FUNCTION login(
-    boletaC NVARCHAR(18)
+CREATE OR REPLACE FUNCTION ListInscripcionesETS(
+    boletaC VARCHAR(18)
+)
+RETURNS TABLE(
+    idets INTEGER,
+    periodo VARCHAR,
+    turno_nombre VARCHAR,
+    fecha DATE,
+    unidad_aprendizaje_nombre VARCHAR
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    SELECT inscripcionets.idets, periodoets.periodo, turno.nombre, ets.fecha, unidadaprendizaje.nombre FROM inscripcionets
+	RETURN QUERY
+
+    SELECT inscripcionets.idets, periodoets.periodo, turno.nombre as turno, ets.fecha, unidadaprendizaje.nombre FROM inscripcionets
 	INNER JOIN ets ON inscripcionets.idets = ets.idets
 	INNER JOIN periodoets ON ets.id_periodo = periodoets.id_periodo 
 	INNER JOIN turno ON turno.id_turno = ets.turno
 	INNER JOIN unidadaprendizaje ON unidadaprendizaje.idua = ets.idua WHERE inscripcionets.boleta = boletaC;
 	
-
-    RETURN;
+    
 END;
 $$;
-
-
-CREATE
 
 select *from login('2022630467', '123');
 SELECT * FROM usuario;
