@@ -12,6 +12,9 @@ class EtsInfoViewModel : ViewModel() {
     private val _etsDetailState = MutableStateFlow<SalonETSResponse?>(null)
     val etsDetailState: StateFlow<SalonETSResponse?> = _etsDetailState
 
+    private val _salonDetailState = MutableStateFlow(true)
+    val salonDetailState: StateFlow<Boolean?> = _salonDetailState
+
     // ESTADO DE CARGA
     private val _loadingState = MutableStateFlow(true)
     val loadingState: StateFlow<Boolean> = _loadingState
@@ -22,10 +25,11 @@ class EtsInfoViewModel : ViewModel() {
                 _loadingState.value = true
                 val response = RetrofitInstance.ETSListapi.getEtsDetail(idETS)
                 System.out.println("EL RESPONSE ES: " + response);
+                _etsDetailState.value = response
                 if (response?.salon?.isNotEmpty() == true) {
-                    _etsDetailState.value = response
+                    _salonDetailState.value = false
                 } else {
-                    _etsDetailState.value = null // Si no hay salones
+                    _salonDetailState.value = true // Si no hay salones
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
