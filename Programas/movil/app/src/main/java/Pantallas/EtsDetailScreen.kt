@@ -121,8 +121,8 @@ fun EtsDetailScreen(
                             )
                         }
                     } else if (etsDetail != null) {
-                        val ets = etsDetail!!.ETS
-                        val salones = etsDetail!!.Salones
+                        val ets = etsDetail!!.ets
+                        val salones = etsDetail!!.salon
 
                         Column {
                             // Lista deslizante de ETS
@@ -135,7 +135,7 @@ fun EtsDetailScreen(
                             ) {
                                 item {
                                     StyledCard(
-                                        title = "Unidad de Aprendizaje", content = ets.UnidadAprendizaje
+                                        title = "Unidad de Aprendizaje", content = ets.unidadAprendizaje
                                     )
                                 }
                                 item {
@@ -148,19 +148,19 @@ fun EtsDetailScreen(
                                     StyledCard(title = "Periodo", content = ets.idPeriodo)
                                 }
                                 item {
-                                    StyledCard(title = "Fecha", content = ets.Fecha)
+                                    StyledCard(title = "Fecha", content = ets.fecha)
                                 }
                                 item {
-                                    StyledCard(title = "Turno", content = ets.Turno)
+                                    StyledCard(title = "Turno", content = ets.turno)
                                 }
                                 item {
-                                    StyledCard(title = "Cupo", content = ets.Cupo.toString())
+                                    StyledCard(title = "Cupo", content = ets.cupo.toString())
                                 }
                                 item {
-                                    StyledCard(title = "Unidad Académica", content = ets.idUA)
+                                    StyledCard(title = "Unidad Académica", content = ets.unidadAprendizaje)
                                 }
                                 item {
-                                    StyledCard(title = "Duración", content = ets.Duracion.toString())
+                                    StyledCard(title = "Duración", content = ets.duracion.toString())
                                 }
                             }
 

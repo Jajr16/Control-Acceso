@@ -61,9 +61,9 @@ fun EtsListScreen(navController: NavController,
                             navController = navController,
                             idETS = ets.idETS,
                             idPeriodo = ets.idPeriodo,
-                            Turno = ets.Turno,
-                            Fecha = ets.Fecha,
-                            UnidadAprendizaje = ets.UnidadAprendizaje
+                            Turno = ets.turno,
+                            Fecha = ets.fecha,
+                            UnidadAprendizaje = ets.unidadAprendizaje
                         )
                     }
                 }
@@ -104,7 +104,7 @@ fun EtsCardButton(
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "Fecha: $Fecha", style = MaterialTheme.typography.bodyLarge)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Carrera: $Turno", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Turno: $Turno", style = MaterialTheme.typography.bodyLarge)
             Spacer(modifier = Modifier.height(8.dp))
         }
     }

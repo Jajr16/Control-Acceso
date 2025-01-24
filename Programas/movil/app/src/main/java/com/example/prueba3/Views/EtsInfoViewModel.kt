@@ -21,7 +21,8 @@ class EtsInfoViewModel : ViewModel() {
             try {
                 _loadingState.value = true
                 val response = RetrofitInstance.ETSListapi.getEtsDetail(idETS)
-                if (response?.Salones?.isNotEmpty() == true) {
+                System.out.println("EL RESPONSE ES: " + response);
+                if (response?.salon?.isNotEmpty() == true) {
                     _etsDetailState.value = response
                 } else {
                     _etsDetailState.value = null // Si no hay salones

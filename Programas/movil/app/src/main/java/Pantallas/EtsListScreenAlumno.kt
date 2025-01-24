@@ -142,9 +142,9 @@ fun EtsListScreenAlumno(navController: NavController,
                                     navController = navController,
                                     idETS = ets.idETS,
                                     idPeriodo = ets.idPeriodo,
-                                    Turno = ets.Turno,
-                                    Fecha = ets.Fecha,
-                                    UnidadAprendizaje = ets.UnidadAprendizaje
+                                    Turno = ets.turno,
+                                    Fecha = ets.fecha,
+                                    UnidadAprendizaje = ets.unidadAprendizaje
                                 )
                             }
                         }
