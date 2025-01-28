@@ -17,9 +17,9 @@ def get_ETS(db: Session = Depends(get_db)):
         {
             "idETS": ets.idets,
             "idPeriodo": ets.periodo.periodo,
-            "Turno": ets.id_turno.nombre,
-            "Fecha": ets.fecha,
-            "UnidadAprendizaje": ets.UAETS.nombre
+            "turno": ets.id_turno.nombre,
+            "fecha": ets.fecha,
+            "unidadAprendizaje": ets.UAETS.nombre
         }
         for ets in unidades
     ]
@@ -36,9 +36,9 @@ def get_ETS(usuario: str, db: Session = Depends(get_db)):
         {
             "idETS": ets.ets.idets,
             "idPeriodo": ets.ets.periodo.periodo,
-            "Turno": ets.ets.id_turno.nombre,
-            "Fecha": ets.ets.fecha,
-            "UnidadAprendizaje": ets.ets.UAETS.nombre
+            "turno": ets.ets.id_turno.nombre,
+            "fecha": ets.ets.fecha,
+            "unidadAprendizaje": ets.ets.UAETS.nombre
         }
         for ets in unidades
     ]

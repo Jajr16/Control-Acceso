@@ -185,6 +185,7 @@ fun CalendarScreen(navController: NavController, loginViewModel: LoginViewModel,
                         }
                     }
                     LaunchedEffect(Unit) {
+                        diasETSModel.resetDays()
                         scope.launch {
                             try {
                                 val response = RetrofitInstance.getCalendar.getCalendar()
