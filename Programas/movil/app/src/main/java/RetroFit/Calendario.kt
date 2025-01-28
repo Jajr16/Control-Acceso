@@ -10,7 +10,7 @@ interface Calendario {
     @GET("/ImagePDF")
     suspend fun getCalendar(): Response<ResponseBody>
 
-    @GET("/ImagePDF/TimeToETS")
+    @GET("/TimeToETS")
     suspend fun getDaysETS(): CalendarDays
 
 }

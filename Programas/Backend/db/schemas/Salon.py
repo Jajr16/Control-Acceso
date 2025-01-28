@@ -16,8 +16,8 @@ class TipoSalonResponse(TipoSalonBase):
 ################## SALON ###############
 class SalonBase(BaseModel):
     numSalon: int
-    Edificio: int
-    Piso: int
+    edificio: int
+    piso: int
 
 
 class SalonCreate(SalonBase):

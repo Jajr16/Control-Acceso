@@ -53,6 +53,7 @@ fun EtsDetailScreen(
     ValidateSession(navController = navController) {
         // Escuchar los datos del ViewModel
         val etsDetail by remember { viewModel.etsDetailState }.collectAsState()
+        val salonState by remember { viewModel.salonDetailState }.collectAsState()
         val isLoading by remember { viewModel.loadingState }.collectAsState()
 
         // Ejecutar la solicitud a la API cuando se cargue la pantalla
@@ -108,6 +109,7 @@ fun EtsDetailScreen(
                         .fillMaxSize()
                         .padding(padding)
                 ) {
+                    System.out.println("ESTO ES ETSDETAIL " + etsDetail);
                     if (isLoading) {
                         Box(
                             modifier = Modifier
@@ -121,21 +123,21 @@ fun EtsDetailScreen(
                             )
                         }
                     } else if (etsDetail != null) {
-                        val ets = etsDetail!!.ETS
-                        val salones = etsDetail!!.Salones
+                        val ets = etsDetail!!.ets
+                        val salones = etsDetail!!.salon
 
                         Column {
                             // Lista deslizante de ETS
                             LazyColumn(
                                 modifier = Modifier
-                                    .weight(2f)
+                                    .weight(3.5f)
                                     .padding(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 item {
                                     StyledCard(
-                                        title = "Unidad de Aprendizaje", content = ets.UnidadAprendizaje
+                                        title = "Unidad de Aprendizaje", content = ets.unidadAprendizaje
                                     )
                                 }
                                 item {
@@ -148,57 +150,82 @@ fun EtsDetailScreen(
                                     StyledCard(title = "Periodo", content = ets.idPeriodo)
                                 }
                                 item {
-                                    StyledCard(title = "Fecha", content = ets.Fecha)
+                                    StyledCard(title = "Fecha", content = ets.fecha)
                                 }
                                 item {
-                                    StyledCard(title = "Turno", content = ets.Turno)
+                                    StyledCard(title = "Turno", content = ets.turno)
                                 }
                                 item {
-                                    StyledCard(title = "Cupo", content = ets.Cupo.toString())
+                                    StyledCard(title = "Cupo", content = ets.cupo.toString())
                                 }
                                 item {
-                                    StyledCard(title = "Unidad Académica", content = ets.idUA)
+                                    StyledCard(title = "Unidad Académica", content = ets.unidadAprendizaje)
                                 }
                                 item {
-                                    StyledCard(title = "Duración", content = ets.Duracion.toString())
+                                    StyledCard(title = "Duración", content = ets.duracion.toString())
                                 }
                             }
 
-                            LazyColumn(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                item {
-                                    Column {
-                                        Text(
-                                            text = "Salon(es) Asignado(s)",
-                                            style = MaterialTheme.typography.titleLarge,
-                                            modifier = Modifier.padding(bottom = 16.dp)
-                                                .align(Alignment.CenterHorizontally),
-                                            color = Color.White,
-                                            textAlign = TextAlign.Center
-                                        )
+                            if (!salonState!!) {
+                                Column (
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .align(Alignment.CenterHorizontally)
+                                ) {
+                                    Text(
+                                        text = "Salon(es) Asignado(s)",
+                                        style = MaterialTheme.typography.titleLarge,
+                                        modifier = Modifier.padding(bottom = 16.dp)
+                                            .align(Alignment.CenterHorizontally),
+                                        color = Color.White,
+                                        textAlign = TextAlign.Center
+                                    )
 
-                                        Divider(
-                                            modifier = Modifier
-                                                .padding(vertical = 8.dp)
-                                                .width(300.dp),
-                                            thickness = 1.dp,
-                                            color = Color.White
-                                        )
+                                    Divider(
+                                        modifier = Modifier
+                                            .padding(vertical = 8.dp)
+                                            .width(300.dp),
+                                        thickness = 1.dp,
+                                        color = Color.White
+                                    )
+                                }
+                                LazyColumn(
+                                    modifier = Modifier
+                                        .weight(1.6f)
+                                        .padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+
+                                    // Mostrar salones
+                                    salones.take(3).forEach { salon -> // Limita a 3 salones
+                                        item {
+                                            SalonCard(
+                                                numSalon = salon.numSalon,
+                                                tipoSalon = salon.tipoSalon
+                                            )
+                                        }
                                     }
                                 }
-
-                                // Mostrar salones
-                                salones.take(3).forEach { salon -> // Limita a 3 salones
+                            } else {
+                                LazyColumn(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
                                     item {
-                                        SalonCard(
-                                            numSalon = salon.numSalon,
-                                            tipoSalon = salon.tipoSalon
-                                        )
+                                        Column {
+                                            Text(
+                                                text = "La asignación de salones sigue pendiente.",
+                                                style = MaterialTheme.typography.titleLarge,
+                                                modifier = Modifier.padding(bottom = 16.dp)
+                                                    .align(Alignment.CenterHorizontally),
+                                                color = Color.White,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -211,7 +238,7 @@ fun EtsDetailScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "La asignación del salón sigue pendiente",
+                                text = "Ocurrió un error al desplegar los detalles del ETS",
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = Color.White
                             )

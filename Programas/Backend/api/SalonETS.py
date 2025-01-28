@@ -20,21 +20,21 @@ def get_all_salon_ets(db: Session = Depends(get_db)):
         salon = db.query(Salon).filter(Salon.num_salon == rel.num_salon).first()
         ets = db.query(ETS).filter(ETS.idets == rel.idETS).first()
         response.append({
-            "Salon": {
+            "salon": {
                 "numSalon": salon.num_salon,
                 "Edificio": salon.edificio,
                 "Piso": salon.piso,
                 "tipoSalon": salon.salonType.tipo
             },
-            "ETS": {
+            "ets": {
                 "tipoETS": ets.periodo.tipo,
                 "idETS": ets.idets,
                 "idPeriodo": ets.periodo.periodo,
-                "Turno": ets.turno.nombre,
-                "Fecha": ets.fecha,
-                "Cupo": ets.cupo,
+                "turno": ets.turno.nombre,
+                "fecha": ets.fecha,
+                "cupo": ets.cupo,
                 "idUA": ets.UAETS.nombre,
-                "Duracion": ets.duracion
+                "duracion": ets.duracion
             }
         })
     
@@ -47,34 +47,35 @@ def getSalonETS(ETSid: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="ETS no encontrado")
     
     relaciones = db.query(SalonETS).filter(SalonETS.idets == ETSid).all()
-    if not relaciones:
-        raise HTTPException(status_code=404, detail="No hay relaciones ETS-Salón registradas")
     
-    # Construir respuesta enriquecida
+    # Construir respuesta para ETS
+    ets_data = {
+        "unidadAprendizaje": ets.UAETS.nombre,
+        "tipoETS": ets.periodo.tipo,
+        "idETS": ets.idets,
+        "idPeriodo": ets.periodo.periodo,
+        "turno": ets.id_turno.nombre,
+        "fecha": ets.fecha,
+        "cupo": ets.cupo,
+        "duracion": ets.duracion
+    }
+    
+    # Construir lista de salones
     salones = [
         {
             "numSalon": salon.num_salon,
-            "Edificio": salon.edificio,
-            "Piso": salon.piso,
+            "edificio": salon.edificio,
+            "piso": salon.piso,
             "tipoSalon": salon.salonType.tipo
         }
         for rel in relaciones
         if (salon := db.query(Salon).filter(Salon.num_salon == rel.num_salon).first())
     ]
     
+    # Retornar respuesta completa
     return {
-        "ETS": {
-            "UnidadAprendizaje": ets.UAETS.nombre,
-            "tipoETS": ets.periodo.tipo,
-            "idETS": ets.idets,
-            "idPeriodo": ets.periodo.periodo,
-            "Turno": ets.id_turno.nombre,
-            "Fecha": ets.fecha,
-            "Cupo": ets.cupo,
-            "idUA": ets.UAETS.programaAcademico.nombre,
-            "Duracion": ets.duracion
-        },
-        "Salones": salones
+        "ets": ets_data,
+        "salon": salones  # Lista vacía si no hay salones
     }
 
 # Asignar un salón a un ETS
@@ -110,13 +111,13 @@ def create_salon_ets(data: SalonETSCreate, db: Session = Depends(get_db)):
 
     # Respuesta enriquecida
     return {
-        "Salon": {
+        "salon": {
             "numSalon": salon.num_salon,
             "Edificio": salon.edificio,
             "Piso": salon.piso,
             "tipoSalon": salon.salonType.tipo
         },
-        "ETS": {
+        "ets": {
             "tipoETS": ets.periodo.tipo,
             "idETS": ets.idets,
             "idPeriodo": ets.periodo.periodo,

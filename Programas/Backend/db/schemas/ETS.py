@@ -25,8 +25,8 @@ class periodoETSResponse(periodoETSBase):
 ############### ETS ##############
 class ETSBase(BaseModel):
     idPeriodo: str
-    Turno: str
-    Fecha: datetime
+    turno: str
+    fecha: datetime
     
     class Config:
         orm_mode = True
@@ -42,7 +42,7 @@ class ETSCreate(ETSBase):
 
 class ETSResponse(ETSBase):
     idETS: int
-    UnidadAprendizaje: Optional[str]
+    unidadAprendizaje: Optional[str]
     
     class Config:
         orm_mode = True

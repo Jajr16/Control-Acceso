@@ -71,20 +71,20 @@ fun LoginScreen(
     LaunchedEffect(loginResponse) {
         loginResponse?.let {
 
-            if (it.Error_code == 0) {
-                loginViewModel.saveUserName(it.Usuario)
-                loginViewModel.saveUserRole(it.Rol)
+            if (it.error_code == 0) {
+                loginViewModel.saveUserName(it.usuario)
+                loginViewModel.saveUserRole(it.rol)
 
-                when (it.Rol) {
+                when (it.rol) {
                     "Alumno" -> navController.navigate("Menu Alumno") {
                         popUpTo(navController.graph.startDestinationId) { inclusive = true } }
                     "Personal Seguridad", "Docente" -> navController.navigate("Menu") {
                         popUpTo(navController.graph.startDestinationId) { inclusive = true } }
                 }
 
-                it.Rol = ""
-                it.Usuario= ""
-                it.Message = ""
+                it.rol = ""
+                it.usuario= ""
+                it.message = ""
             }
         }
     }
