@@ -43,8 +43,8 @@ import com.example.prueba3.ui.theme.BlueBackground
 
 @Composable
 fun WelcomeScreenAlumno(navController: NavController,
-                        loginViewModel: LoginViewModel,
-                        viewModel: HomeViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),) {
+                           loginViewModel: LoginViewModel,
+                           viewModel: HomeViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),) {
 
     val userRole = loginViewModel.getUserRole()
     val username = loginViewModel.getUserName()
