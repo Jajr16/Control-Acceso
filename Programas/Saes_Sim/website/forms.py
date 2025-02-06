@@ -6,6 +6,15 @@ from django.core.exceptions import ValidationError
 from .views.url import url
 import requests
 
+def obtener_opciones(api_endpoint, id_key, label_key):
+    response = requests.get(url + api_endpoint)
+    if response.status_code == 200:
+        json_data = response.json()
+        print(f"VAVAVAVAVAV {json_data}")
+        opciones = [(str(item[id_key]), str(item[label_key])) for item in json_data if id_key in item and label_key in item]
+        return [("", "Seleccione una opción...")] + opciones  # Agrega opción vacía al inicio
+    return [("", "Seleccione una opción...")]
+
 class LoginForm(forms.Form):
     boleta = forms.CharField(max_length=100, label="Boleta", required=True)
     contraseña = forms.CharField(widget=forms.PasswordInput, required=True)
@@ -67,22 +76,14 @@ class periodoForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(periodoForm, self).__init__(*args, **kwargs)
         
-
 class ETSForm(forms.Form):
-    @staticmethod
-    def obtener_opciones(api_endpoint, id_key, label_key):
-        response = requests.get(url + api_endpoint)
-        if response.status_code == 200:
-            json_data = response.json()
-            opciones = [(str(item[id_key]), str(item[label_key])) for item in json_data if id_key in item and label_key in item]
-            return [("", "Seleccione una opción...")] + opciones  # Agrega opción vacía al inicio
-        return [("", "Seleccione una opción...")]
-
     def __init__(self, *args, **kwargs):
         super(ETSForm, self).__init__(*args, **kwargs)
 
-        self.fields['idPeriodo'].choices = self.obtener_opciones("PeriodoToETS", "idPeriodo", "periodo")
-        self.fields['idUA'].choices = self.obtener_opciones("UAprenToETS", "idUA", "nombre")
+        self.fields['idPeriodo'].choices = obtener_opciones("PeriodoToETS", "idPeriodo", "periodo")
+        self.fields['idUA'].choices = obtener_opciones("UAprenToETS", "idUA", "nombre")
+        self.fields["docente"].choices = obtener_opciones("DocenteToETS", "curp", "nombre")
+        self.fields['salon'].choices = obtener_opciones("SalonToETS", "numSalon", "numSalon")
 
     idPeriodo = forms.ChoiceField(label="Periodo")
     idUA = forms.ChoiceField(label="Unidad de Aprendizaje")
@@ -94,4 +95,15 @@ class ETSForm(forms.Form):
                                                         'min': date.today().strftime('%Y-%m-%d'),}))
     Cupo = forms.IntegerField(min_value=1)
     Duracion = forms.IntegerField(min_value=1)
+    docente = forms.ChoiceField(label="Docente", required=False)
+    salon = forms.ChoiceField(label="Salon", required=False)
+
+class NPSForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super(NPSForm, self).__init__(*args, **kwargs)
+        
+    sexo = forms.ChoiceField(
+        choices=[("", "Selecciona una opción..."), ("Masculino", "Masculino"), ("Femenino", "Femenino")],
+        label="Sexo"
+    )
     

@@ -46,11 +46,18 @@ class NETSView(View):
                 "duracion": duracion,
             }
             
-            print(data)
+            if form.cleaned_data['salon']:
+                data["salon"] = int(form.cleaned_data['salon'])
+                
+            if form.cleaned_data['docente']:
+                data["docenteCURP"] = form.cleaned_data['docente']
+                data["titular"] = True
             
             headers = {"Content-Type": "application/json"}
             response = requests.post(url+api, json=data, headers=headers)
-            response_data = response.json() 
+            response_data = response.json()
+            
+            print(response_data)
             
             if response_data.get("Error"):
                 return render(request, 'New_ETS.html', {'form': form, 'message': response_data.get("message")})

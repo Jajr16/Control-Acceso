@@ -17,3 +17,4 @@ class AlumnoView(View):
         }
         
         return render(request, 'Alumnos.html', context)
+    
