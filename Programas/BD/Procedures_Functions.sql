@@ -75,6 +75,32 @@ BEGIN
 END;
 $$;
 
+-- FUNCIÓN PARA EL LISTADO DE ETS DOCENTE
+CREATE OR REPLACE FUNCTION ListInscripcionesETSDocente(
+    rfcD VARCHAR(18)
+)
+RETURNS TABLE(
+    idets INTEGER,
+    periodo VARCHAR,
+    turno_nombre VARCHAR,
+    fecha DATE,
+    unidad_aprendizaje_nombre VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+	RETURN QUERY
+
+    SELECT aplica.idets, periodoets.periodo, turno.nombre as turno, ets.fecha, unidadaprendizaje.nombre FROM aplica
+	INNER JOIN ets ON aplica.idets = ets.idets
+	INNER JOIN periodoets ON ets.id_periodo = periodoets.id_periodo 
+	INNER JOIN turno ON turno.id_turno = ets.turno
+	INNER JOIN unidadaprendizaje ON unidadaprendizaje.idua = ets.idua WHERE aplica.docente_rfc = rfcD;
+	
+    
+END;
+$$;
+
 select *from login('2022630467', '123');
 SELECT * FROM usuario;
 SELECT crypt('123', gen_salt('bf'));
