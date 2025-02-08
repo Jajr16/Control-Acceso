@@ -101,9 +101,21 @@ class ETSForm(forms.Form):
 class NPSForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(NPSForm, self).__init__(*args, **kwargs)
-        
+
+        self.fields['CargoPS'].choices = obtener_opciones('CargoToPS', 'nombre', 'nombre')
+    
+    curp = forms.CharField(max_length=18, required=True, label='CURP')
+    nombre = forms.CharField(required=True, label='Nombre')
+    apellido_P = forms.CharField(required=True, label='apellido_P')
+    apellido_M = forms.CharField(required=True, label='apellido_M')
     sexo = forms.ChoiceField(
         choices=[("", "Selecciona una opción..."), ("Masculino", "Masculino"), ("Femenino", "Femenino")],
         label="Sexo"
     )
+    CargoPS = forms.ChoiceField(label='Cargo', required=True)
+    turno = forms.ChoiceField(
+        choices=[("", "Seleccione un turno..."), ("Matutino", "Matutino"), ("Vespertino", "Vespertino")],
+        label="Turno"
+    )
+    
     

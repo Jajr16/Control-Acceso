@@ -11,4 +11,5 @@ urlpatterns = [
     path('PETS/', views.PETSView.as_view(), name='pets'),
     path('NPETS/', views.NPETSView.as_view(), name='npets'),
     path('NETS/', views.NETSView.as_view(), name='nets'),
+    path('NPS/', views.NPSView.as_view(), name='nps'),
 ]
