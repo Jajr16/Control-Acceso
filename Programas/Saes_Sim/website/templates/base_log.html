@@ -8,6 +8,7 @@
     <title>SAES - IPN</title>
     <link rel="stylesheet" href="{% static 'css/Default.css' %}">
     <link rel="stylesheet" href="{% static 'css/normalize.css' %}">
+    <script src="{% static 'js/jquery.js' %}"></script>
 </head>
 
 <body>
@@ -64,7 +65,7 @@
                                         <td>Alumnos</td>
                                     </tr>
                                     <tr>
-                                        <td>&emsp;Dar de alta alumnos</td>
+                                        <td><a href="{% url 'nalumno' %}">&emsp;Dar de alta alumnos</a></td>
                                     </tr>
                                     <tr>
                                         <td><a href="{% url 'alumno' %}">&emsp;Consultar alumnos</a></td>
@@ -73,7 +74,7 @@
                                         <td>Docentes</td>
                                     </tr>
                                     <tr>
-                                        <td>&emsp;Dar de alta docentes</td>
+                                        <td><a href="{% url 'ndocente' %}">&emsp;Dar de alta docentes</td>
                                     </tr>
                                     <tr>
                                         <td><a href="{% url 'docente' %}">&emsp;Consultar docentes</a></td>

@@ -6,7 +6,13 @@ from .url import url
 from ..forms import NPSForm
 
 class PSView(View):
+    """
+        Clase que define la vista del listado del personal de seguridad
+    """
     def get(self, request, *args, **kwargs):
+        """
+            Función get de la vista encargada de renderizar la página html
+        """
         api = "ps"
         
         headers = {"Content-Type": "application/json"}
@@ -20,12 +26,21 @@ class PSView(View):
         return render(request, 'PS.html', context)
     
 class NPSView(View):
+    """
+        Clase que define la vista del formulario para la alta de nuevo personal de seguridad
+    """
     def get(self, request, *args, **kwargs):
+        """
+            Función get de la vista encargada de renderizar la página html con el formulario vació para dar de alta personal de seguridad 
+        """
         form = NPSForm()
         return render(request, 'New_PersonalSeguridad.html', {'form': form  })
     
     def post(self, request, *args, **kwargs):
-        api = "NPS"
+        """
+            Función post de la vista encargada de la lógica para el envío de la información del formulario
+        """
+        api = "nps"
         
         form = NPSForm(request.POST)
         
@@ -37,6 +52,7 @@ class NPSView(View):
             sexo = form.cleaned_data['sexo']
             cargoPS = form.cleaned_data['cargoPS']
             turno = form.cleaned_data['turno']
+            usuario = request.session.get('usuario')  
             
             data = {
                 "curp": curp,
@@ -45,7 +61,8 @@ class NPSView(View):
                 "apellido_M": apellido_M,
                 "sexo": sexo,
                 "cargoPS": cargoPS,
-                "turno": turno
+                "turno": turno,
+                "user": usuario
             }
             
             headers = {"Content-Type": "application/json"}
@@ -55,7 +72,7 @@ class NPSView(View):
             print(response_data)
             
             if response_data.get("Error"):
-                return render(request, 'New_PersonalSeguridad.html', {'form': form, 'message': response_data.get("message")})
+                return render(request, 'New_PersonalSeguridad.html', {'form': form, 'message': response_data.get("message"), 'Error': response_data.get("Error") })
             else:
                 return render(request, 'New_PersonalSeguridad.html', {'form': form, 'message': response_data.get("message")})
         else:

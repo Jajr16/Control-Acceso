@@ -4,7 +4,14 @@ from django.views import View
 from django.shortcuts import render, redirect
 
 class HomeView(View):
+    """
+        Clase que define la vista de la página principal
+    """
     def get(self, request, *args, **kwargs):
+        """
+            Función get de la vista encargada de renderizar la página html
+        """
+
         if 'usuario' not in request.session:
             return redirect('login')
         

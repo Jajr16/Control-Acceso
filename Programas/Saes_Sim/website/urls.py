@@ -1,3 +1,5 @@
+# Archivo que defina las vistas de cada página
+
 from django.urls import path
 from . import views
 
@@ -12,4 +14,7 @@ urlpatterns = [
     path('NPETS/', views.NPETSView.as_view(), name='npets'),
     path('NETS/', views.NETSView.as_view(), name='nets'),
     path('NPS/', views.NPSView.as_view(), name='nps'),
+    path('NDocente/', views.NDocenteView.as_view(), name='ndocente'),
+    path('NAlumno/', views.NAlumnoView.as_view(), name='nalumno'),
+    path('carreras/', views.carreras, name='carreras'),
 ]

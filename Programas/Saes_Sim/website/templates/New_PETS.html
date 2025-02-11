@@ -18,9 +18,15 @@
             {% endif %}
             
             {% if message %}
-            <div style="text-align: center">
-                {{ message }}
-            </div>
+                {% if Error %}
+                    <div style="text-align: center; color: red; font-size: 15px">
+                        {{ message }}
+                    </div>
+                {% else %}
+                    <div style="text-align: center">
+                        {{ message }}
+                    </div>
+                {% endif %}
             {% endif %}
 
             <form action="{% url 'npets' %}" method="POST" class="login-form">

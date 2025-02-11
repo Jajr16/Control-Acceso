@@ -2,7 +2,7 @@
 
 {% load static %}
 {% block centercontainer %}
-<center style="font-weight:bold; padding: 1rem 0;">Registrar Nuevo Personal de Seguridad <br></center>
+<center style="font-weight:bold; padding: 1rem 0;">Registrar Nuevo Docente <br></center>
     <div class="table-container table-responsive">
         <div class="center">
             {% if form.errors %}
@@ -29,11 +29,15 @@
                 {% endif %}
             {% endif %}
 
-            <form action="{% url 'nps' %}" method="POST" class="login-form">
+            <form action="{% url 'ndocente' %}" method="POST" class="login-form">
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="CURP">CURP:</label>
                     {{ form.curp }}
+                </div>
+                <div class="form-group">
+                    <label for="RFC">RFC:</label>
+                    {{ form.rfc }}
                 </div>
                 <div class="form-group">
                     <label for="nombre">Nombre(s):</label>
@@ -52,8 +56,12 @@
                     {{ form.sexo }}
                 </div>
                 <div class="form-group">
-                    <label for="cargps">Cargo:</label>
-                    {{ form.cargoPS }}
+                    <label for="correo">Correo Institucional:</label>
+                    {{ form.correo }}
+                </div>
+                <div class="form-group">
+                    <label for="cargo">Cargo:</label>
+                    {{ form.cargo }}
                 </div>
                 <div class="form-group">
                     <label for="turno">Turno:</label>

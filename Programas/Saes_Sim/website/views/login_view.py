@@ -5,15 +5,21 @@ from django.shortcuts import render, redirect
 from ..forms import LoginForm
 
 class LoginView(View):
+    """
+        Clase que define la vista del formulario del Login 
+    """
     def get(self, request, *args, **kwargs):
         """
-        Muestra la página de login.
+        Muestra la página de login con su respectivo formulario.
         """
         form = LoginForm()
         
         return render(request, 'login.html', {'form': form  })
     
     def post(self, request, *args, **kwargs):
+        """
+            Función post de la vista encargada de la lógica para el envío de la información del formulario
+        """
         api_url = "http://192.168.1.69:8080/login"
         
         form = LoginForm(request.POST)

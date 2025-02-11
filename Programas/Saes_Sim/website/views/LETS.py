@@ -6,7 +6,13 @@ from .url import url
 from ..forms import ETSForm
 
 class ListETSView(View):
+    """
+        Clase que define la vista del listado de los ETS registrados
+    """
     def get(self, request, *args, **kwargs):
+        """
+            Función get de la vista encargada de renderizar la página html
+        """
         api = "ets"
         
         headers = {"Content-Type": "application/json"}
@@ -20,11 +26,20 @@ class ListETSView(View):
         return render(request, 'ETS.html', context)
     
 class NETSView(View):
+    """
+        Clase que define la vista del formulario de los ETS 
+    """
     def get(self, request, *args, **kwargs):
+        """
+            Función get de la vista encargada de renderizar la página html con el formulario vació para dar de alta ETS
+        """
         form = ETSForm()
         return render(request, 'New_ETS.html', {'form': form  })
     
     def post(self, request, *args, **kwargs):
+        """
+            Función post de la vista encargada de la lógica para el envío de la información del formulario
+        """
         api = "NETS"
         
         form = ETSForm(request.POST)
@@ -60,7 +75,7 @@ class NETSView(View):
             print(response_data)
             
             if response_data.get("Error"):
-                return render(request, 'New_ETS.html', {'form': form, 'message': response_data.get("message")})
+                return render(request, 'New_ETS.html', {'form': form, 'message': response_data.get("message"), 'Error': response_data.get("Error") })
             else:
                 return render(request, 'New_ETS.html', {'form': form, 'message': response_data.get("message")})
         else:

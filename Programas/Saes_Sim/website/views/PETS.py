@@ -6,7 +6,14 @@ from .url import url
 from ..forms import periodoForm
 
 class PETSView(View):
+    """
+        Clase que define la vista del listado de los periodos de los ETS
+    """
     def get(self, request, *args, **kwargs):
+        """
+            Función get de la vista encargada de renderizar la página html
+        """
+        
         api = "periodoETS"
         
         headers = {"Content-Type": "application/json"}
@@ -20,11 +27,20 @@ class PETSView(View):
         return render(request, 'PETS.html', context)
     
 class NPETSView(View):
+    """
+        Clase que define la vista del formulario para la alta de los periodos de ETS 
+    """
     def get(self, request, *args, **kwargs):
+        """
+            Función get de la vista encargada de renderizar la página html con el formulario vació para dar de alta los periodos de ETS 
+        """
         form = periodoForm()
         return render(request, 'New_PETS.html', {'form': form  })
     
     def post(self, request, *args, **kwargs):
+        """
+            Función post de la vista encargada de la lógica para el envío de la información del formulario
+        """
         api = "periodoETS"
         
         form = periodoForm(request.POST)
@@ -50,7 +66,7 @@ class NPETSView(View):
             response_data = response.json() 
             
             if response_data.get("Error"):
-                return render(request, 'New_PETS.html', {'form': form, 'message': response_data.get("message")})
+                return render(request, 'New_PETS.html', {'form': form, 'message': response_data.get("message"), 'Error': response_data.get("Error") })
             else:
                 return render(request, 'New_PETS.html', {'form': form, 'message': response_data.get("message")})
         else:
