@@ -8,10 +8,5 @@
   </component>
   <component name="TemplatesService">
     <option name="TEMPLATE_CONFIGURATION" value="Jinja2" />
-    <option name="TEMPLATE_FOLDERS">
-      <list>
-        <option value="$MODULE_DIR$/Programas/dcrm/website/templates" />
-      </list>
-    </option>
   </component>
 </module>

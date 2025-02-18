@@ -48,7 +48,13 @@
             retrofit.create(AceptadoApi::class.java)
         }
 
+        //Instancia para el alumno
         val confirmacionInscripcion: InscripcionConfirm by lazy {
+            retrofit.create(InscripcionConfirm::class.java)
+        }
+
+        //Instancia para el personal de seguridad y docente
+        val confirmacionValidacion: InscripcionConfirm by lazy {
             retrofit.create(InscripcionConfirm::class.java)
         }
 
@@ -59,6 +65,7 @@
         val getDaysETS: Calendario by lazy {
             retrofit.create(Calendario::class.java)
         }
+
 
 
     }
