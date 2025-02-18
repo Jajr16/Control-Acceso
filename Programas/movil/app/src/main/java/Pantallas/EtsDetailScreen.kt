@@ -130,7 +130,7 @@ fun EtsDetailScreen(
                             // Lista deslizante de ETS
                             LazyColumn(
                                 modifier = Modifier
-                                    .weight(2f)
+                                    .weight(3.5f)
                                     .padding(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
@@ -167,33 +167,35 @@ fun EtsDetailScreen(
                             }
 
                             if (!salonState!!) {
+                                Column (
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .align(Alignment.CenterHorizontally)
+                                ) {
+                                    Text(
+                                        text = "Salon(es) Asignado(s)",
+                                        style = MaterialTheme.typography.titleLarge,
+                                        modifier = Modifier.padding(bottom = 16.dp)
+                                            .align(Alignment.CenterHorizontally),
+                                        color = Color.White,
+                                        textAlign = TextAlign.Center
+                                    )
+
+                                    Divider(
+                                        modifier = Modifier
+                                            .padding(vertical = 8.dp)
+                                            .width(300.dp),
+                                        thickness = 1.dp,
+                                        color = Color.White
+                                    )
+                                }
                                 LazyColumn(
                                     modifier = Modifier
-                                        .weight(1f)
+                                        .weight(1.6f)
                                         .padding(16.dp),
                                     verticalArrangement = Arrangement.spacedBy(8.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    item {
-                                        Column {
-                                            Text(
-                                                text = "Salon(es) Asignado(s)",
-                                                style = MaterialTheme.typography.titleLarge,
-                                                modifier = Modifier.padding(bottom = 16.dp)
-                                                    .align(Alignment.CenterHorizontally),
-                                                color = Color.White,
-                                                textAlign = TextAlign.Center
-                                            )
-
-                                            Divider(
-                                                modifier = Modifier
-                                                    .padding(vertical = 8.dp)
-                                                    .width(300.dp),
-                                                thickness = 1.dp,
-                                                color = Color.White
-                                            )
-                                        }
-                                    }
 
                                     // Mostrar salones
                                     salones.take(3).forEach { salon -> // Limita a 3 salones

@@ -11,10 +11,10 @@ class LoginRequest(BaseModel):
 
 # Login Response: Datos que devuelve el servidor
 class LoginResponse(BaseModel):
-    Usuario: Optional[str]
-    Error_code: int
-    Message: str
-    Rol: Optional[str]
+    usuario: Optional[str]
+    error_Code: int
+    message: str
+    rol: Optional[str]
 
     class Config:
         orm_mode = True

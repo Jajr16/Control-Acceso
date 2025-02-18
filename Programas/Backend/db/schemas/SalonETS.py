@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List
 from pydantic import BaseModel
 from .Salon import SalonResponse
+from typing import Optional
 
 class SalonETSBase(BaseModel):
     numSalon: int
@@ -17,16 +18,15 @@ class SalonETSResponse(SalonETSBase):
     pass
     
 class ETSResponse(BaseModel):
-    UnidadAprendizaje: str
+    unidadAprendizaje: str
     tipoETS: str
     idETS: int
     idPeriodo: str
-    Turno: str
-    Fecha: datetime
-    Cupo: int
-    idUA: str
-    Duracion: int
+    turno: str
+    fecha: datetime
+    cupo: int
+    duracion: int
     
 class ETSWithSalonsResponse(BaseModel):
-    ETS: ETSResponse
-    Salones: List[SalonResponse]
+    ets: ETSResponse
+    salon: Optional[List[SalonResponse]] = []

@@ -80,7 +80,7 @@ fun CalendarScreen(navController: NavController, loginViewModel: LoginViewModel,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 100.dp)
+                        .padding(top = 70.dp)
                 ) {
                     Text(
                         text = "Calendario Escolar",
@@ -185,6 +185,7 @@ fun CalendarScreen(navController: NavController, loginViewModel: LoginViewModel,
                         }
                     }
                     LaunchedEffect(Unit) {
+                        diasETSModel.resetDays()
                         scope.launch {
                             try {
                                 val response = RetrofitInstance.getCalendar.getCalendar()
