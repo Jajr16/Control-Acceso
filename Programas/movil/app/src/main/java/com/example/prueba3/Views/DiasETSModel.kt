@@ -33,4 +33,8 @@ class DiasETSModel() : ViewModel() {
         }
     }
 
+    fun resetDays() {
+        _text.value = null
+    }
+
 }

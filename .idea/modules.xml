@@ -2,7 +2,15 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+<<<<<<< HEAD
       <module fileurl="file://$PROJECT_DIR$/.idea/TT.iml" filepath="$PROJECT_DIR$/.idea/TT.iml" />
+=======
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Prueba3.iml" filepath="$PROJECT_DIR$/.idea/modules/Prueba3.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Prueba3.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Prueba3.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Prueba3.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Prueba3.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Prueba3.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Prueba3.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Prueba3.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Prueba3.app.unitTest.iml" />
+>>>>>>> BD
     </modules>
   </component>
 </project>

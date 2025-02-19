@@ -17,12 +17,12 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     message = "Login exitoso"
 
     # Buscar el usuario en la base de datos
-    usuario = db.query(Usuario).filter(Usuario.usuario == login_data.Usuario).first()
+    usuario = db.query(Usuario).filter(Usuario.usuario == login_data.usuario).first()
     if not usuario:
         error_code = 404
         message = "Usuario no encontrado"
         return LoginResponse(
-            Usuario=None, Error_code=error_code, Message=message, Rol=None
+            usuario=None, error_Code=error_code, message=message, rol=None
         )
 
     # Verificar la contraseña usando bcrypt
@@ -30,13 +30,13 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         error_code = 401
         message = "Contraseña incorrecta"
         return LoginResponse(
-            Usuario=None, Error_code=error_code, Message=message, Rol=None
+            usuario=None, error_Code=error_code, message=message, rol=None
         )
 
     # Retornar respuesta exitosa
     return LoginResponse(
-        Usuario=usuario.usuario,
-        Rol=usuario.tipoUser.tipo,
-        Error_code=error_code,
-        Message=message
+        usuario=usuario.usuario,
+        rol=usuario.tipoUser.tipo,
+        error_Code=error_code,
+        message=message
     )

@@ -44,6 +44,7 @@ fun ETSInscriptionProcessScreen(navController: NavController, loginViewModel: Lo
             modifier = Modifier
                 .fillMaxSize()
                 .background(BlueBackground)
+                .padding(padding)
         ) {
 
             Column(
@@ -83,7 +84,7 @@ fun ETSInscriptionProcessScreen(navController: NavController, loginViewModel: Lo
                     modifier = Modifier
                         .fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp) // Asegura que haya espacio entre los elementos
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     // Lista de pasos
                     val steps = listOf(
