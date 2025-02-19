@@ -15,6 +15,9 @@ class EtsViewModel : ViewModel() {
     private val _etsInscritos = MutableStateFlow<List<ListadoETS>>(emptyList())
     val etsInscritos: StateFlow<List<ListadoETS>> = _etsInscritos
 
+    private val _etsInscritosaplica = MutableStateFlow<List<ListadoETS>>(emptyList())
+    val etsInscritosaplica: StateFlow<List<ListadoETS>> = _etsInscritosaplica
+
     private val _loadingState = MutableStateFlow(true)
     val loadingState: StateFlow<Boolean> = _loadingState
 
@@ -40,6 +43,20 @@ class EtsViewModel : ViewModel() {
                 _loadingState.value = true
                 val response = RetrofitInstance.ETSapi.getEtsInscritos(usuario)
                 _etsInscritos.value = response
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                _loadingState.value = false
+            }
+        }
+    }
+
+    fun fetchETSInscritosAplica(usuario: String) {
+        viewModelScope.launch {
+            try {
+                _loadingState.value = true
+                val response = RetrofitInstance.ETSapi.getEtsInscritosDocente(usuario)
+                _etsInscritosaplica.value = response
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {

@@ -2,6 +2,7 @@ package Pantallas
 
 import Pantallas.components.MenuBottomBar
 import Pantallas.components.ValidateSession
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -20,6 +21,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.LoginViewModel
+import com.example.prueba3.ui.theme.BlueBackground
 
 @Composable
 fun ConsultarScreen(navController: NavController, idETS: String, viewModel: AlumnosViewModel,
@@ -52,6 +54,7 @@ fun ConsultarScreen(navController: NavController, idETS: String, viewModel: Alum
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(BlueBackground)
                     .padding(padding)
             ) {
                 // Si está cargando, mostrar el texto de carga

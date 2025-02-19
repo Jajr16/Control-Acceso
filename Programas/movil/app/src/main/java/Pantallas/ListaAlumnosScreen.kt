@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.LoginViewModel
+import com.example.prueba3.ui.theme.BlueBackground
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -53,6 +54,7 @@ fun ListaAlumnosScreen(navController: NavController, idETS: String, viewModel: A
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(BlueBackground)
                     .padding(padding)
             ) {
                 if (isLoading) {
