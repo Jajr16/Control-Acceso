@@ -61,7 +61,7 @@ fun LoginScreen(
                 when (savedRole) {
                     "Alumno" -> navController.navigate("Menu Alumno") {
                         popUpTo("login") { inclusive = true } }
-                    "Personal Seguridad", "Docente" -> navController.navigate("Menu") {
+                    "Personal Seguridad", "Docente","Personal Academico" -> navController.navigate("Menu") {
                         popUpTo("login") { inclusive = true } }
                 }
             }
@@ -78,7 +78,7 @@ fun LoginScreen(
                 when (it.rol) {
                     "Alumno" -> navController.navigate("Menu Alumno") {
                         popUpTo(navController.graph.startDestinationId) { inclusive = true } }
-                    "Personal Seguridad", "Docente" -> navController.navigate("Menu") {
+                    "Personal Seguridad", "Docente","Personal Academico" -> navController.navigate("Menu") {
                         popUpTo(navController.graph.startDestinationId) { inclusive = true } }
                 }
 
