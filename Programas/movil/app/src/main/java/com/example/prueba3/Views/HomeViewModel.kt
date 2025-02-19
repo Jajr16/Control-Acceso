@@ -10,17 +10,41 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel : ViewModel() {
 
+    // Para el alumno
     private val _StatusInscription = MutableStateFlow<Boolean?>(null)
     val StatusInscripcion: StateFlow<Boolean?> = _StatusInscription
 
+    // Para el personal de seguridad y docente
+    private val _StatusValidacion = MutableStateFlow<Boolean?>(null)
+    val StatusValidacion: StateFlow<Boolean?> = _StatusValidacion
+
+    // Verifica la inscripción del alumno en el ETS
     fun getConfirmationInscription(username: String) {
         viewModelScope.launch {
             try {
                 val confirmacion = RetrofitInstance.confirmacionInscripcion.getConfirmInscrip(username)
-                _StatusInscription.value = confirmacion.message
+                _StatusInscription.value = confirmacion.message // true o false según esté inscrito
             } catch (e: Exception) {
-                _StatusInscription.value = null
+                _StatusInscription.value = null // Error en la validación
             }
         }
     }
+
+    fun getConfirmationValidacion(username: String) {
+        viewModelScope.launch {
+            try {
+                val validacion = RetrofitInstance.confirmacionValidacion.getConfirmValid(username)
+
+                // Verifica si el campo 'error' es nulo (sin error) y si el 'tipoUsuario' es válido
+                if (validacion.error == null && validacion.tipoUsuario != null) {
+                    _StatusValidacion.value = true // Validación exitosa
+                } else {
+                    _StatusValidacion.value = false // Error en la validación
+                }
+            } catch (e: Exception) {
+                _StatusValidacion.value = false // Error en la validación
+            }
+        }
+    }
+
 }

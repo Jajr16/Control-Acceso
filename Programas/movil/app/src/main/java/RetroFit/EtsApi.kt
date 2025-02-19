@@ -10,4 +10,9 @@ interface EtsApi {
 
     @GET("ETS/InscripcionAlumno/{usuario}")
     suspend fun getEtsInscritos(@Path("usuario") usuario: String): List<ListadoETS>
+
+    @GET("ETS/InscripcionDocente/{docente_rfc}")
+    suspend fun getEtsInscritosDocente(@Path("docente_rfc") usuario: String): List<ListadoETS>
+
+
 }
