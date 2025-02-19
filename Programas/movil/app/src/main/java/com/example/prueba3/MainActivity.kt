@@ -2,6 +2,7 @@ package com.example.prueba3
 
 import Pantallas.Camara
 import Pantallas.CalendarScreen
+import Pantallas.ConsultarScreen
 import Pantallas.CreateAccountScreen
 import Pantallas.ETSInscriptionProcessScreen
 import Pantallas.EtsCardButton
@@ -11,16 +12,20 @@ import Pantallas.EtsListScreenAlumno
 import Pantallas.ListaAlumnosScreen
 import Pantallas.LoginScreen
 import Pantallas.QRScannerScreen
-import Pantallas.WelcomeScreenDocente
 import Pantallas.WelcomeScreenAlumno
 import Pantallas.NotificationsScreen
+import Pantallas.WelcomeScreen
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -40,23 +45,23 @@ override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     window.decorView.systemUiVisibility = (
-            android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    or android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
-                    or android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
             )
 
 
-    val sharedPreferences = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+    val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
     val loginViewModel = LoginViewModel(sharedPreferences)
     val DiasETSModel = DiasETSModel()
 
     enableEdgeToEdge()
     setContent {
         Prueba3Theme {
-            androidx.compose.foundation.layout.Box(
-                modifier = androidx.compose.ui.Modifier
+            Box(
+                modifier = Modifier
                     .fillMaxSize()
                     .background(BlueBackground)
             ) {
@@ -72,8 +77,12 @@ override fun onCreate(savedInstanceState: Bundle?) {
                         Camara(navController, boleta, idETS)
                     }
                     composable("notificaciones") { NotificationsScreen(navController) }
-                    composable("Menu") { WelcomeScreenDocente(navController, loginViewModel) }
-                    composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel) }
+                    composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }
+                    composable("Menu") {WelcomeScreen(
+                        navController, loginViewModel = loginViewModel,
+                        idETS = "ets1",
+                    )  }
+
                     composable("LETS") { EtsListScreen(navController, loginViewModel = loginViewModel) }
                     composable("LETSA") { EtsListScreenAlumno(navController, loginViewModel = loginViewModel) }
                     composable("scanQr") { QRScannerScreen(navController, loginViewModel = loginViewModel) }
@@ -101,10 +110,19 @@ override fun onCreate(savedInstanceState: Bundle?) {
 //                        }
 //                    }
 
-                    composable("ListaAlumnos/{idETS}") { backStackEntry ->
+                    composable(
+                        "ListaAlumnos/{idETS}",
+                        arguments = listOf(navArgument("idETS") { type = NavType.StringType })
+                    ) { backStackEntry ->
                         val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
-                        ListaAlumnosScreen(navController, idETS, alumnosViewModel, loginViewModel) // Pasar el ViewModel
+                        ConsultarScreen(navController, idETS, alumnosViewModel, loginViewModel)
                     }
+
+
+//                    composable("Lista/{idETS}") { backStackEntry ->
+//                        val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
+//                       ConsultarScreen(navController, idETS, alumnosViewModel, loginViewModel)
+//                    }
 
 
                     composable(
