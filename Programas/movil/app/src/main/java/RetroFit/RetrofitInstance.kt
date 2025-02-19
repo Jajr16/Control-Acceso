@@ -11,7 +11,7 @@
 
 
     object RetrofitInstance {
-        private const val BASE_URL = "http://192.168.1.131:8080/" // Cambia esta URL al dominio real.
+        private const val BASE_URL = "http://192.168.100.2:8080/" // Cambia esta URL al dominio real.
 
         private val okHttpClient = OkHttpClient.Builder()
             .connectTimeout(120, TimeUnit.SECONDS)  // Timeout de conexión
