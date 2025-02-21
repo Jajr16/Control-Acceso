@@ -10,7 +10,7 @@ import retrofit2.http.Query
 interface InscripcionConfirm {
 
     // Validar inscripción de un alumno por boleta
-    @GET("/inscripciones/confirm/boleta/{Boleta}")
+    @GET("/inscripciones/confirm/{Boleta}")
     suspend fun getConfirmInscrip(@Path("Boleta") Boleta: String): confirmInscripcion
 
     // Validar usuario (Docente o Seguridad) por RFC
