@@ -13,3 +13,5 @@ data class AlumnosInfo(
     val Aceptado: Boolean // Nueva propiedad agregada
 )
 
+
+

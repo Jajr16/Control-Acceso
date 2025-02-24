@@ -15,6 +15,7 @@ import Pantallas.QRScannerScreen
 import Pantallas.WelcomeScreenAlumno
 import Pantallas.NotificationsScreen
 import Pantallas.WelcomeScreen
+import Pantallas.WelcomeScreenDocente
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -78,6 +79,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     }
                     composable("notificaciones") { NotificationsScreen(navController) }
                     composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }
+                    composable("Menu Docente") { WelcomeScreenDocente(navController, loginViewModel = loginViewModel) }
                     composable("Menu") {WelcomeScreen(
                         navController, loginViewModel = loginViewModel,
                         idETS = "ets1",

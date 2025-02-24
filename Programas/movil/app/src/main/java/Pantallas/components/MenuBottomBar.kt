@@ -50,7 +50,7 @@ fun MenuBottomBar(navController: NavController, userRole: String?) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = {
-                        val destination = if (userRole == "Alumno") "Menu Alumno" else "Menu"
+                        val destination = if (userRole == "Alumno") "Menu Alumno" else if (userRole == "Personal Academico" || userRole == "Docente") "Menu Docente" else "Menu"
                         navController.navigate(destination)
                     }) {
                         Icon(
