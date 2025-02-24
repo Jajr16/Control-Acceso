@@ -1,9 +1,12 @@
 package com.example.prueba3.Views
 
 import RetroFit.RetrofitInstance
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.prueba3.Clases.AlumnosInfo
+import com.example.prueba3.Clases.ListaInfor
 import com.example.prueba3.Clases.UpdateAceptadoRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,6 +15,9 @@ import kotlinx.coroutines.launch
 class AlumnosViewModel : ViewModel() {
     private val _alumnosList = MutableStateFlow<List<AlumnosInfo>>(emptyList())
     val alumnosList: StateFlow<List<AlumnosInfo>> = _alumnosList
+
+    private val _alumnosListado = MutableStateFlow<List<ListaInfor>>(emptyList())
+    val alumnosListado: StateFlow<List<ListaInfor>> = _alumnosListado
 
     private val _loadingState = MutableStateFlow(true)
     val loadingState: StateFlow<Boolean> = _loadingState
@@ -31,6 +37,28 @@ class AlumnosViewModel : ViewModel() {
         }
     }
 
+
+    fun fetchListalumnos(fecha: String, periodo: String) {
+        viewModelScope.launch {
+            try {
+                Log.d("FetchAlumnos", "Iniciando consulta con fecha: $fecha, periodo: $periodo")
+                _loadingState.value = true
+
+                val datos = RetrofitInstance.listalumnos.getAlumnoLista(fecha, periodo)
+
+                Log.d("FetchAlumnos", "Respuesta recibida: $datos")
+
+                _alumnosListado.value = datos
+            } catch (e: Exception) {
+                Log.e("FetchAlumnos", "Error en la petición: ${e.localizedMessage}")
+                _alumnosListado.value = emptyList()
+            } finally {
+                _loadingState.value = false
+            }
+        }
+    }
+
+
     // Función para actualizar la asistencia de un alumno
     suspend fun updateAsistencia(boleta: String, idETS: Int, aceptado: Boolean) {
         try {
@@ -49,4 +77,3 @@ class AlumnosViewModel : ViewModel() {
         }
     }
 }
-

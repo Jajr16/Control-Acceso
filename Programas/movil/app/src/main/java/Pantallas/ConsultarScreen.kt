@@ -24,26 +24,26 @@ import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 
 @Composable
-fun ConsultarScreen(navController: NavController, idETS: String, viewModel: AlumnosViewModel,
+fun ConsultarScreen(navController: NavController,
+                    fecha: String,
+                    periodo: String,
+                    viewModel: AlumnosViewModel,
                     loginViewModel: LoginViewModel
 ) {
 
     // Validar sesión
     ValidateSession(navController = navController) {
 
-        // Recolectar el estado de la lista de alumnos y el estado de carga
-        val alumnosList by viewModel.alumnosList.collectAsState(initial = emptyList())
+        val alumnosListado by viewModel.alumnosListado.collectAsState(initial = emptyList())
         val isLoading by viewModel.loadingState.collectAsState(initial = false)
 
         // Obtener el rol del usuario
         val userRole = loginViewModel.getUserRole()
 
-        // Llamar a la función fetchAlumno cuando cambia el idETS
-        LaunchedEffect(idETS) {
-            viewModel.fetchAlumno(idETS)
+        LaunchedEffect(fecha, periodo, ) {
+            viewModel.fetchListalumnos(fecha, periodo)
         }
 
-        // Scaffold para la estructura básica
         Scaffold(
             bottomBar = {
                 MenuBottomBar(navController = navController, userRole)
@@ -71,12 +71,12 @@ fun ConsultarScreen(navController: NavController, idETS: String, viewModel: Alum
                     }
                 } else {
                     // Si la lista de alumnos tiene datos, mostrarla en un LazyColumn
-                    if (alumnosList.isNotEmpty()) {
+                    if (alumnosListado.isNotEmpty()) {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(16.dp)
                         ) {
-                            items(alumnosList) { alumno ->
+                            items(alumnosListado) { alumno ->
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()

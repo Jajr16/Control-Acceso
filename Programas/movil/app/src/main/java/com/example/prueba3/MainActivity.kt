@@ -78,9 +78,9 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     }
                     composable("notificaciones") { NotificationsScreen(navController) }
                     composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }
+
                     composable("Menu") {WelcomeScreen(
                         navController, loginViewModel = loginViewModel,
-                        idETS = "ets1",
                     )  }
 
                     composable("LETS") { EtsListScreen(navController, loginViewModel = loginViewModel) }
@@ -110,13 +110,42 @@ override fun onCreate(savedInstanceState: Bundle?) {
 //                        }
 //                    }
 
-                    composable(
-                        "ListaAlumnos/{idETS}",
-                        arguments = listOf(navArgument("idETS") { type = NavType.StringType })
-                    ) { backStackEntry ->
-                        val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
-                        ConsultarScreen(navController, idETS, alumnosViewModel, loginViewModel)
+                    composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }
+
+                    composable("Menu") {
+                        // Llamamos a la pantalla WelcomeScreen
+                        WelcomeScreen(navController = navController, loginViewModel = loginViewModel)
                     }
+
+                    composable(
+                        "ConsultarAlumnos/{fecha}/{periodo}",
+                        arguments = listOf(
+                            navArgument("fecha") { type = NavType.StringType },
+                            navArgument("periodo") { type = NavType.StringType }
+                        )
+                    ) { backStackEntry ->
+                        val fecha = backStackEntry.arguments?.getString("fecha") ?: ""
+                        val periodo = backStackEntry.arguments?.getString("periodo") ?: ""
+
+                        // Aquí llamas la pantalla ConsultarScreen
+                        ConsultarScreen(
+                            navController = navController,
+                            fecha = fecha,
+                            periodo = periodo,
+                            viewModel = alumnosViewModel,
+                            loginViewModel = loginViewModel
+                        )
+                }
+
+
+
+//                    composable(
+//                        "ListaAlumnos/{idETS}",
+//                        arguments = listOf(navArgument("idETS") { type = NavType.StringType })
+//                    ) { backStackEntry ->
+//                        val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
+//                        ConsultarScreen(navController, idETS, alumnosViewModel, loginViewModel)
+//                    }
 
 
 //                    composable("Lista/{idETS}") { backStackEntry ->
