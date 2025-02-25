@@ -5,9 +5,8 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 interface ListalumnosApi {
-    @GET("alumno/inscritosETS/{fecha}/{periodo}")
-    suspend fun getAlumnoLista(
-        @Path("fecha") fecha: String,
-        @Path("periodo") periodo: String,
-    ): List<ListaInfor>
-}
+
+        @GET("alumno/inscritosETS")
+        suspend fun getAlumnoLista(
+        ): List<ListaInfor>
+    }

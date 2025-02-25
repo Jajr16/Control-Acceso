@@ -77,7 +77,6 @@ override fun onCreate(savedInstanceState: Bundle?) {
                         Camara(navController, boleta, idETS)
                     }
                     composable("notificaciones") { NotificationsScreen(navController) }
-                    composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }
 
                     composable("Menu") {WelcomeScreen(
                         navController, loginViewModel = loginViewModel,
@@ -112,30 +111,33 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
                     composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }
 
-                    composable("Menu") {
-                        // Llamamos a la pantalla WelcomeScreen
-                        WelcomeScreen(navController = navController, loginViewModel = loginViewModel)
+                    composable("Menu") { WelcomeScreen(navController = navController, loginViewModel = loginViewModel) }
+
+//
+                    composable("ConsultarAlumnos") {
+                        ConsultarScreen(navController, viewModel = alumnosViewModel, loginViewModel = loginViewModel)
                     }
 
-                    composable(
-                        "ConsultarAlumnos/{fecha}/{periodo}",
-                        arguments = listOf(
-                            navArgument("fecha") { type = NavType.StringType },
-                            navArgument("periodo") { type = NavType.StringType }
-                        )
-                    ) { backStackEntry ->
-                        val fecha = backStackEntry.arguments?.getString("fecha") ?: ""
-                        val periodo = backStackEntry.arguments?.getString("periodo") ?: ""
 
-                        // Aquí llamas la pantalla ConsultarScreen
-                        ConsultarScreen(
-                            navController = navController,
-                            fecha = fecha,
-                            periodo = periodo,
-                            viewModel = alumnosViewModel,
-                            loginViewModel = loginViewModel
-                        )
-                }
+//                    composable(
+//                        "ConsultarAlumnos",
+//                        arguments = listOf(
+//                            navArgument("fecha") { type = NavType.StringType },
+//                            navArgument("periodo") { type = NavType.IntType }
+//                        )
+//                    ) { backStackEntry ->
+//                        val fecha = backStackEntry.arguments?.getString("fecha") ?: ""
+//                        val periodo = backStackEntry.arguments?.getInt("periodo") ?: ""
+//
+//                        ConsultarScreen(
+//                            navController = navController,
+//                            fecha = fecha,
+//
+//                            periodo = Integer.parseInt(periodo.toString()),
+//                            viewModel = alumnosViewModel,
+//                            loginViewModel = loginViewModel
+//                        )
+//                }
 
 
 
@@ -144,7 +146,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
 //                        arguments = listOf(navArgument("idETS") { type = NavType.StringType })
 //                    ) { backStackEntry ->
 //                        val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
-//                        ConsultarScreen(navController, idETS, alumnosViewModel, loginViewModel)
+//                        ListaAlumnosScreen(navController, idETS, alumnosViewModel, loginViewModel)
 //                    }
 
 

@@ -18,15 +18,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.ui.theme.BlueBackground
+import okhttp3.internal.wait
 
 @Composable
 fun ConsultarScreen(navController: NavController,
-                    fecha: String,
-                    periodo: String,
+
                     viewModel: AlumnosViewModel,
                     loginViewModel: LoginViewModel
 ) {
@@ -40,8 +41,8 @@ fun ConsultarScreen(navController: NavController,
         // Obtener el rol del usuario
         val userRole = loginViewModel.getUserRole()
 
-        LaunchedEffect(fecha, periodo, ) {
-            viewModel.fetchListalumnos(fecha, periodo)
+        LaunchedEffect(Unit) {
+            viewModel.fetchListalumnos()
         }
 
         Scaffold(
@@ -90,11 +91,11 @@ fun ConsultarScreen(navController: NavController,
                                     ) {
                                         // Mostrar boleta y nombre completo
                                         Text(
-                                            text = "Boleta: ${alumno.Boleta}",
+                                            text = "Boleta: ${alumno.boleta}",
                                             style = MaterialTheme.typography.bodyMedium
                                         )
                                         Text(
-                                            text = "Nombre: ${alumno.NombreA} ${alumno.ApellidoP} ${alumno.ApellidoM}",
+                                            text = "Nombre: ${alumno.nombre} ${alumno.apellidoP} ${alumno.apellidoM}",
                                             style = MaterialTheme.typography.bodyMedium
                                         )
                                     }
@@ -105,6 +106,7 @@ fun ConsultarScreen(navController: NavController,
                         // Si no hay alumnos, mostrar un mensaje
                         Text(
                             text = "No hay alumnos inscritos al ETS.",
+                            color = Color.White,
                             modifier = Modifier.align(Alignment.Center),
                             style = MaterialTheme.typography.bodyLarge
                         )

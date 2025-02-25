@@ -46,7 +46,6 @@ import com.example.prueba3.ui.theme.BlueBackground
 fun WelcomeScreen(
     navController: NavController,
     loginViewModel: LoginViewModel,
-    alumnosViewModel: AlumnosViewModel = androidx.lifecycle.viewmodel.compose.viewModel(), // Agregado el AlumnosViewModel
     viewModel: HomeViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     // Obtener el estado de validación
@@ -126,7 +125,7 @@ fun WelcomeScreen(
                                     title = "Consultar Alumnos",
                                     icon = ImageVector.vectorResource(id = R.drawable.exam),
                                     onClick = {
-                                            navController.navigate("ConsultarAlumnos/{fecha}/{periodo}")
+                                            navController.navigate("ConsultarAlumnos")
 
                                     },
                                     modifier = Modifier.size(150.dp)

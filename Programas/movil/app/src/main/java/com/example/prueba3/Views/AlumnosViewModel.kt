@@ -38,19 +38,14 @@ class AlumnosViewModel : ViewModel() {
     }
 
 
-    fun fetchListalumnos(fecha: String, periodo: String) {
+    fun fetchListalumnos() {
         viewModelScope.launch {
             try {
-                Log.d("FetchAlumnos", "Iniciando consulta con fecha: $fecha, periodo: $periodo")
                 _loadingState.value = true
-
-                val datos = RetrofitInstance.listalumnos.getAlumnoLista(fecha, periodo)
-
-                Log.d("FetchAlumnos", "Respuesta recibida: $datos")
-
+                val datos = RetrofitInstance.listalumnos.getAlumnoLista()
+                System.out.println("Aqui es datos" + datos);
                 _alumnosListado.value = datos
             } catch (e: Exception) {
-                Log.e("FetchAlumnos", "Error en la petición: ${e.localizedMessage}")
                 _alumnosListado.value = emptyList()
             } finally {
                 _loadingState.value = false
