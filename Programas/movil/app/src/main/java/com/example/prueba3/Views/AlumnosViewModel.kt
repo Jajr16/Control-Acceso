@@ -1,9 +1,12 @@
 package com.example.prueba3.Views
 
 import RetroFit.RetrofitInstance
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.prueba3.Clases.AlumnosInfo
+import com.example.prueba3.Clases.ListaInfor
 import com.example.prueba3.Clases.UpdateAceptadoRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,6 +15,9 @@ import kotlinx.coroutines.launch
 class AlumnosViewModel : ViewModel() {
     private val _alumnosList = MutableStateFlow<List<AlumnosInfo>>(emptyList())
     val alumnosList: StateFlow<List<AlumnosInfo>> = _alumnosList
+
+    private val _alumnosListado = MutableStateFlow<List<ListaInfor>>(emptyList())
+    val alumnosListado: StateFlow<List<ListaInfor>> = _alumnosListado
 
     private val _loadingState = MutableStateFlow(true)
     val loadingState: StateFlow<Boolean> = _loadingState
@@ -31,6 +37,23 @@ class AlumnosViewModel : ViewModel() {
         }
     }
 
+
+    fun fetchListalumnos() {
+        viewModelScope.launch {
+            try {
+                _loadingState.value = true
+                val datos = RetrofitInstance.listalumnos.getAlumnoLista()
+                System.out.println("Aqui es datos" + datos);
+                _alumnosListado.value = datos
+            } catch (e: Exception) {
+                _alumnosListado.value = emptyList()
+            } finally {
+                _loadingState.value = false
+            }
+        }
+    }
+
+
     // Función para actualizar la asistencia de un alumno
     suspend fun updateAsistencia(boleta: String, idETS: Int, aceptado: Boolean) {
         try {
@@ -49,4 +72,3 @@ class AlumnosViewModel : ViewModel() {
         }
     }
 }
-
