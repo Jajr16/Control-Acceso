@@ -90,11 +90,11 @@ fun ConsultarScreen(navController: NavController, idETS: String, viewModel: Alum
                                     ) {
                                         // Mostrar boleta y nombre completo
                                         Text(
-                                            text = "Boleta: ${alumno.Boleta}",
+                                            text = "Boleta: ${alumno.boleta}",
                                             style = MaterialTheme.typography.bodyMedium
                                         )
                                         Text(
-                                            text = "Nombre: ${alumno.NombreA} ${alumno.ApellidoP} ${alumno.ApellidoM}",
+                                            text = "Nombre: ${alumno.nombreA} ${alumno.apellidoP} ${alumno.apellidoM}",
                                             style = MaterialTheme.typography.bodyMedium
                                         )
                                     }

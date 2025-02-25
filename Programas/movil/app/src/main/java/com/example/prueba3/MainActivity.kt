@@ -117,7 +117,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
                         arguments = listOf(navArgument("idETS") { type = NavType.StringType })
                     ) { backStackEntry ->
                         val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
-                        ConsultarScreen(navController, idETS, alumnosViewModel, loginViewModel)
+                        ListaAlumnosScreen(navController, idETS, alumnosViewModel, loginViewModel)
                     }
 
 

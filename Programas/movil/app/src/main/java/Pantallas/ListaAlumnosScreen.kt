@@ -98,11 +98,11 @@ fun ListaAlumnosScreen(navController: NavController, idETS: String, viewModel: A
                                                 .padding(end = 8.dp)
                                         ) {
                                             Text(
-                                                text = "Boleta: ${alumno.Boleta}",
+                                                text = "Boleta: ${alumno.boleta}",
                                                 style = MaterialTheme.typography.bodyMedium
                                             )
                                             Text(
-                                                text = "Nombre: ${alumno.NombreA} ${alumno.ApellidoP} ${alumno.ApellidoM}",
+                                                text = "Nombre: ${alumno.nombreA} ${alumno.apellidoP} ${alumno.apellidoM}",
                                                 style = MaterialTheme.typography.bodyMedium
                                             )
 
@@ -123,7 +123,7 @@ fun ListaAlumnosScreen(navController: NavController, idETS: String, viewModel: A
                                                 modifier = Modifier
                                                     .size(28.dp)
                                                     .background(
-                                                        color = if (alumno.Aceptado) Color(0xFF4CAF50) else Color(0xFFF44336),
+                                                        color = if (alumno.aceptado) Color(0xFF4CAF50) else Color(0xFFF44336),
                                                         shape = CircleShape
                                                     )
                                             )
@@ -138,7 +138,7 @@ fun ListaAlumnosScreen(navController: NavController, idETS: String, viewModel: A
                                         // Botón Reconocimiento Facial
                                         Button(
                                             onClick = {
-                                                navController.navigate("camara/${alumno.Boleta}/${idETS}")
+                                                navController.navigate("camara/${alumno.boleta}/${idETS}")
                                             },
                                             modifier = Modifier.weight(1f), // Peso igual
                                             colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
@@ -150,19 +150,19 @@ fun ListaAlumnosScreen(navController: NavController, idETS: String, viewModel: A
                                         Button(
                                             onClick = {
                                                 // Lógica para poner o quitar asistencia
-                                                val aceptado = !alumno.Aceptado // Cambiar el estado
+                                                val aceptado = !alumno.aceptado // Cambiar el estado
                                                 // Lanzamos la coroutine dentro del onClick
                                                 CoroutineScope(Dispatchers.Main).launch {
-                                                    viewModel.updateAsistencia(alumno.Boleta, idETS.toInt(), aceptado)
+                                                    viewModel.updateAsistencia(alumno.boleta, idETS.toInt(), aceptado)
                                                 }
                                             },
                                             modifier = Modifier.weight(1f), // Peso igual
                                             colors = ButtonDefaults.buttonColors(
-                                                if (alumno.Aceptado) Color(0xFFFF5722) else Color(0xFF4CAF50)
+                                                if (alumno.aceptado) Color(0xFFFF5722) else Color(0xFF4CAF50)
                                             )
                                         ) {
                                             Text(
-                                                text = if (alumno.Aceptado) "Quitar Asistencia" else "Poner Asistencia"
+                                                text = if (alumno.aceptado) "Quitar Asistencia" else "Poner Asistencia"
                                             )
                                         }
                                     }
