@@ -104,3 +104,40 @@ $$;
 select *from login('2022630467', '123');
 SELECT * FROM usuario;
 SELECT crypt('123', gen_salt('bf'));
+
+CREATE OR REPLACE FUNCTION validar_programa_academico()
+RETURNS TRIGGER AS $$
+DECLARE
+    escuela_alumno INT;
+    escuela_programa INT;
+BEGIN
+    -- Obtener la unidad académica del alumno
+    SELECT id_escuela INTO escuela_alumno 
+    FROM persona 
+    WHERE curp = NEW.curp;
+
+    -- Obtener la unidad académica del programa académico
+    SELECT id_escuela INTO escuela_programa 
+    FROM escuelaprograma 
+    WHERE idpa = NEW.idpa;
+
+    -- Validar si coinciden
+    IF escuela_alumno IS NULL OR escuela_programa IS NULL THEN
+        RAISE EXCEPTION 'Error: No se encontró la unidad académica del alumno o del programa académico.';
+    END IF;
+
+    IF escuela_alumno != escuela_programa THEN
+        RAISE EXCEPTION 'Error: El programa académico no pertenece a la unidad académica del alumno.';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_validar_programa
+BEFORE INSERT OR UPDATE ON alumno
+FOR EACH ROW
+EXECUTE FUNCTION validar_programa_academico();
+
+INSERT INTO alumno
+VALUES ('20230001', 'a@a.com', 'a', '0', 'IIA-2024' );

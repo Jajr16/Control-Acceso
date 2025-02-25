@@ -11,3 +11,4 @@ data class InscripcionResponse(
     val Correo: String,
     val Carrera: String
 )
+

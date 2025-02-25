@@ -16,5 +16,7 @@ urlpatterns = [
     path('NPS/', views.NPSView.as_view(), name='nps'),
     path('NDocente/', views.NDocenteView.as_view(), name='ndocente'),
     path('NAlumno/', views.NAlumnoView.as_view(), name='nalumno'),
+    path('NInscripciones/', views.NInsView.as_view(), name='ninscripciones'),
+    path('Inscripciones/', views.InsView.as_view(), name='inscripciones'),
     path('carreras/', views.carreras, name='carreras'),
 ]

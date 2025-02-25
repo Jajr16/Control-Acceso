@@ -43,8 +43,7 @@ import com.example.prueba3.ui.theme.BlueBackground
 
 @Composable
 fun EtsListScreenAlumno(navController: NavController,
-                        viewModel: EtsViewModel = androidx
-                            .lifecycle.viewmodel.compose.viewModel(),
+                        viewModel: EtsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
                         loginViewModel: LoginViewModel
 ) {
 
