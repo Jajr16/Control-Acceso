@@ -6,7 +6,7 @@ import retrofit2.http.Path
 
 
 interface AlumnosApi {
-    @GET("alumno/inscritosETS")
+    @GET("alumno/inscritosETS/{ETSid}")
     suspend fun getAlumnoList(
         @Path("ETSid") ETSid: String,
     ): List<AlumnosInfo>

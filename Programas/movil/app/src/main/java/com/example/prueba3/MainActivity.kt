@@ -15,6 +15,7 @@ import Pantallas.QRScannerScreen
 import Pantallas.WelcomeScreenAlumno
 import Pantallas.NotificationsScreen
 import Pantallas.WelcomeScreen
+import Pantallas.WelcomeScreenDocente
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -77,10 +78,11 @@ override fun onCreate(savedInstanceState: Bundle?) {
                         Camara(navController, boleta, idETS)
                     }
                     composable("notificaciones") { NotificationsScreen(navController) }
+                    composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }
 
-                    composable("Menu") {WelcomeScreen(
-                        navController, loginViewModel = loginViewModel,
-                    )  }
+                    composable("Menu") { WelcomeScreen(navController = navController, loginViewModel = loginViewModel) }
+                    composable("Menu Docente") { WelcomeScreenDocente(navController, loginViewModel = loginViewModel) }
+
 
                     composable("LETS") { EtsListScreen(navController, loginViewModel = loginViewModel) }
                     composable("LETSA") { EtsListScreenAlumno(navController, loginViewModel = loginViewModel) }
@@ -89,53 +91,18 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     composable("CrearCuenta") { CreateAccountScreen(navController) }
 
                     composable("Calendar") { CalendarScreen(navController, loginViewModel, DiasETSModel) }
-//                    composable("Calendar") {
-//                        val intent = Intent(
-//                            Intent.ACTION_VIEW,
-//                            Uri.parse("https://www.ipn.mx/assets/files/website/docs/inicio/calendarioipn-escolarizada.pdf"))
-//                        startActivity(intent)
-//
-//                        LaunchedEffect(Unit) {
-//                            loginViewModel.getUserRole()?.let { savedRole ->
-//                                if (savedRole != null || savedRole != "") {
-//                                    when (savedRole) {
-//                                        "Alumno" -> navController.navigate("Menu Alumno") {
-//                                            popUpTo("login") { inclusive = true } }
-//                                        "Personal Seguridad", "Docente" -> navController.navigate("Menu") {
-//                                            popUpTo("login") { inclusive = true } }
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
 
-                    //Menu del Alumnos
-                    composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }
-                    //Menu del personal de seguridad
-                    composable("Menu") { WelcomeScreen(navController = navController, loginViewModel = loginViewModel) }
-                    //Consultar alumnos por boleta o nombre completo (Seguridad)
                     composable("ConsultarAlumnos") {
-                        ConsultarScreen(navController, viewModel = alumnosViewModel, loginViewModel = loginViewModel) }
-                    //Escanear Codigo QR
+                        ConsultarScreen(navController, viewModel = alumnosViewModel, loginViewModel = loginViewModel)
+                    }
 
-
-//
-
-
-//                    composable(
-//                        "ListaAlumnos/{idETS}",
-//                        arguments = listOf(navArgument("idETS") { type = NavType.StringType })
-//                    ) { backStackEntry ->
-//                        val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
-//                        ListaAlumnosScreen(navController, idETS, alumnosViewModel, loginViewModel)
-//                    }
-
-
-//                    composable("Lista/{idETS}") { backStackEntry ->
-//                        val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
-//                       ConsultarScreen(navController, idETS, alumnosViewModel, loginViewModel)
-//                    }
-
+                    composable(
+                        "ListaAlumnos/{idETS}",
+                        arguments = listOf(navArgument("idETS") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
+                        ListaAlumnosScreen(navController, idETS, alumnosViewModel, loginViewModel)
+                    }
 
                     composable(
                         route = "unicETSDetail/{idETS}",
