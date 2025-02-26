@@ -91,25 +91,6 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     composable("CrearCuenta") { CreateAccountScreen(navController) }
 
                     composable("Calendar") { CalendarScreen(navController, loginViewModel, DiasETSModel) }
-//                    composable("Calendar") {
-//                        val intent = Intent(
-//                            Intent.ACTION_VIEW,
-//                            Uri.parse("https://www.ipn.mx/assets/files/website/docs/inicio/calendarioipn-escolarizada.pdf"))
-//                        startActivity(intent)
-//
-//                        LaunchedEffect(Unit) {
-//                            loginViewModel.getUserRole()?.let { savedRole ->
-//                                if (savedRole != null || savedRole != "") {
-//                                    when (savedRole) {
-//                                        "Alumno" -> navController.navigate("Menu Alumno") {
-//                                            popUpTo("login") { inclusive = true } }
-//                                        "Personal Seguridad", "Docente" -> navController.navigate("Menu") {
-//                                            popUpTo("login") { inclusive = true } }
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
 
                     composable("ConsultarAlumnos") {
                         ConsultarScreen(navController, viewModel = alumnosViewModel, loginViewModel = loginViewModel)
@@ -122,13 +103,6 @@ override fun onCreate(savedInstanceState: Bundle?) {
                         val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
                         ListaAlumnosScreen(navController, idETS, alumnosViewModel, loginViewModel)
                     }
-
-
-//                    composable("Lista/{idETS}") { backStackEntry ->
-//                        val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
-//                       ConsultarScreen(navController, idETS, alumnosViewModel, loginViewModel)
-//                    }
-
 
                     composable(
                         route = "unicETSDetail/{idETS}",
