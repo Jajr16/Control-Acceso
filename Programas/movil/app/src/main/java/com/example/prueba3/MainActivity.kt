@@ -15,6 +15,7 @@ import Pantallas.QRScannerScreen
 import Pantallas.WelcomeScreenAlumno
 import Pantallas.NotificationsScreen
 import Pantallas.WelcomeScreen
+import Pantallas.WelcomeScreenDocente
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -77,10 +78,11 @@ override fun onCreate(savedInstanceState: Bundle?) {
                         Camara(navController, boleta, idETS)
                     }
                     composable("notificaciones") { NotificationsScreen(navController) }
+                    composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }
 
-                    composable("Menu") {WelcomeScreen(
-                        navController, loginViewModel = loginViewModel,
-                    )  }
+                    composable("Menu") { WelcomeScreen(navController = navController, loginViewModel = loginViewModel) }
+                    composable("Menu Docente") { WelcomeScreenDocente(navController, loginViewModel = loginViewModel) }
+
 
                     composable("LETS") { EtsListScreen(navController, loginViewModel = loginViewModel) }
                     composable("LETSA") { EtsListScreenAlumno(navController, loginViewModel = loginViewModel) }
@@ -109,45 +111,17 @@ override fun onCreate(savedInstanceState: Bundle?) {
 //                        }
 //                    }
 
-                    composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }
-
-                    composable("Menu") { WelcomeScreen(navController = navController, loginViewModel = loginViewModel) }
-
-//
                     composable("ConsultarAlumnos") {
                         ConsultarScreen(navController, viewModel = alumnosViewModel, loginViewModel = loginViewModel)
                     }
 
-
-//                    composable(
-//                        "ConsultarAlumnos",
-//                        arguments = listOf(
-//                            navArgument("fecha") { type = NavType.StringType },
-//                            navArgument("periodo") { type = NavType.IntType }
-//                        )
-//                    ) { backStackEntry ->
-//                        val fecha = backStackEntry.arguments?.getString("fecha") ?: ""
-//                        val periodo = backStackEntry.arguments?.getInt("periodo") ?: ""
-//
-//                        ConsultarScreen(
-//                            navController = navController,
-//                            fecha = fecha,
-//
-//                            periodo = Integer.parseInt(periodo.toString()),
-//                            viewModel = alumnosViewModel,
-//                            loginViewModel = loginViewModel
-//                        )
-//                }
-
-
-
-//                    composable(
-//                        "ListaAlumnos/{idETS}",
-//                        arguments = listOf(navArgument("idETS") { type = NavType.StringType })
-//                    ) { backStackEntry ->
-//                        val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
-//                        ListaAlumnosScreen(navController, idETS, alumnosViewModel, loginViewModel)
-//                    }
+                    composable(
+                        "ListaAlumnos/{idETS}",
+                        arguments = listOf(navArgument("idETS") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
+                        ListaAlumnosScreen(navController, idETS, alumnosViewModel, loginViewModel)
+                    }
 
 
 //                    composable("Lista/{idETS}") { backStackEntry ->

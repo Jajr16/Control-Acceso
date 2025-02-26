@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from .views.url import url
 import requests
 
-def obtener_opciones(api_endpoint, id_key, label_key):
+def obtener_opciones(api_endpoint, id_key, label_key, user=None):
     """ Función para crear options de selects con base en los registros de la BD
 
     Args:
@@ -16,14 +16,24 @@ def obtener_opciones(api_endpoint, id_key, label_key):
         id_key (str): Valor que tendrá cada option del select
         label_key (str): Lo que dirá el option del select
     """
+    
+    if user:
+        api_endpoint = f"{api_endpoint}/{user}"
+    
     # Manda la solicitud GET al servidor de Java
     response = requests.get(url + api_endpoint)
     if response.status_code == 200: # Si la respuesta se procesa de manera correcta entra aquí
+        
         json_data = response.json() # Convierte la respuesta a json
         print(f"RECIBE: {json_data}")
+        
         # Crea los option del select
         opciones = [(str(item[id_key]), str(item[label_key])) for item in json_data if id_key in item and label_key in item] 
+        
+        print(f"Opciones generadas: {opciones}") 
+        
         return [("", "Seleccione una opción...")] + opciones  # Agrega opción vacía al inicio
+    
     return [("", "Seleccione una opción...")]
 
 class LoginForm(forms.Form):
@@ -194,3 +204,25 @@ class NAlumnoForm(forms.Form):
     correo = forms.CharField(required=True, label='correo')
     escuela = forms.ChoiceField(label='Cargo', required=True)
     carrera = forms.ChoiceField(label='carrera', required=True)
+
+class InscripcionForm(forms.Form):
+    """ 
+        Clase que define el formulario de la página que inscribirá alumnos a los ETS
+    """
+    
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super(InscripcionForm, self).__init__(*args, **kwargs)
+
+        self.fields['ets'].choices = obtener_opciones(f'etsperschool', 'idUA', 'nombre', self.user)
+        self.fields['alumnos'].choices = obtener_opciones(f'studentperschool', 'boleta', 'nombre', self.user)
+        self.fields['idPeriodo'].choices = obtener_opciones("PeriodoToETS", "idPeriodo", "periodo")
+    
+    alumnos = forms.ChoiceField(label='Alumno', required=True)
+    ets = forms.ChoiceField(label='ETS', required=True)
+    turno = forms.ChoiceField(
+        choices=[("", "Seleccione un turno..."), ("Matutino", "Matutino"), ("Vespertino", "Vespertino")],
+        label="Turno"
+    )
+    idPeriodo = forms.ChoiceField(label="Periodo")
+    
