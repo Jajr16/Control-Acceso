@@ -7,14 +7,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -56,13 +54,12 @@ fun ConsultarScreen(
                     .padding(padding)
                     .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
-
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "Consultar Alumnos",
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.Normal,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Normal, // Sin negrita
                     color = Color.White
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -73,50 +70,44 @@ fun ConsultarScreen(
                     leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Buscar") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(Color.LightGray, shape = MaterialTheme.shapes.medium)
+                        .background(Color.LightGray, shape = MaterialTheme.shapes.medium) // Color gris claro
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (isLoading) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Color.White)
+                        Text(text = "Cargando...", style = MaterialTheme.typography.bodyLarge)
                     }
                 } else {
                     if (filteredList.isNotEmpty()) {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(8.dp)
-                    ) {
-                        items(filteredList) { alumno ->
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp)
-                                    .clickable { navController.navigate("scanQr") },
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
-                                elevation = CardDefaults.cardElevation(4.dp)
-                            )
-                            {
-                                Column(
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp)
+                        ) {
+                            items(filteredList) { alumno ->
+                                Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(16.dp)
+                                        .padding(4.dp)
+                                        .clickable { navController.navigate("scanQr") },
+                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    elevation = CardDefaults.cardElevation(4.dp)
                                 ) {
-                                    Text(
-                                        text = "Boleta: ${alumno.boleta}",
-                                        fontWeight = FontWeight.Normal,
-                                        fontSize = 16.sp
-                                    )
-                                    Text(
-                                        text = "Nombre: ${alumno.nombre} ${alumno.apellidoP} ${alumno.apellidoM}",
-                                        fontSize = 16.sp
-                                    )
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp)
+                                    ) {
+                                        Text(text = "Boleta: ${alumno.boleta}", style = MaterialTheme.typography.bodyMedium)
+                                        Text(
+                                            text = "Nombre: ${alumno.nombre} ${alumno.apellidoP} ${alumno.apellidoM}",
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
                                 }
                             }
                         }
-                    }
-                } else {
+                    } else {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Text(
                                 text = "No hay alumnos para mostrar.",
@@ -124,11 +115,9 @@ fun ConsultarScreen(
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
+                    }
                 }
-                }
-
             }
-
         }
     }
 }
