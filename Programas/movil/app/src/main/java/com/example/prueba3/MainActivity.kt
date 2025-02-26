@@ -79,11 +79,10 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     }
                     composable("notificaciones") { NotificationsScreen(navController) }
                     composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }
+
+                    composable("Menu") { WelcomeScreen(navController = navController, loginViewModel = loginViewModel) }
                     composable("Menu Docente") { WelcomeScreenDocente(navController, loginViewModel = loginViewModel) }
-                    composable("Menu") {WelcomeScreen(
-                        navController, loginViewModel = loginViewModel,
-                        idETS = "ets1",
-                    )  }
+
 
                     composable("LETS") { EtsListScreen(navController, loginViewModel = loginViewModel) }
                     composable("LETSA") { EtsListScreenAlumno(navController, loginViewModel = loginViewModel) }
@@ -111,6 +110,10 @@ override fun onCreate(savedInstanceState: Bundle?) {
 //                            }
 //                        }
 //                    }
+
+                    composable("ConsultarAlumnos") {
+                        ConsultarScreen(navController, viewModel = alumnosViewModel, loginViewModel = loginViewModel)
+                    }
 
                     composable(
                         "ListaAlumnos/{idETS}",

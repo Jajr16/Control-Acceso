@@ -41,7 +41,7 @@ fun ListaAlumnosScreen(navController: NavController, idETS: String, viewModel: A
 
         val userRole = loginViewModel.getUserRole()
 
-        // Llama al ViewModel para obtener los datos al cambiar el idETS
+         //Llama al ViewModel para obtener los datos al cambiar el idETS
         LaunchedEffect(idETS) {
             viewModel.fetchAlumno(idETS)
         }

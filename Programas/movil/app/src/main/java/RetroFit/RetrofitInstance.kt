@@ -43,6 +43,10 @@
             retrofit.create(AlumnosApi::class.java)
         }
 
+        val listalumnos: ListalumnosApi by lazy {
+            retrofit.create(ListalumnosApi::class.java)
+        }
+
         // Instancia de AceptadoApi
         val aceptadoApi: AceptadoApi by lazy {
             retrofit.create(AceptadoApi::class.java)

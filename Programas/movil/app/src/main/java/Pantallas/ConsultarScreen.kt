@@ -18,32 +18,33 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.ui.theme.BlueBackground
+import okhttp3.internal.wait
 
 @Composable
-fun ConsultarScreen(navController: NavController, idETS: String, viewModel: AlumnosViewModel,
+fun ConsultarScreen(navController: NavController,
+
+                    viewModel: AlumnosViewModel,
                     loginViewModel: LoginViewModel
 ) {
 
     // Validar sesión
     ValidateSession(navController = navController) {
 
-        // Recolectar el estado de la lista de alumnos y el estado de carga
-        val alumnosList by viewModel.alumnosList.collectAsState(initial = emptyList())
+        val alumnosListado by viewModel.alumnosListado.collectAsState(initial = emptyList())
         val isLoading by viewModel.loadingState.collectAsState(initial = false)
 
         // Obtener el rol del usuario
         val userRole = loginViewModel.getUserRole()
 
-        // Llamar a la función fetchAlumno cuando cambia el idETS
-        LaunchedEffect(idETS) {
-            viewModel.fetchAlumno(idETS)
+        LaunchedEffect(Unit) {
+            viewModel.fetchListalumnos()
         }
 
-        // Scaffold para la estructura básica
         Scaffold(
             bottomBar = {
                 MenuBottomBar(navController = navController, userRole)
@@ -71,12 +72,12 @@ fun ConsultarScreen(navController: NavController, idETS: String, viewModel: Alum
                     }
                 } else {
                     // Si la lista de alumnos tiene datos, mostrarla en un LazyColumn
-                    if (alumnosList.isNotEmpty()) {
+                    if (alumnosListado.isNotEmpty()) {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(16.dp)
                         ) {
-                            items(alumnosList) { alumno ->
+                            items(alumnosListado) { alumno ->
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -94,7 +95,7 @@ fun ConsultarScreen(navController: NavController, idETS: String, viewModel: Alum
                                             style = MaterialTheme.typography.bodyMedium
                                         )
                                         Text(
-                                            text = "Nombre: ${alumno.nombreA} ${alumno.apellidoP} ${alumno.apellidoM}",
+                                            text = "Nombre: ${alumno.nombre} ${alumno.apellidoP} ${alumno.apellidoM}",
                                             style = MaterialTheme.typography.bodyMedium
                                         )
                                     }
@@ -105,6 +106,7 @@ fun ConsultarScreen(navController: NavController, idETS: String, viewModel: Alum
                         // Si no hay alumnos, mostrar un mensaje
                         Text(
                             text = "No hay alumnos inscritos al ETS.",
+                            color = Color.White,
                             modifier = Modifier.align(Alignment.Center),
                             style = MaterialTheme.typography.bodyLarge
                         )
