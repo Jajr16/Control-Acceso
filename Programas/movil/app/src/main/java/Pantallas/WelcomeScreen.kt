@@ -137,7 +137,7 @@ fun WelcomeScreen(
                                 OptionButton(
                                     title = "Escanear credencial",
                                     icon = Icons.Default.Info,
-                                    onClick = { navController.navigate("EscanearCredencial") },
+                                    onClick = { navController.navigate("scanQr") },
                                     modifier = Modifier.size(150.dp)
                                 )
                             }

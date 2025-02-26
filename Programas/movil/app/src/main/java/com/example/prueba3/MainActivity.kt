@@ -109,36 +109,17 @@ override fun onCreate(savedInstanceState: Bundle?) {
 //                        }
 //                    }
 
+                    //Menu del Alumnos
                     composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }
-
+                    //Menu del personal de seguridad
                     composable("Menu") { WelcomeScreen(navController = navController, loginViewModel = loginViewModel) }
-
-//
+                    //Consultar alumnos por boleta o nombre completo (Seguridad)
                     composable("ConsultarAlumnos") {
-                        ConsultarScreen(navController, viewModel = alumnosViewModel, loginViewModel = loginViewModel)
-                    }
+                        ConsultarScreen(navController, viewModel = alumnosViewModel, loginViewModel = loginViewModel) }
+                    //Escanear Codigo QR
 
 
-//                    composable(
-//                        "ConsultarAlumnos",
-//                        arguments = listOf(
-//                            navArgument("fecha") { type = NavType.StringType },
-//                            navArgument("periodo") { type = NavType.IntType }
-//                        )
-//                    ) { backStackEntry ->
-//                        val fecha = backStackEntry.arguments?.getString("fecha") ?: ""
-//                        val periodo = backStackEntry.arguments?.getInt("periodo") ?: ""
 //
-//                        ConsultarScreen(
-//                            navController = navController,
-//                            fecha = fecha,
-//
-//                            periodo = Integer.parseInt(periodo.toString()),
-//                            viewModel = alumnosViewModel,
-//                            loginViewModel = loginViewModel
-//                        )
-//                }
-
 
 
 //                    composable(

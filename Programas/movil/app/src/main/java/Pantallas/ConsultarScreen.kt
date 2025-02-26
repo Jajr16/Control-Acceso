@@ -3,116 +3,132 @@ package Pantallas
 import Pantallas.components.MenuBottomBar
 import Pantallas.components.ValidateSession
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.ui.theme.BlueBackground
-import okhttp3.internal.wait
 
 @Composable
-fun ConsultarScreen(navController: NavController,
-
-                    viewModel: AlumnosViewModel,
-                    loginViewModel: LoginViewModel
+fun ConsultarScreen(
+    navController: NavController,
+    viewModel: AlumnosViewModel,
+    loginViewModel: LoginViewModel
 ) {
-
-    // Validar sesión
     ValidateSession(navController = navController) {
-
         val alumnosListado by viewModel.alumnosListado.collectAsState(initial = emptyList())
         val isLoading by viewModel.loadingState.collectAsState(initial = false)
+        var searchQuery by remember { mutableStateOf("") }
 
-        // Obtener el rol del usuario
-        val userRole = loginViewModel.getUserRole()
+        val filteredList = alumnosListado.filter {
+            it.boleta.contains(searchQuery, ignoreCase = true) ||
+                    it.nombre.contains(searchQuery, ignoreCase = true) ||
+                    it.apellidoP.contains(searchQuery, ignoreCase = true) ||
+                    it.apellidoM.contains(searchQuery, ignoreCase = true)
+        }
 
         LaunchedEffect(Unit) {
             viewModel.fetchListalumnos()
         }
 
         Scaffold(
-            bottomBar = {
-                MenuBottomBar(navController = navController, userRole)
-            }
+            bottomBar = { MenuBottomBar(navController = navController, loginViewModel.getUserRole()) }
         ) { padding ->
-
-            // Contenedor principal
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(BlueBackground)
                     .padding(padding)
+                    .padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+
             ) {
-                // Si está cargando, mostrar el texto de carga
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Consultar Alumnos",
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("Buscar por nombre o boleta") },
+                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Buscar") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color.LightGray, shape = MaterialTheme.shapes.medium)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
                 if (isLoading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Cargando...",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Color.White)
                     }
                 } else {
-                    // Si la lista de alumnos tiene datos, mostrarla en un LazyColumn
-                    if (alumnosListado.isNotEmpty()) {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp)
-                        ) {
-                            items(alumnosListado) { alumno ->
-                                Card(
+                    if (filteredList.isNotEmpty()) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(8.dp)
+                    ) {
+                        items(filteredList) { alumno ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .clickable { navController.navigate("scanQr") },
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                elevation = CardDefaults.cardElevation(4.dp)
+                            )
+                            {
+                                Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(8.dp),
-                                    elevation = CardDefaults.cardElevation(4.dp)
+                                        .padding(16.dp)
                                 ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(16.dp)
-                                    ) {
-                                        // Mostrar boleta y nombre completo
-                                        Text(
-                                            text = "Boleta: ${alumno.boleta}",
-                                            style = MaterialTheme.typography.bodyMedium
-                                        )
-                                        Text(
-                                            text = "Nombre: ${alumno.nombre} ${alumno.apellidoP} ${alumno.apellidoM}",
-                                            style = MaterialTheme.typography.bodyMedium
-                                        )
-                                    }
+                                    Text(
+                                        text = "Boleta: ${alumno.boleta}",
+                                        fontWeight = FontWeight.Normal,
+                                        fontSize = 16.sp
+                                    )
+                                    Text(
+                                        text = "Nombre: ${alumno.nombre} ${alumno.apellidoP} ${alumno.apellidoM}",
+                                        fontSize = 16.sp
+                                    )
                                 }
                             }
                         }
-                    } else {
-                        // Si no hay alumnos, mostrar un mensaje
-                        Text(
-                            text = "No hay alumnos inscritos al ETS.",
-                            color = Color.White,
-                            modifier = Modifier.align(Alignment.Center),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
                     }
+                } else {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(
+                                text = "No hay alumnos para mostrar.",
+                                color = Color.White,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
                 }
+                }
+
             }
+
         }
     }
 }
