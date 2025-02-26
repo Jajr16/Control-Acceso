@@ -61,8 +61,8 @@ class AlumnosViewModel : ViewModel() {
 
             // Actualizamos solo el alumno modificado en la lista local
             _alumnosList.value = _alumnosList.value.map { alumno ->
-                if (alumno.Boleta == boleta) {
-                    alumno.copy(Aceptado = aceptado) // Modificamos solo el alumno con el 'Boleta' correspondiente
+                if (alumno.boleta == boleta) {
+                    alumno.copy(aceptado = aceptado) // Modificamos solo el alumno con el 'Boleta' correspondiente
                 } else {
                     alumno // Dejamos los demás alumnos sin cambios
                 }

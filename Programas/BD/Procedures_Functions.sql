@@ -141,3 +141,48 @@ EXECUTE FUNCTION validar_programa_academico();
 
 INSERT INTO alumno
 VALUES ('20230001', 'a@a.com', 'a', '0', 'IIA-2024' );
+
+CREATE OR REPLACE FUNCTION ObtenerAsistenciaDetalles(
+    etsprueba INTEGER
+)
+RETURNS TABLE(
+    idETS INTEGER,
+    Boleta VARCHAR(18),
+    CURP VARCHAR(18),
+    NombreA VARCHAR,
+    ApellidoP VARCHAR,
+    ApellidoM VARCHAR,
+    Sexo VARCHAR,  -- Ahora se obtiene el nombre del sexo
+    Correo VARCHAR,
+    Carrera VARCHAR,
+    Aceptado BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        ai.inscripcionets_idets AS idETS,  -- ID del ETS
+        ai.inscripcionets_boleta AS Boleta, -- Boleta del alumno
+        a.curp AS CURP, -- CURP del alumno
+        p.nombre AS NombreA, -- Nombre del alumno
+        p.apellido_p AS ApellidoP, -- Apellido paterno
+        p.apellido_m AS ApellidoM, -- Apellido materno
+        s.nombre AS Sexo, -- Se une con la tabla 'sexo' para obtener el nombre
+        a.correoi AS Correo, -- Correo institucional
+        a.idpa::VARCHAR AS Carrera, -- ID de la carrera convertido a texto
+        ai.aceptado AS Aceptado -- Estado de aceptación
+    FROM asistenciainscripcion ai
+    INNER JOIN alumno a ON ai.inscripcionets_boleta = a.boleta
+    INNER JOIN persona p ON a.curp = p.curp
+    INNER JOIN sexo s ON p.sexo = s.id_sexo -- JOIN con la tabla 'sexo' para obtener el nombre
+    WHERE ai.inscripcionets_idets = etsprueba;
+END;
+$$;
+
+
+DROP FUNCTION obtenerasistenciadetalles(integer)
+
+select * from sexo
+
+SELECT * FROM ObtenerAsistenciaDetalles(52);
