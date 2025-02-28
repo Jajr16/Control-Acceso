@@ -1,6 +1,7 @@
 package Pantallas
 
 import Pantallas.Plantillas.Buscador
+import Pantallas.Plantillas.BuscadorConLista
 import Pantallas.components.MenuBottomBar
 import Pantallas.components.ValidateSession
 import androidx.compose.foundation.background
@@ -66,12 +67,12 @@ fun ConsultarScreen(
                     fontWeight = FontWeight.Normal,
                     color = Color.White
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                Buscador(
-                    searchQuery = searchQuery,
-                    onSearchQueryChanged = { searchQuery = it },
-                    placeholder = "Buscar por nombre o boleta"
-                )
+//                Spacer(modifier = Modifier.height(16.dp))
+//                Buscador(
+//                    searchQuery = searchQuery,
+//                    onSearchQueryChanged = { searchQuery = it },
+//                    placeholder = "Buscar por nombre o boleta"
+//                )
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (isLoading) {
@@ -79,48 +80,76 @@ fun ConsultarScreen(
                         CircularProgressIndicator(color = Color.White)
                     }
                 } else {
-                    if (filteredList.isNotEmpty()) {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(8.dp)
-                    ) {
-                        items(filteredList) { alumno ->
-                            Card(
+                    BuscadorConLista(
+                        lista = alumnosListado,
+                        filtro = { alumno, query ->
+                            alumno.boleta.contains(query, ignoreCase = true) ||
+                                    alumno.nombre.contains(query, ignoreCase = true) ||
+                                    alumno.apellidoP.contains(query, ignoreCase = true) ||
+                                    alumno.apellidoM.contains(query, ignoreCase = true)
+                        },
+                        onItemClick = { alumno -> navController.navigate("scanQr") },
+                        placeholder = "Buscar por nombre o boleta",
+                        itemContent = { alumno ->
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 4.dp)
-                                    .clickable { navController.navigate("scanQr") },
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
-                                elevation = CardDefaults.cardElevation(4.dp)
-                            )
-                            {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp)
-                                ) {
-                                    Text(
-                                        text = "Boleta: ${alumno.boleta}",
-                                        fontWeight = FontWeight.Normal,
-                                        fontSize = 16.sp
-                                    )
-                                    Text(
-                                        text = "Nombre: ${alumno.nombre} ${alumno.apellidoP} ${alumno.apellidoM}",
-                                        fontSize = 16.sp
-                                    )
-                                }
+                                    .padding(16.dp)
+                            ) {
+                                Text(
+                                    text = "Boleta: ${alumno.boleta}",
+                                    fontWeight = FontWeight.Normal,
+                                    fontSize = 16.sp
+                                )
+                                Text(
+                                    text = "Nombre: ${alumno.nombre} ${alumno.apellidoP} ${alumno.apellidoM}",
+                                    fontSize = 16.sp
+                                )
                             }
                         }
-                    }
-                } else {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(
-                                text = "No hay alumnos para mostrar.",
-                                color = Color.White,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
-                }
+                    )
+//                    if (filteredList.isNotEmpty()) {
+//                    LazyColumn(
+//                        modifier = Modifier.fillMaxSize(),
+//                        contentPadding = PaddingValues(8.dp)
+//                    ) {
+//                        items(filteredList) { alumno ->
+//                            Card(
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                                    .padding(vertical = 4.dp)
+//                                    .clickable { navController.navigate("scanQr") },
+//                                colors = CardDefaults.cardColors(containerColor = Color.White),
+//                                elevation = CardDefaults.cardElevation(4.dp)
+//                            )
+//                            {
+//                                Column(
+//                                    modifier = Modifier
+//                                        .fillMaxWidth()
+//                                        .padding(16.dp)
+//                                ) {
+//                                    Text(
+//                                        text = "Boleta: ${alumno.boleta}",
+//                                        fontWeight = FontWeight.Normal,
+//                                        fontSize = 16.sp
+//                                    )
+//                                    Text(
+//                                        text = "Nombre: ${alumno.nombre} ${alumno.apellidoP} ${alumno.apellidoM}",
+//                                        fontSize = 16.sp
+//                                    )
+//                                }
+//                            }
+//                        }
+//                    }
+//                } else {
+//                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+//                            Text(
+//                                text = "No hay alumnos para mostrar.",
+//                                color = Color.White,
+//                                style = MaterialTheme.typography.bodyLarge
+//                            )
+//                        }
+//                }
                 }
 
             }
