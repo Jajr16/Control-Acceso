@@ -18,6 +18,10 @@ class HomeViewModel : ViewModel() {
     private val _StatusValidacion = MutableStateFlow<Boolean?>(null)
     val StatusValidacion: StateFlow<Boolean?> = _StatusValidacion
 
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
+
+
     // Verifica la inscripción del alumno en el ETS
     fun getConfirmationInscription(username: String) {
         viewModelScope.launch {
@@ -38,11 +42,14 @@ class HomeViewModel : ViewModel() {
                 // Verifica si el campo 'error' es nulo (sin error) y si el 'tipoUsuario' es válido
                 if (validacion.error == null && validacion.tipoUsuario != null) {
                     _StatusValidacion.value = true // Validación exitosa
+                    _errorMessage.value = null
                 } else {
                     _StatusValidacion.value = false // Error en la validación
+                    _errorMessage.value = validacion.error ?: "Error desconocido"
                 }
             } catch (e: Exception) {
                 _StatusValidacion.value = false // Error en la validación
+                _errorMessage.value = "Error en la validación: ${e.message}"
             }
         }
     }

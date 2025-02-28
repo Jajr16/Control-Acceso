@@ -1,5 +1,6 @@
 package Pantallas
 
+import Pantallas.Plantillas.Buscador
 import Pantallas.components.MenuBottomBar
 import Pantallas.components.ValidateSession
 import androidx.compose.foundation.background
@@ -66,15 +67,10 @@ fun ConsultarScreen(
                     color = Color.White
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = { Text("Buscar por nombre o boleta") },
-                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Buscar") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(Color.LightGray, shape = MaterialTheme.shapes.medium)
+                Buscador(
+                    searchQuery = searchQuery,
+                    onSearchQueryChanged = { searchQuery = it },
+                    placeholder = "Buscar por nombre o boleta"
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
