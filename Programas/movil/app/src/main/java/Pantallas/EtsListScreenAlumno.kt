@@ -1,5 +1,7 @@
 package Pantallas
 
+import androidx.compose.foundation.layout.Row
+import Pantallas.Plantillas.BuscadorConLista
 import Pantallas.components.MenuBottomBar
 import Pantallas.components.ValidateSession
 import android.content.Context
@@ -15,13 +17,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -57,6 +56,8 @@ fun EtsListScreenAlumno(navController: NavController,
             .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
         val username = sharedPreferences.getString("username", "") ?: ""
 
+//      ============= BUSCADOR =============
+
         LaunchedEffect(username) {
             viewModel.fetchETSInscritos(username)
         }
@@ -68,16 +69,18 @@ fun EtsListScreenAlumno(navController: NavController,
                 modifier = Modifier
                     .fillMaxSize()
                     .background(BlueBackground)
+                    .padding(start = 16.dp, top = 0.dp, end = 16.dp)
             ) {
 
+                // Barra de búsqueda
                 Column (
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 70.dp)
+                        .padding(top = 50.dp)
                 ) {
                     Text(
-                        text = "ETS inscritos",
+                        text = "Lista de ETS",
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier
                             .padding(bottom = 16.dp)
@@ -92,12 +95,12 @@ fun EtsListScreenAlumno(navController: NavController,
                             .padding(vertical = 8.dp)
                             .width(270.dp),
                         thickness = 1.dp,
-                        color = Color.White
+                        color = Color.LightGray
                     )
                 }
 
-                Spacer(modifier = Modifier.height(25.dp))
 
+                Spacer(modifier = Modifier.height(25.dp))
 
                 if (isLoading) {
                     Box(
@@ -112,31 +115,25 @@ fun EtsListScreenAlumno(navController: NavController,
                             color = Color.White
                         )
                     }
-                } else if (etsInscritos.isEmpty()) {
+                } else {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(padding),
-                        contentAlignment = Alignment.Center
+                            .padding(padding)
                     ) {
-                        Text(
-                            text = "No tienes ETS inscritos.",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = Color.White
-                        )
-                    }
-                } else {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(padding),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            items(etsInscritos) { ets ->
+
+                        BuscadorConLista(
+                            lista = etsInscritos,
+                            filtro = { ets, query ->
+                                ets.idPeriodo.contains(query, ignoreCase = true) ||
+                                        ets.turno.contains(query, ignoreCase = true) ||
+                                        ets.fecha.contains(query, ignoreCase = true) ||
+                                        ets.unidadAprendizaje.contains(query, ignoreCase = true)
+                            },
+                            onItemClick = {},
+                            placeholder = "Buscar por nombre o boleta",
+                            itemContent = { ets ->
+
                                 EtsACardButton(
                                     navController = navController,
                                     idETS = ets.idETS,
@@ -145,8 +142,50 @@ fun EtsListScreenAlumno(navController: NavController,
                                     Fecha = ets.fecha,
                                     UnidadAprendizaje = ets.unidadAprendizaje
                                 )
+                            },
+                            additionalContent = {
+
+                                Spacer(modifier = Modifier.height(15.dp))
+
+                                Row (
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ){
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(35.dp)
+                                            .background(Color(0xFFF5F5F5))
+                                            .clickable(onClick = { })
+                                    ) {
+                                        Text(
+                                            text = "Todos",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            textAlign = TextAlign.Center,
+                                        )
+                                    }
+
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(35.dp)
+                                            .background(Color(0xFFF5F5F5))
+                                            .clickable(onClick = { })
+                                            .padding(8.dp)
+                                    ) {
+                                        Text(
+                                            text = "Mis ETS",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            textAlign = TextAlign.Center,
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(15.dp))
                             }
-                        }
+                        )
                     }
                 }
             }
@@ -166,7 +205,6 @@ fun EtsACardButton(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
             .clickable {
                 navController.navigate("unicETSDetail/$idETS")
             },
@@ -186,7 +224,7 @@ fun EtsACardButton(
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "Fecha: $Fecha", style = MaterialTheme.typography.bodyLarge)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Carrera: $Turno", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Turno: $Turno", style = MaterialTheme.typography.bodyLarge)
             Spacer(modifier = Modifier.height(8.dp))
         }
     }

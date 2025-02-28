@@ -135,7 +135,7 @@ fun EtsListScreen(navController: NavController,
                             modifier = Modifier.fillMaxSize()
                         ) {
                             items(etsInscritos) { ets ->
-                                EtsACardButton1(
+                                EtsACardButton(
                                     navController = navController,
                                     idETS = ets.idETS,
                                     idPeriodo = ets.idPeriodo,
@@ -151,48 +151,6 @@ fun EtsListScreen(navController: NavController,
         }
     }
 
-
-}
-
-@Composable
-fun EtsACardButton1(
-    navController: NavController,
-    idETS: Int,
-    idPeriodo: String,
-    Turno: String,
-    Fecha: String,
-    UnidadAprendizaje: String
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .clickable {
-                navController.navigate("unicETSDetail/$idETS")
-            },
-        shape = RoundedCornerShape(8.dp),
-        border = BorderStroke(1.dp, Color.Black),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFEAEAEA) // Color similar al fondo de la tarjeta en la imagen
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-        ) {
-            Text(
-                text = "Unidad de Aprendizaje: $UnidadAprendizaje",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Periodo: $idPeriodo", style = MaterialTheme.typography.bodyLarge)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Fecha: $Fecha", style = MaterialTheme.typography.bodyLarge)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Carrera: $Turno", style = MaterialTheme.typography.bodyLarge)
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-    }
 
 }
 
