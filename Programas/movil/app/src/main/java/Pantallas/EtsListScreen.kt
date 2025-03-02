@@ -1,5 +1,6 @@
 package Pantallas
 
+import Pantallas.Reutilizables.EtsACardButton
 import Pantallas.components.MenuBottomBar
 import Pantallas.components.ValidateSession
 import android.content.Context

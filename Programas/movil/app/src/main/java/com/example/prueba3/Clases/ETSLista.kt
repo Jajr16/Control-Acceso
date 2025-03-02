@@ -5,5 +5,6 @@ data class ListadoETS (
     val idPeriodo: String,
     val turno: String,
     val fecha: String,
-    val unidadAprendizaje: String
+    val unidadAprendizaje: String,
+    val inscrito: Boolean
 )

@@ -20,7 +20,7 @@ class LoginView(View):
         """
             Función post de la vista encargada de la lógica para el envío de la información del formulario
         """
-        api_url = "http://192.168.1.69:8080/login"
+        api_url = "http://192.168.1.68:8080/login"
         
         form = LoginForm(request.POST)
         

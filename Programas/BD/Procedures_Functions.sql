@@ -58,19 +58,30 @@ RETURNS TABLE(
     periodo VARCHAR,
     turno_nombre VARCHAR,
     fecha DATE,
-    unidad_aprendizaje_nombre VARCHAR
+    unidad_aprendizaje_nombre VARCHAR,
+	inscrito Boolean
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
 	RETURN QUERY
 
-    SELECT inscripcionets.idets, periodoets.periodo, turno.nombre as turno, ets.fecha, unidadaprendizaje.nombre FROM inscripcionets
-	INNER JOIN ets ON inscripcionets.idets = ets.idets
+	SELECT 
+	    ets.idets,
+	    periodoets.periodo, 
+	    turno.nombre AS turno, 
+	    ets.fecha,
+	    unidadaprendizaje.nombre AS unidad_aprendizaje,
+	    EXISTS (
+            SELECT 1 
+            FROM inscripcionets i 
+            WHERE i.idets = ets.idets 
+            AND i.boleta = boletaC
+        ) AS inscrito
+	FROM ets
 	INNER JOIN periodoets ON ets.id_periodo = periodoets.id_periodo 
 	INNER JOIN turno ON turno.id_turno = ets.turno
-	INNER JOIN unidadaprendizaje ON unidadaprendizaje.idua = ets.idua WHERE inscripcionets.boleta = boletaC;
-	
+	INNER JOIN unidadaprendizaje ON unidadaprendizaje.idua = ets.idua;
     
 END;
 $$;
@@ -183,6 +194,7 @@ $$;
 
 DROP FUNCTION obtenerasistenciadetalles(integer)
 
-select * from sexo
+select * from programaacademico;
+select * from unidadaprendizaje;
 
 SELECT * FROM ObtenerAsistenciaDetalles(52);
