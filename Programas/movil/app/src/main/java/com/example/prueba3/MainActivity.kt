@@ -5,7 +5,7 @@ import Pantallas.CalendarScreen
 import Pantallas.ConsultarScreen
 import Pantallas.CreateAccountScreen
 import Pantallas.ETSInscriptionProcessScreen
-import Pantallas.EtsCardButton
+//import Pantallas.EtsCardButton
 import Pantallas.EtsDetailScreen
 import Pantallas.EtsListScreen
 import Pantallas.EtsListScreenAlumno
@@ -133,7 +133,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
                         val PA = backStackEntry.arguments?.getString("PA") ?: ""
                         val Fecha = backStackEntry.arguments?.getString("Fecha") ?: ""
 
-                        EtsCardButton(navController, parsedETS, Periodo,Turno, Fecha,PA)
+//                        EtsCardButton(navController, parsedETS, Periodo,Turno, Fecha,PA)
                         }
                     }
                 }
