@@ -44,12 +44,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.prueba3.Views.EtsViewModel
 import com.example.prueba3.Views.LoginViewModel
+import com.example.prueba3.Views.PersonaViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 
 @Composable
 fun EtsListScreen(navController: NavController,
                   viewModel: EtsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
-                  loginViewModel: LoginViewModel) {
+                  loginViewModel: LoginViewModel
+                  ) {
     val userRole = loginViewModel.getUserRole()
 
     ValidateSession(navController = navController) {

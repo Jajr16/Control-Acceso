@@ -36,6 +36,7 @@ import androidx.navigation.navArgument
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.DiasETSModel
+import com.example.prueba3.Views.PersonaViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 import com.example.prueba3.ui.theme.Prueba3Theme
 import java.lang.Integer.parseInt
@@ -56,6 +57,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
     val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
     val loginViewModel = LoginViewModel(sharedPreferences)
+    val personaViewModel = PersonaViewModel()
     val DiasETSModel = DiasETSModel()
 
     enableEdgeToEdge()
@@ -81,7 +83,11 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }
 
                     composable("Menu") { WelcomeScreen(navController = navController, loginViewModel = loginViewModel) }
-                    composable("Menu Docente") { WelcomeScreenDocente(navController, loginViewModel = loginViewModel) }
+                    composable("Menu Docente") { WelcomeScreenDocente(
+                        navController = navController,
+                        loginViewModel = loginViewModel
+
+                    ) }
 
 
                     composable("LETS") { EtsListScreen(navController, loginViewModel = loginViewModel) }

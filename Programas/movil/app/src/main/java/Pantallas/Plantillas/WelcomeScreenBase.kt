@@ -25,7 +25,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.prueba3.R
 import com.example.prueba3.Views.HomeViewModel
@@ -73,16 +75,17 @@ fun WelcomeScreenBase(
                     Image(
                         painter = painterResource(id = R.drawable.escom),
                         contentDescription = "Logo ESCOM",
-                        modifier = Modifier.size(250.dp)
+                        modifier = Modifier.size(220.dp)
                     )
 
                     Spacer(modifier = Modifier.height(15.dp))
 
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 30.sp,lineHeight = 36.sp),
                         modifier = Modifier.padding(bottom = 16.dp),
-                        color = Color.White
+                        color = Color.White,
+                        textAlign = TextAlign.Center
                     )
 
                     Divider(

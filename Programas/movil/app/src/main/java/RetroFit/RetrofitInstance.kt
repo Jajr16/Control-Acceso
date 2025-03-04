@@ -70,6 +70,10 @@
             retrofit.create(Calendario::class.java)
         }
 
+        val getdatospersona: PersonaApi by lazy {
+            retrofit.create(PersonaApi::class.java)
+        }
+
 
 
     }

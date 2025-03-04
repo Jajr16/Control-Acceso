@@ -130,7 +130,7 @@ fun EtsDetailScreen(
                         item { StyledCard(title = "Fecha", content = etsDetail!!.ets.fecha) }
                         item { StyledCard(title = "Turno", content = etsDetail!!.ets.turno) }
                         item { StyledCard(title = "Cupo", content = etsDetail!!.ets.cupo.toString()) }
-                        item { StyledCard(title = "Duración", content = etsDetail!!.ets.duracion.toString()) }
+                        item { StyledCard(title = "Duración", content = etsDetail!!.ets.duracion.toString() + " horas") }
 
                         if (!salonState!!) {
                             etsDetail!!.salon.take(3).forEach { salon ->
