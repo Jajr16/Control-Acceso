@@ -192,9 +192,34 @@ END;
 $$;
 
 
+
 DROP FUNCTION obtenerasistenciadetalles(integer)
 
 select * from programaacademico;
 select * from unidadaprendizaje;
 
 SELECT * FROM ObtenerAsistenciaDetalles(52);
+
+CREATE OR REPLACE FUNCTION obtenerpersona(
+    boletaC VARCHAR(18)
+) 
+RETURNS TABLE(
+    nombre VARCHAR,
+    apellido_p VARCHAR, 
+    apellido_m VARCHAR 
+    
+) 
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        p.nombre::VARCHAR,
+        p.apellido_p::VARCHAR, 
+        p.apellido_m::VARCHAR
+        
+    FROM usuario u
+    INNER JOIN persona p ON u.curp = p.curp
+    WHERE u.usuario = boletaC;
+END;
+$$;

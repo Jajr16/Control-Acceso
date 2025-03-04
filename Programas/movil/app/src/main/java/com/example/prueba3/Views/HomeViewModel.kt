@@ -22,6 +22,8 @@ class HomeViewModel : ViewModel() {
     val errorMessage: StateFlow<String?> = _errorMessage
 
 
+
+
     // Verifica la inscripción del alumno en el ETS
     fun getConfirmationInscription(username: String) {
         viewModelScope.launch {
