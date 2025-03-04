@@ -32,6 +32,10 @@
             <form action="{% url 'nps' %}" method="POST" class="login-form">
                 {% csrf_token %}
                 <div class="form-group">
+                    <label for="RFC">RFC:</label>
+                    {{ form.rfc }}
+                </div>
+                <div class="form-group">
                     <label for="CURP">CURP:</label>
                     {{ form.curp }}
                 </div>
