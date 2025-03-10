@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "665981422021",
+    "project_id": "control-acceso-d7afc",
+    "storage_bucket": "control-acceso-d7afc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:665981422021:android:250b55d044aa81ac21e3ac",
+        "android_client_info": {
+          "package_name": "com.example.prueba3"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuRn6xlxIk-scRNRxll0D04OC5IdUieFQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

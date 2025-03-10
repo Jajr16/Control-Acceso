@@ -1,22 +1,15 @@
 package Pantallas
 
-import Pantallas.Plantillas.Buscador
-import Pantallas.Plantillas.BuscadorConLista
-import Pantallas.components.MenuBottomBar
+import Pantallas.components.BuscadorConLista
+import Pantallas.Plantillas.MenuBottomBar
+import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -49,6 +42,12 @@ fun ConsultarScreen(
         }
 
         Scaffold(
+            topBar = {
+                MenuTopBar(
+                    true, true, loginViewModel,
+                    navController
+                )
+            },
             bottomBar = { MenuBottomBar(navController = navController, loginViewModel.getUserRole()) }
         ) { padding ->
             Column(
@@ -67,12 +66,7 @@ fun ConsultarScreen(
                     fontWeight = FontWeight.Normal,
                     color = Color.White
                 )
-//                Spacer(modifier = Modifier.height(16.dp))
-//                Buscador(
-//                    searchQuery = searchQuery,
-//                    onSearchQueryChanged = { searchQuery = it },
-//                    placeholder = "Buscar por nombre o boleta"
-//                )
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (isLoading) {

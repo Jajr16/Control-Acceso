@@ -1,16 +1,15 @@
 package Pantallas
 
 import Pantallas.Reutilizables.ZoomableImage
-import Pantallas.components.MenuBottomBar
+import Pantallas.Plantillas.MenuBottomBar
+import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
 import RetroFit.RetrofitInstance
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Divider
 import androidx.compose.material3.Button
@@ -24,18 +23,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
-import androidx.compose.ui.window.Popup
 import androidx.navigation.NavController
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.Views.DiasETSModel
 import com.example.prueba3.ui.theme.BlueBackground
-import com.example.prueba3.ui.theme.colorLetterLabel
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.InputStream
@@ -55,12 +49,19 @@ fun CalendarScreen(navController: NavController, loginViewModel: LoginViewModel,
 
     ValidateSession(navController = navController) {
         Scaffold(
+            topBar = {
+                MenuTopBar(
+                    true, true, loginViewModel,
+                    navController
+                )
+            },
             bottomBar = { MenuBottomBar(navController = navController, userRole) }
         ) { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(BlueBackground)
+                    .padding(top = 90.dp)
             ) {
                 if (isZoomed) {
                     Box(
@@ -81,13 +82,12 @@ fun CalendarScreen(navController: NavController, loginViewModel: LoginViewModel,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 70.dp)
                 ) {
                     Text(
                         text = "Calendario Escolar",
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 8.dp)
                             .align(Alignment.CenterHorizontally),
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
@@ -103,7 +103,7 @@ fun CalendarScreen(navController: NavController, loginViewModel: LoginViewModel,
                     )
                 }
 
-                Spacer(modifier = Modifier.height(50.dp))
+                Spacer(modifier = Modifier.height(25.dp))
 
                 Box(modifier = Modifier.fillMaxSize()) {
 

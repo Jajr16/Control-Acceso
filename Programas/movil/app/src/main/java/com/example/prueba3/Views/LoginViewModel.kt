@@ -3,10 +3,13 @@ package com.example.prueba3.Views
 import android.content.SharedPreferences
 import com.example.prueba3.Clases.LoginResponse
 import RetroFit.RetrofitInstance
+import RetroFit.RetrofitInstance.sendTokenToBack
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.prueba3.Clases.LoginRequest
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -42,7 +45,6 @@ class LoginViewModel(private val sharedPreferences: SharedPreferences) : ViewMod
     fun login(username: String, password: String) {
         viewModelScope.launch {
             try {
-
                 val response = RetrofitInstance.loginApi.login(LoginRequest(username, password))
 
                 if (response.isSuccessful && response.body() != null) {

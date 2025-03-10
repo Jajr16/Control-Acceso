@@ -6,8 +6,6 @@ import retrofit2.http.Path
 
 
 interface PersonaApi {
-
     @GET("persona/datos/{usuario}")
     suspend fun getdatospersona(@Path("usuario")usuario: String): List<DataPersona>
-
 }

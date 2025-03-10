@@ -116,40 +116,6 @@ select *from login('2022630467', '123');
 SELECT * FROM usuario;
 SELECT crypt('123', gen_salt('bf'));
 
-CREATE OR REPLACE FUNCTION validar_programa_academico()
-RETURNS TRIGGER AS $$
-DECLARE
-    escuela_alumno INT;
-    escuela_programa INT;
-BEGIN
-    -- Obtener la unidad académica del alumno
-    SELECT id_escuela INTO escuela_alumno 
-    FROM persona 
-    WHERE curp = NEW.curp;
-
-    -- Obtener la unidad académica del programa académico
-    SELECT id_escuela INTO escuela_programa 
-    FROM escuelaprograma 
-    WHERE idpa = NEW.idpa;
-
-    -- Validar si coinciden
-    IF escuela_alumno IS NULL OR escuela_programa IS NULL THEN
-        RAISE EXCEPTION 'Error: No se encontró la unidad académica del alumno o del programa académico.';
-    END IF;
-
-    IF escuela_alumno != escuela_programa THEN
-        RAISE EXCEPTION 'Error: El programa académico no pertenece a la unidad académica del alumno.';
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_validar_programa
-BEFORE INSERT OR UPDATE ON alumno
-FOR EACH ROW
-EXECUTE FUNCTION validar_programa_academico();
-
 INSERT INTO alumno
 VALUES ('20230001', 'a@a.com', 'a', '0', 'IIA-2024' );
 
@@ -223,3 +189,174 @@ BEGIN
     WHERE u.usuario = boletaC;
 END;
 $$;
+
+-- ======================= TRIGGERS ===========================
+-- PARA VALIDAR UN PROGRAMA ACADÉMICO
+CREATE OR REPLACE FUNCTION validar_programa_academico()
+RETURNS TRIGGER AS $$
+DECLARE
+    escuela_alumno INT;
+    escuela_programa INT;
+BEGIN
+    -- Obtener la unidad académica del alumno
+    SELECT id_escuela INTO escuela_alumno 
+    FROM persona 
+    WHERE curp = NEW.curp;
+
+    -- Obtener la unidad académica del programa académico
+    SELECT id_escuela INTO escuela_programa 
+    FROM escuelaprograma 
+    WHERE idpa = NEW.idpa;
+
+    -- Validar si coinciden
+    IF escuela_alumno IS NULL OR escuela_programa IS NULL THEN
+        RAISE EXCEPTION 'Error: No se encontró la unidad académica del alumno o del programa académico.';
+    END IF;
+
+    IF escuela_alumno != escuela_programa THEN
+        RAISE EXCEPTION 'Error: El programa académico no pertenece a la unidad académica del alumno.';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- TRIGGER QUE EJECUTA LA FUNCIÓN PARA VALIDAR UN PROGRAMA
+CREATE TRIGGER trigger_validar_programa
+BEFORE INSERT OR UPDATE ON alumno
+FOR EACH ROW
+EXECUTE FUNCTION validar_programa_academico();
+
+-- FUNCION PARA CREAR EL USUARIO DE UN ALUMNO
+CREATE OR REPLACE FUNCTION crear_usuarioA()
+RETURNS TRIGGER AS $$
+BEGIN
+    BEGIN
+
+        INSERT INTO usuario
+        VALUES (NEW.boleta, crypt(NEW.boleta, gen_salt('bf')), NEW.curp, (SELECT idtu FROM tipousuario WHERE tipo = 'Alumno'));
+    
+    EXCEPTION WHEN OTHERS THEN
+        -- Si hay un error, cancelar la transacción y lanzar excepción
+        RAISE EXCEPTION 'Error al crear usuario, operación cancelada: %', SQLERRM;
+        RETURN NULL; -- Evita que se inserte el alumno si hay un error
+    END;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- TRIGGER QUE EJECUTA LA FUNCIÓN PARA CREAR UN NUEVO USUARIO DE ALUMNO
+CREATE OR REPLACE TRIGGER create_user 
+AFTER INSERT ON alumno
+FOR EACH ROW
+EXECUTE FUNCTION crear_usuarioA();
+
+-- FUNCIÓN PARA CREAR EL USUARIO DE UN PERSONAL ACADÉMICO
+CREATE OR REPLACE FUNCTION crear_usuarioPA()
+RETURNS TRIGGER AS $$
+BEGIN
+    BEGIN
+	
+        INSERT INTO usuario
+        VALUES (NEW.rfc, crypt(NEW.rfc, gen_salt('bf')), NEW.curp, (SELECT idtu FROM tipousuario WHERE tipo = 'Personal Academico'));
+    
+    EXCEPTION WHEN OTHERS THEN
+        -- Si hay un error, cancelar la transacción y lanzar excepción
+        RAISE EXCEPTION 'Error al crear usuario, operación cancelada: %', SQLERRM;
+        RETURN NULL; -- Evita que se inserte el personal academico si hay un error
+    END;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- TRIGGER PARA EJECUTAR LA FUNCIÓN DE CREAR USUARIO DE PERSONAL ACADÉMICO
+CREATE OR REPLACE TRIGGER create_userPA
+AFTER INSERT ON personalacademico
+FOR EACH ROW
+EXECUTE FUNCTION crear_usuarioPA();
+
+-- FUNCIÓN PARA CREAR UN USUARIO DE PERSONAL DE SEGURIDAD
+CREATE OR REPLACE FUNCTION crear_usuariopPS()
+RETURNS TRIGGER AS $$
+
+BEGIN
+
+	BEGIN
+
+		INSERT INTO usuario
+		VALUES (NEW.rfc, crypt(NEW.rfc, gen_salt('bf')), NEW.curp,
+		(SELECT idtu FROM tipousuario WHERE tipo = 'Personal Seguridad'));
+
+	EXCEPTION WHEN OTHERS THEN
+        -- Si hay un error, cancelar la transacción y lanzar excepción
+        RAISE EXCEPTION 'Error al crear usuario, operación cancelada: %', SQLERRM;
+        RETURN NULL; -- Evita que se inserte el personal academico si hay un error
+    END;
+
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- TRIGGER QUE EJECUTA LA FUNCIÓN PARA CREAR EL USUARIO DE PERSONAL DE SEGURIDAD
+CREATE OR REPLACE TRIGGER create_userPS
+AFTER INSERT ON personalseguridad
+FOR EACH ROW
+EXECUTE FUNCTION crear_usuariopPS();
+
+select*from persona;
+
+
+-- ON UPDATE CASCADE ON DELETE CASCADE 
+ALTER TABLE public.personalacademico
+DROP CONSTRAINT fkoannh428gwaa99dj2ghpfnek7;
+
+ALTER TABLE public.personalacademico 
+ADD CONSTRAINT fkoannh428gwaa99dj2ghpfnek7 
+FOREIGN KEY (curp) 
+REFERENCES public.persona(curp) 
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE public.cargodocente
+DROP CONSTRAINT fk3mtxsq6vvg52q7ok4or8cbs3o;
+
+ALTER TABLE public.cargodocente 
+ADD CONSTRAINT fk3mtxsq6vvg52q7ok4or8cbs3o 
+FOREIGN KEY (rfc) 
+REFERENCES public.personalacademico(rfc) 
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+
+ALTER TABLE public.personalseguridad
+DROP CONSTRAINT fkaqfhf3tuec5c7e0787a3dc21i;
+
+ALTER TABLE public.personalseguridad 
+ADD CONSTRAINT fkaqfhf3tuec5c7e0787a3dc21i 
+FOREIGN KEY (curp) 
+REFERENCES public.persona(curp) 
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE public.alumno 
+DROP CONSTRAINT fkop2ux5hhbenpakvtwjeb1iswo;
+
+ALTER TABLE public.alumno 
+ADD CONSTRAINT fkop2ux5hhbenpakvtwjeb1iswo 
+FOREIGN KEY (curp) 
+REFERENCES public.persona(curp) 
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+ALTER TABLE public.usuario 
+DROP CONSTRAINT fk7k5mbe2uawbnfhr2d7h8jxlo0;
+
+ALTER TABLE public.usuario 
+ADD CONSTRAINT fk7k5mbe2uawbnfhr2d7h8jxlo0 
+FOREIGN KEY (curp) 
+REFERENCES public.persona(curp) 
+ON DELETE CASCADE
+ON UPDATE CASCADE;

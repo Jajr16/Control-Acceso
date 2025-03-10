@@ -9,13 +9,17 @@ import Pantallas.ETSInscriptionProcessScreen
 import Pantallas.EtsDetailScreen
 import Pantallas.EtsListScreen
 import Pantallas.EtsListScreenAlumno
+import Pantallas.InformacionAlumno
 import Pantallas.ListaAlumnosScreen
 import Pantallas.LoginScreen
+import Pantallas.MensajesScreen
 import Pantallas.QRScannerScreen
 import Pantallas.WelcomeScreenAlumno
 import Pantallas.NotificationsScreen
+import Pantallas.Reporte
 import Pantallas.WelcomeScreen
 import Pantallas.WelcomeScreenDocente
+import RetroFit.RetrofitInstance
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -36,6 +40,7 @@ import androidx.navigation.navArgument
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.DiasETSModel
+import com.example.prueba3.Views.MensajesViewModel
 import com.example.prueba3.Views.PersonaViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 import com.example.prueba3.ui.theme.Prueba3Theme
@@ -91,6 +96,8 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
 
                     composable("LETS") { EtsListScreen(navController, loginViewModel = loginViewModel) }
+                    composable("InfoA") { InformacionAlumno(navController, loginViewModel = loginViewModel) }
+                    composable("Reporte") { Reporte(navController, loginViewModel = loginViewModel) }
                     composable("LETSA") { EtsListScreenAlumno(navController, loginViewModel = loginViewModel) }
                     composable("scanQr") { QRScannerScreen(navController, loginViewModel = loginViewModel) }
                     composable("info") { ETSInscriptionProcessScreen(navController, loginViewModel) }
@@ -116,6 +123,13 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     ) { backStackEntry ->
                         val idETS = backStackEntry.arguments?.getInt("idETS") ?: 0
                         EtsDetailScreen(navController, idETS, loginViewModel = loginViewModel)
+                    }
+
+                    composable(route = "Mensajes/{user}",
+                        arguments = listOf(navArgument("user") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val user = backStackEntry.arguments?.getString("user") ?: ""
+                        MensajesScreen(navController, user, loginViewModel, MensajesViewModel())
                     }
 
                     composable(

@@ -37,7 +37,6 @@ class AlumnosViewModel : ViewModel() {
         }
     }
 
-
     fun fetchListalumnos() {
         viewModelScope.launch {
             try {

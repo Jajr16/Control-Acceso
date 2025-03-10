@@ -1,7 +1,8 @@
 package Pantallas
 
 
-import Pantallas.components.MenuBottomBar
+import Pantallas.Plantillas.MenuBottomBar
+import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -20,10 +21,19 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.ui.theme.BlueBackground
@@ -32,10 +42,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
-fun ListaAlumnosScreen(navController: NavController, idETS: String, viewModel: AlumnosViewModel,
-                       loginViewModel: LoginViewModel) {
-
-    ValidateSession (navController = navController) {
+fun ListaAlumnosScreen(
+    navController: NavController,
+    idETS: String,
+    viewModel: AlumnosViewModel,
+    loginViewModel: LoginViewModel
+) {
+    ValidateSession(navController = navController) {
         val alumnosList by viewModel.alumnosList.collectAsState()
         val isLoading by remember { viewModel.loadingState }.collectAsState()
 
@@ -47,6 +60,12 @@ fun ListaAlumnosScreen(navController: NavController, idETS: String, viewModel: A
         }
 
         Scaffold(
+            topBar = {
+                MenuTopBar(
+                    true, true, loginViewModel,
+                    navController
+                )
+            },
             bottomBar = {
                 MenuBottomBar(navController = navController, userRole)
             }
@@ -54,19 +73,46 @@ fun ListaAlumnosScreen(navController: NavController, idETS: String, viewModel: A
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(BlueBackground)
+                    .background(BlueBackground) // Fondo oscuro azulado
                     .padding(padding)
             ) {
-                if (isLoading) {
-                    Box(
+                // Título con fondo estilizado
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(BlueBackground) // Color de fondo del título
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "ETS Big Data",
+                        style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Cargando...",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                            .padding(top = 50.dp),
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Text(
+                        text = "Lista de alumnos inscritos",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFFD9D9D9), // Color gris claro para el subtítulo
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+
+                    Divider(
+                        color = Color(0xFFFFFFFF ),
+                        thickness = 5.dp,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                if (isLoading) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Color.White)
                     }
                 } else if (alumnosList.isNotEmpty()) {
                     LazyColumn(
@@ -78,105 +124,77 @@ fun ListaAlumnosScreen(navController: NavController, idETS: String, viewModel: A
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(8.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF )),
+                                 // Color de la tarjeta
                                 elevation = CardDefaults.cardElevation(4.dp)
                             ) {
-                                Column(
+                                Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(16.dp)
+                                        .padding(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(bottom = 8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
+                                    // Botón con boleta y nombre
+                                    Button(
+                                        onClick = {navController.navigate("InfoA")},
+                                        modifier = Modifier.weight(0.8f),
+                                        colors = ButtonDefaults.buttonColors(Color(0xFFFFFFFF )) // Color más oscuro
                                     ) {
-                                        // Columna de datos del alumno
-                                        Column(
-                                            modifier = Modifier
-                                                .weight(0.8f)
-                                                .padding(end = 8.dp)
-                                        ) {
+                                        Column {
                                             Text(
                                                 text = "Boleta: ${alumno.boleta}",
-                                                style = MaterialTheme.typography.bodyMedium
+                                                fontSize = 14.sp,
+                                                color = Color.Black
                                             )
                                             Text(
                                                 text = "Nombre: ${alumno.nombreA} ${alumno.apellidoP} ${alumno.apellidoM}",
-                                                style = MaterialTheme.typography.bodyMedium
+                                                fontSize = 14.sp,
+                                                color = Color.Black
                                             )
 
-                                        }
-
-                                        // Columna para el estado
-                                        Column(
-                                            modifier = Modifier
-                                                .weight(0.2f),
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
-                                            Text(
-                                                text = "Asistencia",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                modifier = Modifier.padding(bottom = 8.dp)
-                                            )
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(28.dp)
-                                                    .background(
-                                                        color = if (alumno.aceptado) Color(0xFF4CAF50) else Color(0xFFF44336),
-                                                        shape = CircleShape
-                                                    )
-                                            )
                                         }
                                     }
 
-                                    // Botones de acción (con espacio igual)
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        // Botón Reconocimiento Facial
-                                        Button(
-                                            onClick = {
-                                                navController.navigate("camara/${alumno.boleta}/${idETS}")
-                                            },
-                                            modifier = Modifier.weight(1f), // Peso igual
-                                            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
-                                        ) {
-                                            Text(text = "Reconocimiento Facial")
-                                        }
+                                    // Botón redondo con estado
+                                    val (color, icon) = when (alumno.aceptado) {
+                                        true -> Color(0xFF4CAF50) to Icons.Filled.Check
+                                        false -> Color(0xFFF44336) to Icons.Filled.Close
+                                        else -> Color.Gray to Icons.Filled.Info
+                                    }
 
-                                        // Botón Dinámico de Asistencia
-                                        Button(
-                                            onClick = {
-                                                // Lógica para poner o quitar asistencia
-                                                val aceptado = !alumno.aceptado // Cambiar el estado
-                                                // Lanzamos la coroutine dentro del onClick
-                                                CoroutineScope(Dispatchers.Main).launch {
-                                                    viewModel.updateAsistencia(alumno.boleta, idETS.toInt(), aceptado)
-                                                }
-                                            },
-                                            modifier = Modifier.weight(1f), // Peso igual
-                                            colors = ButtonDefaults.buttonColors(
-                                                if (alumno.aceptado) Color(0xFFFF5722) else Color(0xFF4CAF50)
-                                            )
-                                        ) {
-                                            Text(
-                                                text = if (alumno.aceptado) "Quitar Asistencia" else "Poner Asistencia"
-                                            )
-                                        }
+                                    IconButton(
+                                        onClick = {
+//                                            val nuevoEstado = alumno.aceptado != true
+//                                            CoroutineScope(Dispatchers.Main).launch {
+//                                                viewModel.updateAsistencia(alumno.boleta, idETS.toInt(), nuevoEstado)
+//                                            }
+                                            navController.navigate("Reporte")
+                                        },
+                                        modifier = Modifier
+                                            .size(50.dp)
+                                            .padding(8.dp)
+                                            .background(Color(0xFFF0F0F0)) // Gris claro
+                                            .clip(RoundedCornerShape(12.dp)) // Bordes redondeados
+                                    ) {
+                                        Icon(
+                                            imageVector = icon,
+                                            contentDescription = "Estado",
+                                            tint = color,
+                                            modifier = Modifier.size(40.dp)
+                                        )
                                     }
                                 }
                             }
                         }
                     }
                 } else {
-                    // Texto de carga
-                    Text(
-                        text = "No hay alumnos inscritos al ETS.",
-                        modifier = Modifier.align(Alignment.Center),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "No hay alumnos inscritos al ETS.",
+                            color = Color.White,
+                            fontSize = 16.sp
+                        )
+                    }
                 }
             }
         }
