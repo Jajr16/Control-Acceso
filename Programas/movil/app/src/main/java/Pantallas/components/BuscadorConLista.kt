@@ -1,4 +1,4 @@
-package Pantallas.Plantillas
+package Pantallas.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box

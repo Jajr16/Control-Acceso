@@ -1,7 +1,8 @@
 package Pantallas
 
 
-import Pantallas.components.MenuBottomBar
+import Pantallas.Plantillas.MenuBottomBar
+import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -47,6 +48,12 @@ fun ListaAlumnosScreen(navController: NavController, idETS: String, viewModel: A
         }
 
         Scaffold(
+            topBar = {
+                MenuTopBar(
+                    true, true, loginViewModel,
+                    navController
+                )
+            },
             bottomBar = {
                 MenuBottomBar(navController = navController, userRole)
             }

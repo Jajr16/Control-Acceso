@@ -1,9 +1,8 @@
-package Pantallas.components
+package Pantallas.Plantillas
 
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,7 +31,7 @@ import java.io.File
 @Composable
 fun MenuBottomBar(navController: NavController, userRole: String?) {
 
-    // Barra superior con el color morado
+    // Barra superior con color blanco en el fondo
     BottomAppBar (
         modifier = Modifier
             .fillMaxWidth()

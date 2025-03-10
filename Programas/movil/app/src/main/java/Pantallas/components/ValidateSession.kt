@@ -1,5 +1,6 @@
 package Pantallas.components
 
+import Pantallas.Plantillas.clearSession
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

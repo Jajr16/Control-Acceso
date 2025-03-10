@@ -1,6 +1,5 @@
 package Pantallas.Plantillas
 
-import Pantallas.components.MenuBottomBar
 import Pantallas.components.ValidateSession
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.prueba3.Clases.getFCMToken
 import com.example.prueba3.R
 import com.example.prueba3.Views.HomeViewModel
 import com.example.prueba3.Views.LoginViewModel
@@ -56,7 +56,15 @@ fun WelcomeScreenBase(
         }
     }
 
+    LaunchedEffect(Unit) {
+        if (username != null) {
+            getFCMToken(username)
+        }
+    }
+
     Scaffold(
+        topBar = { MenuTopBar(false, true, loginViewModel,
+            navController ) },
         bottomBar = { MenuBottomBar(navController = navController, userRole) }
     ) { padding ->
         Box(
@@ -68,8 +76,7 @@ fun WelcomeScreenBase(
             ValidateSession(navController = navController) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 50.dp),
+                        .fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Image(

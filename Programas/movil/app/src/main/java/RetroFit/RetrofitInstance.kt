@@ -4,6 +4,8 @@
     import com.example.prueba3.LoginApi
     import com.example.prueba3.EtsApi
     import com.example.prueba3.EtsInfoApi
+    import kotlinx.coroutines.GlobalScope
+    import kotlinx.coroutines.launch
     import okhttp3.OkHttpClient
     import retrofit2.Retrofit
     import retrofit2.converter.gson.GsonConverterFactory
@@ -11,7 +13,7 @@
 
 
     object RetrofitInstance {
-        private const val BASE_URL = "http://192.168.100.2:8080/" // Cambia esta URL al dominio real.
+        private const val BASE_URL = "http://192.168.1.68:8080/" // Cambia esta URL al dominio real.
 
         private val okHttpClient = OkHttpClient.Builder()
             .connectTimeout(120, TimeUnit.SECONDS)  // Timeout de conexión
@@ -74,8 +76,13 @@
             retrofit.create(PersonaApi::class.java)
         }
 
+        val sendTokenToBack: TokenFirebase by lazy {
+            retrofit.create(TokenFirebase::class.java)
+        }
 
-
+        val getListaUsuariosChat: Mensajes by lazy {
+            retrofit.create(Mensajes::class.java)
+        }
     }
 
 
