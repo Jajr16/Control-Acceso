@@ -1,6 +1,6 @@
 package Pantallas
 
-import Pantallas.components.MenuBottomBar
+import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.components.ValidateSession
 import android.text.Layout
 import androidx.compose.foundation.Image
