@@ -28,10 +28,10 @@
         <domain includeSubdomains="true">192.168.1.175</domain>
     </domain-config>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">192.168.1.69</domain>
+        <domain includeSubdomains="true">192.168.1.66A</domain>
     </domain-config>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">192.168.1.68</domain>
+        <domain includeSubdomains="true">192.168.1.73</domain>
     </domain-config>
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">192.168.100.10</domain>

@@ -4,11 +4,13 @@ import Pantallas.Camara
 import Pantallas.CalendarScreen
 import Pantallas.ConsultarScreen
 import Pantallas.CreateAccountScreen
+import Pantallas.CredencialScreen
 import Pantallas.ETSInscriptionProcessScreen
 import Pantallas.EtsCardButton
 import Pantallas.EtsDetailScreen
 import Pantallas.EtsListScreen
 import Pantallas.EtsListScreenAlumno
+import Pantallas.InformacionAlumno
 import Pantallas.ListaAlumnosScreen
 import Pantallas.LoginScreen
 import Pantallas.QRScannerScreen
@@ -83,6 +85,15 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     composable("Menu") { WelcomeScreen(navController = navController, loginViewModel = loginViewModel) }
                     composable("Menu Docente") { WelcomeScreenDocente(navController, loginViewModel = loginViewModel) }
 
+                    composable("credencial/{boleta}") { backStackEntry ->
+                        val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
+                        CredencialScreen(
+                            navController = navController,
+                            loginViewModel = loginViewModel,
+                            viewModel = alumnosViewModel,
+                            boleta = boleta
+                        )
+                    }
 
                     composable("LETS") { EtsListScreen(navController, loginViewModel = loginViewModel) }
                     composable("LETSA") { EtsListScreenAlumno(navController, loginViewModel = loginViewModel) }

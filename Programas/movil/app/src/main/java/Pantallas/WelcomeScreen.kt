@@ -26,20 +26,21 @@ fun WelcomeScreen(navController: NavController, loginViewModel: LoginViewModel) 
             horizontalArrangement = Arrangement.Center
         ) {
             OptionButton(
-                title = "Consultar Alumnos",
-                icon = ImageVector.vectorResource(id = R.drawable.exam),
+                title = "Escanear Credencial",
+//                icon = ImageVector.vectorResource(id = R.drawable.exam),
+                icon = Icons.Default.Info,
                 onClick = { navController.navigate("ConsultarAlumnos") },
                 modifier = Modifier.size(150.dp)
             )
 
             Spacer(modifier = Modifier.width(20.dp))
 
-            OptionButton(
-                title = "Escanear credencial",
-                icon = Icons.Default.Info,
-                onClick = { navController.navigate("scanQr") },
-                modifier = Modifier.size(150.dp)
-            )
+//            OptionButton(
+//                title = "Escanear credencial",
+//                icon = Icons.Default.Info,
+//                onClick = { navController.navigate("scanQr") },
+//                modifier = Modifier.size(150.dp)
+//            )
         }
     }
 }

@@ -11,7 +11,7 @@
 
 
     object RetrofitInstance {
-        private const val BASE_URL = "http://192.168.1.68:8080/" // Cambia esta URL al dominio real.
+        private const val BASE_URL = "http://192.168.1.73:8080/" // Cambia esta URL al dominio real.
 
         private val okHttpClient = OkHttpClient.Builder()
             .connectTimeout(120, TimeUnit.SECONDS)  // Timeout de conexión
@@ -45,6 +45,14 @@
 
         val listalumnos: ListalumnosApi by lazy {
             retrofit.create(ListalumnosApi::class.java)
+        }
+
+        val alumnosDetalle: DetallesApi by lazy {
+            retrofit.create(DetallesApi::class.java)
+        }
+
+        val alumnosCredencial: DetallesApi by lazy {
+            retrofit.create(DetallesApi::class.java)
         }
 
         // Instancia de AceptadoApi

@@ -88,7 +88,7 @@ fun ConsultarScreen(
                                     alumno.apellidoP.contains(query, ignoreCase = true) ||
                                     alumno.apellidoM.contains(query, ignoreCase = true)
                         },
-                        onItemClick = { alumno -> navController.navigate("scanQr") },
+                        onItemClick = { alumno -> navController.navigate("credencial/${alumno.boleta}") },
                         placeholder = "Buscar por nombre o boleta",
                         itemContent = { alumno ->
                             Column(
