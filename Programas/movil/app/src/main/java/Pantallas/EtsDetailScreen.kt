@@ -84,7 +84,7 @@ fun EtsDetailScreen(
                     },
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier
-                        .padding(vertical = 16.dp)
+                        .padding(top = 50.dp)
                         .fillMaxWidth(),
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
