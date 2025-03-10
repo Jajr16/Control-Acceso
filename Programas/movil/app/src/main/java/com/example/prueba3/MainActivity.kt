@@ -9,12 +9,14 @@ import Pantallas.ETSInscriptionProcessScreen
 import Pantallas.EtsDetailScreen
 import Pantallas.EtsListScreen
 import Pantallas.EtsListScreenAlumno
+import Pantallas.InformacionAlumno
 import Pantallas.ListaAlumnosScreen
 import Pantallas.LoginScreen
 import Pantallas.MensajesScreen
 import Pantallas.QRScannerScreen
 import Pantallas.WelcomeScreenAlumno
 import Pantallas.NotificationsScreen
+import Pantallas.Reporte
 import Pantallas.WelcomeScreen
 import Pantallas.WelcomeScreenDocente
 import RetroFit.RetrofitInstance
@@ -94,6 +96,8 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
 
                     composable("LETS") { EtsListScreen(navController, loginViewModel = loginViewModel) }
+                    composable("InfoA") { InformacionAlumno(navController, loginViewModel = loginViewModel) }
+                    composable("Reporte") { Reporte(navController, loginViewModel = loginViewModel) }
                     composable("LETSA") { EtsListScreenAlumno(navController, loginViewModel = loginViewModel) }
                     composable("scanQr") { QRScannerScreen(navController, loginViewModel = loginViewModel) }
                     composable("info") { ETSInscriptionProcessScreen(navController, loginViewModel) }
