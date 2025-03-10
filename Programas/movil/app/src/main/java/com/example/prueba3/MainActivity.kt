@@ -6,18 +6,21 @@ import Pantallas.ConsultarScreen
 import Pantallas.CreateAccountScreen
 import Pantallas.CredencialScreen
 import Pantallas.ETSInscriptionProcessScreen
-import Pantallas.EtsCardButton
+//import Pantallas.EtsCardButton
 import Pantallas.EtsDetailScreen
 import Pantallas.EtsListScreen
 import Pantallas.EtsListScreenAlumno
 import Pantallas.InformacionAlumno
 import Pantallas.ListaAlumnosScreen
 import Pantallas.LoginScreen
+import Pantallas.MensajesScreen
 import Pantallas.QRScannerScreen
 import Pantallas.WelcomeScreenAlumno
 import Pantallas.NotificationsScreen
+import Pantallas.Reporte
 import Pantallas.WelcomeScreen
 import Pantallas.WelcomeScreenDocente
+import RetroFit.RetrofitInstance
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -38,6 +41,8 @@ import androidx.navigation.navArgument
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.DiasETSModel
+import com.example.prueba3.Views.MensajesViewModel
+import com.example.prueba3.Views.PersonaViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 import com.example.prueba3.ui.theme.Prueba3Theme
 import java.lang.Integer.parseInt
@@ -58,6 +63,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
     val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
     val loginViewModel = LoginViewModel(sharedPreferences)
+    val personaViewModel = PersonaViewModel()
     val DiasETSModel = DiasETSModel()
 
     enableEdgeToEdge()
@@ -83,7 +89,11 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }
 
                     composable("Menu") { WelcomeScreen(navController = navController, loginViewModel = loginViewModel) }
-                    composable("Menu Docente") { WelcomeScreenDocente(navController, loginViewModel = loginViewModel) }
+                    composable("Menu Docente") { WelcomeScreenDocente(
+                        navController = navController,
+                        loginViewModel = loginViewModel
+
+                    ) }
 
                     composable("credencial/{boleta}") { backStackEntry ->
                         val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
@@ -96,6 +106,8 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     }
 
                     composable("LETS") { EtsListScreen(navController, loginViewModel = loginViewModel) }
+                    composable("InfoA") { InformacionAlumno(navController, loginViewModel = loginViewModel) }
+                    composable("Reporte") { Reporte(navController, loginViewModel = loginViewModel) }
                     composable("LETSA") { EtsListScreenAlumno(navController, loginViewModel = loginViewModel) }
                     composable("scanQr") { QRScannerScreen(navController, loginViewModel = loginViewModel) }
                     composable("info") { ETSInscriptionProcessScreen(navController, loginViewModel) }
@@ -123,6 +135,13 @@ override fun onCreate(savedInstanceState: Bundle?) {
                         EtsDetailScreen(navController, idETS, loginViewModel = loginViewModel)
                     }
 
+                    composable(route = "Mensajes/{user}",
+                        arguments = listOf(navArgument("user") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val user = backStackEntry.arguments?.getString("user") ?: ""
+                        MensajesScreen(navController, user, loginViewModel, MensajesViewModel())
+                    }
+
                     composable(
                         route = "etsDetail/{ETS}/{Periodo}/{Turno}/{Fecha}/{PA}",
                         arguments = listOf(
@@ -144,7 +163,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
                         val PA = backStackEntry.arguments?.getString("PA") ?: ""
                         val Fecha = backStackEntry.arguments?.getString("Fecha") ?: ""
 
-                        EtsCardButton(navController, parsedETS, Periodo,Turno, Fecha,PA)
+//                        EtsCardButton(navController, parsedETS, Periodo,Turno, Fecha,PA)
                         }
                     }
                 }

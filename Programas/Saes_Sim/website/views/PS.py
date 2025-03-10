@@ -45,6 +45,7 @@ class NPSView(View):
         form = NPSForm(request.POST)
         
         if form.is_valid():
+            rfc = form.cleaned_data['rfc']
             curp = form.cleaned_data['curp']
             nombre = form.cleaned_data['nombre']
             apellido_P = form.cleaned_data['apellido_P']
@@ -55,6 +56,7 @@ class NPSView(View):
             usuario = request.session.get('usuario')  
             
             data = {
+                "rfc": rfc,
                 "curp": curp,
                 "nombre": nombre,
                 "apellido_P": apellido_P,

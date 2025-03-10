@@ -1,6 +1,7 @@
 package Pantallas
 
-import Pantallas.components.MenuBottomBar
+import Pantallas.Plantillas.MenuBottomBar
+import Pantallas.Plantillas.MenuTopBar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,6 +39,12 @@ fun ETSInscriptionProcessScreen(navController: NavController, loginViewModel: Lo
     val userRole = loginViewModel.getUserRole()
 
     Scaffold(
+        topBar = {
+            MenuTopBar(
+                true, true, loginViewModel,
+                navController
+            )
+        },
         bottomBar = { MenuBottomBar(navController = navController, userRole) }
     ) { padding ->
         Column (
@@ -51,13 +58,15 @@ fun ETSInscriptionProcessScreen(navController: NavController, loginViewModel: Lo
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 70.dp)
+                    .padding(top = 30.dp)
             ) {
                 Text(
                     text = "Guía de Inscripción al ETS",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp),
+                    modifier = Modifier
+                        .padding(bottom = 8.dp)
+                        .align(Alignment.CenterHorizontally),
                     color = Color.White
                 )
 

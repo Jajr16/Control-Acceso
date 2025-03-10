@@ -4,6 +4,8 @@
     import com.example.prueba3.LoginApi
     import com.example.prueba3.EtsApi
     import com.example.prueba3.EtsInfoApi
+    import kotlinx.coroutines.GlobalScope
+    import kotlinx.coroutines.launch
     import okhttp3.OkHttpClient
     import retrofit2.Retrofit
     import retrofit2.converter.gson.GsonConverterFactory
@@ -78,8 +80,17 @@
             retrofit.create(Calendario::class.java)
         }
 
+        val getdatospersona: PersonaApi by lazy {
+            retrofit.create(PersonaApi::class.java)
+        }
 
+        val sendTokenToBack: TokenFirebase by lazy {
+            retrofit.create(TokenFirebase::class.java)
+        }
 
+        val getListaUsuariosChat: Mensajes by lazy {
+            retrofit.create(Mensajes::class.java)
+        }
     }
 
 

@@ -141,6 +141,7 @@ class NPSForm(forms.Form):
 
         self.fields['cargoPS'].choices = obtener_opciones('CargoToPS', 'nombre', 'nombre')
     
+    rfc = forms.CharField(max_length=13, required=True, label='CURP')
     curp = forms.CharField(max_length=18, required=True, label='CURP')
     nombre = forms.CharField(required=True, label='Nombre')
     apellido_P = forms.CharField(required=True, label='apellido_P')

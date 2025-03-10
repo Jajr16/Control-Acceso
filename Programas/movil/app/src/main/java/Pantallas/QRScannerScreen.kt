@@ -1,6 +1,7 @@
 package Pantallas
 
-import Pantallas.components.MenuBottomBar
+import Pantallas.Plantillas.MenuBottomBar
+import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
 import android.Manifest
 import android.content.Context
@@ -72,6 +73,12 @@ fun QRScannerScreen(navController: NavController, loginViewModel: LoginViewModel
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
+            topBar = {
+                MenuTopBar(
+                    true, true, loginViewModel,
+                    navController
+                )
+            },
             bottomBar = { MenuBottomBar(navController = navController, userRole) }
         ) { padding ->
             Box(

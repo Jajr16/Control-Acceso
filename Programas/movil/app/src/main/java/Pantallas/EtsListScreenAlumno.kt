@@ -1,9 +1,10 @@
 package Pantallas
 
 import androidx.compose.foundation.layout.Row
-import Pantallas.Plantillas.BuscadorConLista
+import Pantallas.components.BuscadorConLista
 import Pantallas.Reutilizables.EtsACardButton
-import Pantallas.components.MenuBottomBar
+import Pantallas.Plantillas.MenuBottomBar
+import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
 import android.content.Context
 import androidx.compose.foundation.background
@@ -68,13 +69,19 @@ fun EtsListScreenAlumno(navController: NavController,
         }
 
         Scaffold(
+            topBar = {
+                MenuTopBar(
+                    true, true, loginViewModel,
+                    navController
+                )
+            },
             bottomBar = { MenuBottomBar(navController = navController, userRole) }
         ) { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(BlueBackground)
-                    .padding(start = 16.dp, top = 0.dp, end = 16.dp)
+                    .padding(start = 16.dp, top = 90.dp, end = 16.dp)
             ) {
 
                 // Barra de búsqueda
@@ -82,13 +89,11 @@ fun EtsListScreenAlumno(navController: NavController,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 50.dp)
                 ) {
                     Text(
                         text = "Lista de ETS",
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier
-                            .padding(bottom = 16.dp)
                             .align(Alignment.CenterHorizontally),
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
@@ -103,9 +108,6 @@ fun EtsListScreenAlumno(navController: NavController,
                         color = Color.LightGray
                     )
                 }
-
-
-                Spacer(modifier = Modifier.height(25.dp))
 
                 if (isLoading) {
                     Box(
@@ -124,7 +126,7 @@ fun EtsListScreenAlumno(navController: NavController,
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(padding)
+                            .padding(top = 0.dp, bottom = 110.dp)
                     ) {
 //                      ============= BUSCADOR =============
                         BuscadorConLista(
@@ -199,7 +201,7 @@ fun EtsListScreenAlumno(navController: NavController,
                                     }
                                 }
 
-                                Spacer(modifier = Modifier.height(15.dp))
+                                Spacer(modifier = Modifier.height(1.dp))
                             }
                         )
                     }

@@ -1,11 +1,13 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("com.google.gms.google-services")
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
     namespace = "com.example.prueba3"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.prueba3"
@@ -93,6 +95,8 @@ dependencies {
     implementation(libs.play.services.mlkit.face.detection)
     implementation(libs.play.services.mlkit.barcode.scanning)
     implementation(libs.androidx.ui.test.android)
+    implementation(libs.firebase.messaging.ktx)
+    implementation(libs.androidx.room.ktx)
     testImplementation(libs.junit)
     implementation(libs.material3)
     androidTestImplementation(libs.androidx.junit)
@@ -113,4 +117,7 @@ dependencies {
     implementation(libs.face.detection.v1604)
     implementation(kotlin("script-runtime"))
 
+//    IMPORTAR FIREBASE
+    implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
+    implementation(libs.firebase.analytics)
 }

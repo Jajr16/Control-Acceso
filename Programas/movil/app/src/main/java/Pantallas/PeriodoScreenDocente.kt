@@ -1,10 +1,9 @@
 package Pantallas
 
+import Pantallas.Plantillas.MenuBottomBar
+import Pantallas.Plantillas.MenuTopBar
 import androidx.compose.foundation.layout.*
-import Pantallas.components.MenuBottomBar
 import Pantallas.components.ValidateSession
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -40,7 +39,13 @@ fun PeriodoScreenDocente(
 
     ValidateSession(navController = navController) {
         Scaffold(
-            //bottomBar = { MenuBottomBar(navController = navController, userRole) }
+            topBar = {
+                MenuTopBar(
+                    true, true, loginViewModel,
+                    navController
+                )
+            },
+            bottomBar = { MenuBottomBar(navController = navController, userRole) }
         ) { padding ->
             Column(
                 modifier = Modifier

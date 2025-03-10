@@ -1,4 +1,4 @@
-package Pantallas.Plantillas
+package Pantallas.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
