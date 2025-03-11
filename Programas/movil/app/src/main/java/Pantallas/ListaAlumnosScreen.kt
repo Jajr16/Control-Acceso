@@ -54,7 +54,7 @@ fun ListaAlumnosScreen(
 
         val userRole = loginViewModel.getUserRole()
 
-         //Llama al ViewModel para obtener los datos al cambiar el idETS
+        // Llama al ViewModel para obtener los datos al cambiar el idETS
         LaunchedEffect(idETS) {
             viewModel.fetchAlumno(idETS)
         }
@@ -81,14 +81,13 @@ fun ListaAlumnosScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(BlueBackground) // Color de fondo del título
-                        .padding(16.dp),
+                        .padding(top = 30.dp, start = 16.dp, end = 16.dp, bottom = 16.dp), // Ajusta el padding superior
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = "ETS Big Data",
                         style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier
-                            .padding(top = 50.dp),
+                        modifier = Modifier.padding(top = 6.dp),
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                         textAlign = TextAlign.Center
@@ -104,7 +103,7 @@ fun ListaAlumnosScreen(
                     )
 
                     Divider(
-                        color = Color(0xFFFFFFFF ),
+                        color = Color(0xFFFFFFFF),
                         thickness = 5.dp,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
@@ -116,7 +115,9 @@ fun ListaAlumnosScreen(
                     }
                 } else if (alumnosList.isNotEmpty()) {
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 100.dp), // Ajusta el padding superior para evitar superposición
                         contentPadding = PaddingValues(16.dp)
                     ) {
                         items(alumnosList) { alumno ->
@@ -124,8 +125,7 @@ fun ListaAlumnosScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(8.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF )),
-                                 // Color de la tarjeta
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)), // Color de la tarjeta
                                 elevation = CardDefaults.cardElevation(4.dp)
                             ) {
                                 Row(
@@ -136,9 +136,9 @@ fun ListaAlumnosScreen(
                                 ) {
                                     // Botón con boleta y nombre
                                     Button(
-                                        onClick = {navController.navigate("InfoA")},
+                                        onClick = { navController.navigate("InfoA") },
                                         modifier = Modifier.weight(0.8f),
-                                        colors = ButtonDefaults.buttonColors(Color(0xFFFFFFFF )) // Color más oscuro
+                                        colors = ButtonDefaults.buttonColors(Color(0xFFFFFFFF)) // Color más oscuro
                                     ) {
                                         Column {
                                             Text(
@@ -151,7 +151,6 @@ fun ListaAlumnosScreen(
                                                 fontSize = 14.sp,
                                                 color = Color.Black
                                             )
-
                                         }
                                     }
 
@@ -164,10 +163,6 @@ fun ListaAlumnosScreen(
 
                                     IconButton(
                                         onClick = {
-//                                            val nuevoEstado = alumno.aceptado != true
-//                                            CoroutineScope(Dispatchers.Main).launch {
-//                                                viewModel.updateAsistencia(alumno.boleta, idETS.toInt(), nuevoEstado)
-//                                            }
                                             navController.navigate("Reporte")
                                         },
                                         modifier = Modifier

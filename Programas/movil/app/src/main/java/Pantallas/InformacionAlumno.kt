@@ -1,6 +1,7 @@
 package Pantallas
 
 import Pantallas.Plantillas.MenuBottomBar
+import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -44,7 +45,12 @@ fun InformacionAlumno(navController: NavController, loginViewModel: LoginViewMod
     ValidateSession(navController = navController) {
         val userRole = loginViewModel.getUserRole()
 
-        Scaffold(bottomBar = { MenuBottomBar(navController, userRole) }) { padding ->
+        Scaffold(topBar = {
+            MenuTopBar(
+                true, true, loginViewModel,
+                navController
+            )
+        },bottomBar = { MenuBottomBar(navController, userRole) }) { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -57,7 +63,7 @@ fun InformacionAlumno(navController: NavController, loginViewModel: LoginViewMod
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 50.dp),
+                        .padding(top = 20.dp),
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     textAlign = TextAlign.Center
@@ -184,7 +190,8 @@ fun InformacionAlumno(navController: NavController, loginViewModel: LoginViewMod
                         onClick = { /* Acción para registrar asistencia */ },
                         modifier = Modifier.weight(1f)
                             .padding(horizontal = 8.dp),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green)
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF64BD67))
+
                     ) {
                         Text(
                             text = "Registrar asistencia",
@@ -196,7 +203,7 @@ fun InformacionAlumno(navController: NavController, loginViewModel: LoginViewMod
                         onClick = { /* Acción para registrar incidencia */ },
                         modifier = Modifier.weight(1f)
                             .padding(horizontal = 8.dp),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFCB5252))
                     ) {
                         Text(
                             text = "Registrar incidencia",
@@ -246,11 +253,11 @@ fun InformacionAlumno(navController: NavController, loginViewModel: LoginViewMod
                         onClick = { /* Acción para verificar QR */ },
                         modifier = Modifier.weight(1f)
                             .padding(horizontal = 8.dp),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue)
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
                     ) {
                         Text(
                             text = "Verificar QR",
-                            color = Color.White
+                            color = Color.Black
                         )
                     }
 
@@ -258,11 +265,11 @@ fun InformacionAlumno(navController: NavController, loginViewModel: LoginViewMod
                         onClick = { /* Acción para verificar con IA */ },
                         modifier = Modifier.weight(1f)
                             .padding(horizontal = 8.dp),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue)
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
                     ) {
                         Text(
                             text = "Verificar con IA",
-                            color = Color.White
+                            color = Color.Black
                         )
                     }
                 }
