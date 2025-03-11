@@ -48,5 +48,11 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">172.100.68.74</domain>
     </domain-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">172.100.73.133</domain>
+    </domain-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">192.168.0.108</domain>
+    </domain-config>
 </network-security-config>
 
