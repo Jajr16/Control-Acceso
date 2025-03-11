@@ -1,6 +1,7 @@
 package Pantallas
 
 import Pantallas.Plantillas.MenuBottomBar
+import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
 import android.text.Layout
 import androidx.compose.foundation.Image
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -46,6 +48,7 @@ import androidx.compose.ui.res.painterResource
 import com.example.prueba3.R
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.filled.Email
 
 //painter = painterResource(id = R.drawable.info),
 
@@ -55,7 +58,15 @@ fun Reporte(navController: NavController, loginViewModel: LoginViewModel) {
     ValidateSession(navController = navController) {
         val userRole = loginViewModel.getUserRole()
 
-        Scaffold(bottomBar = { MenuBottomBar(navController, userRole) }) { padding ->
+        Scaffold(
+            topBar = {
+                MenuTopBar(
+                    true, true, loginViewModel,
+                    navController
+                )
+            },
+            bottomBar = { MenuBottomBar(navController, userRole) }
+        ) { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -68,49 +79,45 @@ fun Reporte(navController: NavController, loginViewModel: LoginViewModel) {
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 50.dp, bottom = 8.dp),
+                        .padding(top = 20.dp, bottom = 8.dp),
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     textAlign = TextAlign.Center
                 )
 
-                // Fila para el ícono y la foto (en paralelo)
-                Row(
+                // Contenedor para la foto y el ícono
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                    contentAlignment = Alignment.Center // Centra la foto
                 ) {
-                    // Icono circular
-                    Box(
-                        modifier = Modifier
-                            .size(120.dp)
-                            .clip(CircleShape)
-                            .background(Color.LightGray)
-                            .padding(8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Icono de perfil",
-                            modifier = Modifier.size(30.dp),
-                            tint = Color.White
-                        )
-                    }
-
-                    // Espacio entre el ícono y la foto
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    // Foto circular
+                    // Foto circular (grande)
                     Image(
                         painter = painterResource(id = R.drawable.info),
                         contentDescription = "Foto de perfil",
                         modifier = Modifier
-                            .size(120.dp)
+                            .size(160.dp) // Tamaño grande para la foto
                             .clip(CircleShape)
                             .border(2.dp, Color.White, CircleShape)
                     )
+
+                    // Icono pequeño superpuesto en la esquina inferior derecha de la foto
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.Center) // Centra el ícono
+                            .offset(x = 50.dp, y = 50.dp) // Desplaza ligeramente hacia la derecha y abajo
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Icono de perfil",
+                            modifier = Modifier
+                                .size(60.dp) // Tamaño pequeño para el ícono
+                                .background(Color.LightGray, CircleShape) // Fondo circular
+                                .padding(4.dp),
+                            tint = Color.White
+                        )
+                    }
                 }
 
                 // Contenido del reporte con LazyColumn (scroll integrado)
@@ -148,7 +155,7 @@ fun InfoRow(label: String, value: String) {
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         elevation = 2.dp, // Reducimos la sombra
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(10.dp),
         backgroundColor = Color.White
     ) {
         Row(
@@ -158,13 +165,13 @@ fun InfoRow(label: String, value: String) {
         ) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodySmall, // Texto más pequeño
+                style = MaterialTheme.typography.bodyMedium, // Texto más pequeño
                 color = Color.Black,
                 modifier = Modifier.weight(1f)
             )
             Text(
                 text = value,
-                style = MaterialTheme.typography.bodySmall, // Texto más pequeño
+                style = MaterialTheme.typography.bodyMedium, // Texto más pequeño
                 color = Color.Black,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.End
