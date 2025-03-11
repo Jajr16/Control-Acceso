@@ -94,8 +94,8 @@ fun QRScannerScreen(navController: NavController, loginViewModel: LoginViewModel
                         qrScanner = qrScanner,
                         onQrCodeDetected = { result ->
                             qrCodeResult = result.displayValue
-                            result.displayValue?.let { url ->
-                                openWebPage(context, url)
+                            result.displayValue?.let { qrCode ->
+                                navController.navigate("CredencialDAE")
                             }
                         }
                     )

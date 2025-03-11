@@ -29,7 +29,7 @@ fun WelcomeScreen(navController: NavController, loginViewModel: LoginViewModel) 
                 title = "Escanear Credencial",
 //                icon = ImageVector.vectorResource(id = R.drawable.exam),
                 icon = Icons.Default.Info,
-                onClick = { navController.navigate("ConsultarAlumnos") },
+                onClick = { navController.navigate("scanQr") },
                 modifier = Modifier.size(150.dp)
             )
 
