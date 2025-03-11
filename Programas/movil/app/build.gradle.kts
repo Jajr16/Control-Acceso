@@ -55,11 +55,12 @@ android {
 dependencies {
 
 // PERMISOS
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
     implementation(libs.accompanist.permissions)
     implementation(libs.face.detection)
 
     //implementation("com.github.chrisbanes:photoview:2.3.0")
-
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)

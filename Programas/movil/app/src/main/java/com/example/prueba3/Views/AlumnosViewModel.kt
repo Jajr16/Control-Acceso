@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.prueba3.Clases.AlumnosInfo
+import com.example.prueba3.Clases.CredencialAlumnos
+import com.example.prueba3.Clases.DetalleAlumnos
 import com.example.prueba3.Clases.ListaInfor
 import com.example.prueba3.Clases.UpdateAceptadoRequest
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,8 +21,15 @@ class AlumnosViewModel : ViewModel() {
     private val _alumnosListado = MutableStateFlow<List<ListaInfor>>(emptyList())
     val alumnosListado: StateFlow<List<ListaInfor>> = _alumnosListado
 
+    private val _alumnosDetalle = MutableStateFlow<List<DetalleAlumnos>>(emptyList())
+    val alumnosDetalle: StateFlow<List<DetalleAlumnos>> = _alumnosDetalle
+
+    private val _alumnosCredencial = MutableStateFlow<List<CredencialAlumnos>>(emptyList())
+    val alumnosCredencial: StateFlow<List<CredencialAlumnos>> = _alumnosCredencial
+
     private val _loadingState = MutableStateFlow(true)
     val loadingState: StateFlow<Boolean> = _loadingState
+
 
     // Función para obtener los datos de alumnos
     fun fetchAlumno(ETSid: String) {
@@ -52,6 +61,35 @@ class AlumnosViewModel : ViewModel() {
         }
     }
 
+    // ======= Mostrar Informacion del alumno ===========
+    fun fetchDetalleAlumnos() {
+        viewModelScope.launch {
+            try {
+                _loadingState.value = true
+                val alumnoState = RetrofitInstance.alumnosDetalle.getalumnosDetalle()
+                _alumnosDetalle.value = alumnoState
+            }catch (e: Exception) {
+                _alumnosDetalle.value = emptyList()
+            }finally {
+                _loadingState.value = false
+            }
+        }
+    }
+
+    // ======== Mostrar la credencial del alumno ============
+    fun fetchCredencialAlumnos(boleta: String) {
+        viewModelScope.launch {
+            try {
+                _loadingState.value = true
+                val estado = RetrofitInstance.alumnosCredencial.getalumnosCredencial(boleta)
+                _alumnosCredencial.value = estado
+            }catch (e: Exception) {
+                _alumnosCredencial.value = emptyList()
+            }finally {
+                _loadingState.value = false
+            }
+        }
+    }
 
     // Función para actualizar la asistencia de un alumno
     suspend fun updateAsistencia(boleta: String, idETS: Int, aceptado: Boolean) {
