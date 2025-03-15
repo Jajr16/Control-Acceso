@@ -116,8 +116,17 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
 
                     composable("Calendar") { CalendarScreen(navController, loginViewModel, DiasETSModel) }
-                    composable("CredencialDAE") { CredencialDAEScreen(navController, loginViewModel) }
-
+                    composable(
+                        route = "CredencialDAE?url={url}", // Define la ruta con un argumento
+                        arguments = listOf(
+                            navArgument("url") { // Define el argumento "url"
+                                type = NavType.StringType // Especifica que es de tipo String
+                            }
+                        )
+                    ) { backStackEntry ->
+                        val url = backStackEntry.arguments?.getString("url")
+                        CredencialDAEScreen(navController, loginViewModel, url)
+                    }
 
                     composable("ConsultarAlumnos") {
                         ConsultarScreen(navController, viewModel = alumnosViewModel, loginViewModel = loginViewModel)

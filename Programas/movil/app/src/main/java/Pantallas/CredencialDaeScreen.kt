@@ -35,19 +35,23 @@ import retrofit2.HttpException
 import java.io.InputStream
 
 @Composable
-fun CredencialDAEScreen(navController: NavController, loginViewModel: LoginViewModel) {
+fun CredencialDAEScreen(navController: NavController, loginViewModel: LoginViewModel, url: String?) {
     var imageBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isZoomed by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
+    // Obtener la URL del código QR escaneado
+    val url = navController.currentBackStackEntry?.arguments?.getString("url")
+    println("No se mando la url")
+
     ValidateSession(navController = navController) {
         Scaffold(
             topBar = {
                 MenuTopBar(
                     true, true, loginViewModel,
-                    navController
+                    navController,
                 )
             },
             bottomBar = { MenuBottomBar(navController = navController, loginViewModel.getUserRole()) }
@@ -63,7 +67,7 @@ fun CredencialDAEScreen(navController: NavController, loginViewModel: LoginViewM
                         modifier = Modifier
                             .fillMaxSize()
                             .background(Color.Black.copy(alpha = 0.8f))
-                            .clickable { isZoomed = false }, // Salir del zoom al hacer clic en el fondo
+                            .clickable { isZoomed = false },
                         contentAlignment = Alignment.Center
                     ) {
                         ZoomableImage(bitmap = imageBitmap!!)
@@ -111,7 +115,7 @@ fun CredencialDAEScreen(navController: NavController, loginViewModel: LoginViewM
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(400.dp)
-                                    .clickable { isZoomed = true } // Hacer zoom al hacer clic en la imagen
+                                    .clickable { isZoomed = true }
                             )
                         }
 
@@ -134,26 +138,31 @@ fun CredencialDAEScreen(navController: NavController, loginViewModel: LoginViewM
                 }
 
                 // Cargar la imagen desde la API
-                LaunchedEffect(Unit) {
-                    scope.launch {
-                        try {
-                            val response = RetrofitInstance.alumnosDetalle.getCredencial()
-                            if (response.isSuccessful && response.body() != null) {
-                                val inputStream: InputStream = response.body()!!.byteStream()
-                                val bitmap = BitmapFactory.decodeStream(inputStream)
-                                imageBitmap = bitmap
+                LaunchedEffect(url) {
+                    if (url != null) {
+                        scope.launch {
+                            try {
+                                val response = RetrofitInstance.alumnosDetalle.getCredencial(url)
+                                if (response.isSuccessful && response.body() != null) {
+                                    val inputStream: InputStream = response.body()!!.byteStream()
+                                    val bitmap = BitmapFactory.decodeStream(inputStream)
+                                    imageBitmap = bitmap
+                                    isLoading = false
+                                } else {
+                                    errorMessage = "Error al obtener la imagen"
+                                    isLoading = false
+                                }
+                            } catch (e: HttpException) {
+                                errorMessage = "Error en la solicitud: ${e.message()}"
                                 isLoading = false
-                            } else {
-                                errorMessage = "Error al obtener la imagen"
+                            } catch (e: Exception) {
+                                errorMessage = "Error general: ${e.message}"
                                 isLoading = false
                             }
-                        } catch (e: HttpException) {
-                            errorMessage = "Error en la solicitud: ${e.message()}"
-                            isLoading = false
-                        } catch (e: Exception) {
-                            errorMessage = "Error general: ${e.message}"
-                            isLoading = false
                         }
+                    } else {
+                        errorMessage = "URL no válida"
+                        isLoading = false
                     }
                 }
             }

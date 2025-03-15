@@ -95,11 +95,15 @@ fun QRScannerScreen(navController: NavController, loginViewModel: LoginViewModel
                         onQrCodeDetected = { result ->
                             qrCodeResult = result.displayValue
                             result.displayValue?.let { qrCode ->
-                                navController.navigate("CredencialDAE")
+                                if (qrCode.isNotEmpty()) {
+                                    println("Código QR escaneado: $qrCode")
+                                    navController.navigate("CredencialDAE?url=${Uri.encode(qrCode)}")
+                                } else {
+                                    println("El código QR no contiene una URL válida.")
+                                }
                             }
                         }
-                    )
-
+                    )/
                     // Cuadro en el centro para marcar el área de escaneo
                     Box(
                         modifier = Modifier
@@ -170,5 +174,3 @@ fun openWebPage(context: Context, url: String) {
         Toast.makeText(context, "No se pudo abrir la URL", Toast.LENGTH_SHORT).show()
     }
 }
-
-
