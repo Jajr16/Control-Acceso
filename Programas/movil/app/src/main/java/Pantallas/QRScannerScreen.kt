@@ -103,7 +103,7 @@ fun QRScannerScreen(navController: NavController, loginViewModel: LoginViewModel
                                 }
                             }
                         }
-                    )/
+                    )
                     // Cuadro en el centro para marcar el área de escaneo
                     Box(
                         modifier = Modifier
