@@ -1,19 +1,16 @@
     package RetroFit
 
-    import android.util.Log
     import com.example.prueba3.LoginApi
     import com.example.prueba3.EtsApi
     import com.example.prueba3.EtsInfoApi
     import okhttp3.OkHttpClient
-    import okhttp3.ResponseBody
-    import retrofit2.Call
     import retrofit2.Retrofit
     import retrofit2.converter.gson.GsonConverterFactory
     import java.util.concurrent.TimeUnit
 
 
     object RetrofitInstance {
-            private const val BASE_URL = "http://10.100.98.129:8080/"
+            private const val BASE_URL = "http://192.168.1.73:8080/"
 
         private val okHttpClient = OkHttpClient.Builder()
             .connectTimeout(120, TimeUnit.SECONDS)  // Timeout de conexión
