@@ -11,17 +11,16 @@ import com.example.prueba3.Clases.ListadoUsuarios
 import com.example.prueba3.Clases.Mensaje
 import com.example.prueba3.Clases.sendMensaje
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
 class MensajesViewModel @Inject constructor(): ViewModel() {
+    private val TAG = "MensajesViewModel"
 
     private val _listaUsuarios = MutableStateFlow<List<ListadoUsuarios>>(emptyList())
     val listaUsuarios: StateFlow<List<ListadoUsuarios>> = _listaUsuarios
@@ -91,13 +90,16 @@ class MensajesViewModel @Inject constructor(): ViewModel() {
         }
     }
 
+    private val _nuevoMensajeEnviado = MutableSharedFlow<Unit>()
+    val nuevoMensajeEnviado: SharedFlow<Unit> = _nuevoMensajeEnviado
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun sendMessage(remitente: String, destinatario: String, mensaje: String) {
         viewModelScope.launch {
             try {
                 val result = RetrofitInstance.getListaUsuariosChat.enviarMensaje(sendMensaje(remitente, destinatario, mensaje))
                 if (result.success) {
-                    agregarMensaje(remitente, mensaje)
+                    _nuevoMensajeEnviado.emit(Unit) // Emitir un valor cuando el mensaje se envía con éxito
                 } else {
                     _errorMessage.value = "Error sending message"
                 }
@@ -107,40 +109,30 @@ class MensajesViewModel @Inject constructor(): ViewModel() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun agregarMensaje(remitente: String, mensaje: String) {
-        viewModelScope.launch {
-            val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
-            val nuevoMensaje = Mensaje(
-                usuario = remitente,
-                mensaje = mensaje,
-                fecha = LocalDateTime.now().format(formatter)
-            )
-            _mensajes.value = _mensajes.value + nuevoMensaje
-        }
-    }
-
     fun refreshMessages(remitente: String, destinatario: String) {
         viewModelScope.launch {
-            Log.d("MensajesViewModel", "refreshMessages called, remitente: $remitente, destinatario: $destinatario")
+            Log.d(TAG, "refreshMessages called, remitente: $remitente, destinatario: $destinatario")
             try {
                 val response = RetrofitInstance.getListaUsuariosChat.getHistorial(remitente, destinatario)
                 if (response.isSuccessful) {
                     val newMessages = response.body() ?: emptyList()
-                    Log.d("MensajesViewModel", "New messages fetched: $newMessages")
-                    val currentMessages = _mensajes.value
-                    _mensajes.value = if (newMessages.isEmpty()) {
-                        currentMessages
-                    } else {
-                        currentMessages + newMessages.filter { !currentMessages.contains(it) }
-                    }
+                    Log.d(TAG, "New messages fetched: $newMessages")
+                    updateMessages(remitente, destinatario, newMessages)
                 } else {
                     _errorMessage.value = "Error fetching messages: ${response.code()}"
                 }
             } catch (e: Exception) {
                 _errorMessage.value = "Error fetching messages: ${e.message}"
-                Log.e("MensajesViewModel", "Error in refreshMessages: ${e.message}", e)
+                Log.e(TAG, "Error in refreshMessages: ${e.message}", e)
             }
+        }
+    }
+
+
+    fun updateMessages(remitente: String, destinatario: String, nuevosMensajes: List<Mensaje>) {
+        viewModelScope.launch {
+            val currentMessages = _mensajes.value
+            _mensajes.value = currentMessages + nuevosMensajes.filter { !currentMessages.contains(it) }
         }
     }
 

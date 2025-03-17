@@ -26,6 +26,14 @@ data class Mensaje(
     val mensaje: String
 )
 
+data class Page<T>(
+    val content: List<T>,
+    val number: Int,
+    val size: Int,
+    val totalElements: Long,
+    val totalPages: Int
+)
+
 // ENVIAR MENSAJES
 data class sendMensaje(
     val remitente: String,

@@ -187,11 +187,15 @@ fun MensajesScreen(
                                                     )
                                                 )
                                             ) {
-                                                Column {
+                                                Column (
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                ) {
                                                     Text(
                                                         text = chat.nombre,
                                                         fontSize = 14.sp,
-                                                        color = Color.Black
+                                                        color = Color.Black,
+                                                        modifier = Modifier.fillMaxWidth()
                                                     )
                                                 }
                                             }
