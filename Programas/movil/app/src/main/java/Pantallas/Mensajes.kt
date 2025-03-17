@@ -6,6 +6,8 @@ import Pantallas.components.ValidateSession
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,9 +19,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,9 +36,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.Views.MensajesViewModel
@@ -51,12 +61,17 @@ fun MensajesScreen(
 
         val userRole = loginViewModel.getUserRole()
 
-        LaunchedEffect(true) {
+        LaunchedEffect(Unit) {
             mensajesViewModel.getUsuarios()
+            mensajesViewModel.getChats(user)
         }
 
         var active by remember { mutableStateOf(false) }
         var query by remember { mutableStateOf("") }
+
+        //        ALMACENAR LOS CHATS
+        val chats by remember {mensajesViewModel.chats}.collectAsState()
+        val mensajeError by mensajesViewModel.mensajeError.collectAsState()
 
         if (active) {
             Box(
@@ -93,8 +108,7 @@ fun MensajesScreen(
                                     .padding(16.dp)
                                     .clickable {
                                         active = false
-                                        query =
-                                            it.nombre // (Opcional) Llena el query con el nombre seleccionado
+                                        navController.navigate("Chat/${it.usuario}/${it.nombre}")
                                     },
                                 fontSize = 16.sp
                             )
@@ -103,10 +117,10 @@ fun MensajesScreen(
                 }
             }
         } else {
-            androidx.compose.material3.Scaffold(
+            Scaffold(
                 topBar = {
                     MenuTopBar(true, false, loginViewModel, navController,
-                        searchBar = {
+                        Component = {
                             SearchBar(
                                 query = query,
                                 onQueryChange = { query = it },
@@ -122,7 +136,8 @@ fun MensajesScreen(
                                         }
                                     }
                                 },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier
+                                    .fillMaxWidth()
                                     .height(50.dp),
                             ) {}
                         })
@@ -135,6 +150,57 @@ fun MensajesScreen(
                         .background(BlueBackground)
                         .padding(padding)
                 ) {
+                    if (mensajeError != null) {
+                        mensajeError?.let { Text(text = it, color = Color.White) }
+                    } else {
+                        if (chats.isEmpty()) {
+                            Column (
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                            )
+                            {
+                                Text(text = "Aún no has hablado con nadie.", color = Color.White)
+                            }
+                        } else {
+                            LazyColumn {
+                                items(chats) { chat ->
+                                    Card(
+                                        modifier = Modifier
+                                            .padding(8.dp),
+                                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)),
+                                        elevation = CardDefaults.cardElevation(4.dp)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .padding(8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            // Botón con boleta y nombre
+                                            Button(
+                                                onClick = { navController.navigate(
+                                                    "Chat/${chat.destinatario}/${chat.nombre}"
+                                                ) },
+                                                modifier = Modifier.weight(0.8f),
+                                                colors = ButtonDefaults.buttonColors(
+                                                    Color(
+                                                        0xFFFFFFFF
+                                                    )
+                                                )
+                                            ) {
+                                                Column {
+                                                    Text(
+                                                        text = chat.nombre,
+                                                        fontSize = 14.sp,
+                                                        color = Color.Black
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
