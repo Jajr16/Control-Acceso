@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.prueba3.Views.AlumnosViewModel
+import com.example.prueba3.Views.EtsInfoViewModel
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 import kotlinx.coroutines.CoroutineScope
@@ -46,17 +47,21 @@ fun ListaAlumnosScreen(
     navController: NavController,
     idETS: String,
     viewModel: AlumnosViewModel,
-    loginViewModel: LoginViewModel
+    loginViewModel: LoginViewModel,
+    viewModel2: EtsInfoViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     ValidateSession(navController = navController) {
         val alumnosList by viewModel.alumnosList.collectAsState()
         val isLoading by remember { viewModel.loadingState }.collectAsState()
+        val etsDetail by remember { viewModel2.etsDetailState }.collectAsState()
 
         val userRole = loginViewModel.getUserRole()
 
         // Llama al ViewModel para obtener los datos al cambiar el idETS
         LaunchedEffect(idETS) {
             viewModel.fetchAlumno(idETS)
+            val idETS2 = idETS.toInt()
+            viewModel2.fetchEtsDetail(idETS2)
         }
 
         Scaffold(
@@ -85,7 +90,12 @@ fun ListaAlumnosScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "ETS Big Data",
+                        text = if (etsDetail != null) {
+                            val ets3 = etsDetail!!.ets
+                            "ETS de ${ets3.unidadAprendizaje} ${ets3.idPeriodo} "
+                        } else {
+                            "Detalles del ETS"
+                        },
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(top = 6.dp),
                         fontWeight = FontWeight.Bold,
@@ -117,7 +127,7 @@ fun ListaAlumnosScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(top = 100.dp), // Ajusta el padding superior para evitar superposición
+                            .padding(top = 150.dp), // Ajusta el padding superior para evitar superposición
                         contentPadding = PaddingValues(16.dp)
                     ) {
                         items(alumnosList) { alumno ->

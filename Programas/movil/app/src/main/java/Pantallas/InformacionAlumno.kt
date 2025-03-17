@@ -6,27 +6,43 @@ import Pantallas.components.ValidateSession
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CheckboxDefaults
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ExposedDropdownMenuBox
+import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -39,9 +55,49 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import com.example.prueba3.R
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.window.Dialog
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun InformacionAlumno(navController: NavController, loginViewModel: LoginViewModel) {
+
+    // Variables para aviso del boton "Registrar asistencia"
+
+    var showDialog by remember { mutableStateOf(false) }
+    var razon by remember { mutableStateOf("") }
+    var tipo by remember { mutableStateOf("") }
+    var expanded by remember { mutableStateOf(false) } // Estado para controlar la visibilidad del menú
+    val tipos = listOf(
+        "Aceptado: Verificado por el profesor.",
+        "Aceptado: Verificado con el código QR de la credencial.",
+        "Aceptado: Verificado con el reconocimiento facial."
+    )
+
+    val horaActual = remember { SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()) }
+    var showError by remember { mutableStateOf(false) }
+    var showSuccessDialog by remember { mutableStateOf(false) }
+
+    val razonValida = razon.length >= 5
+    val tipoValido = tipo.isNotEmpty()
+
+    // Variables para aviso del boton "Registrar incidencia"
+
+    var showDialog2 by remember { mutableStateOf(false) }
+    val tipos2 = listOf(
+        "Rechazado: Verificado por el profesor.",
+        "Rechazado: Verificado con el reconocimiento facial.",
+        "Rechazado: Verificado con el código QR de la credencial."
+    )
+
+
+
+    var showSuccessDialog2 by remember { mutableStateOf(false) }
+
     ValidateSession(navController = navController) {
         val userRole = loginViewModel.getUserRole()
 
@@ -187,7 +243,7 @@ fun InformacionAlumno(navController: NavController, loginViewModel: LoginViewMod
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(
-                        onClick = { /* Acción para registrar asistencia */ },
+                        onClick = { showDialog = true },
                         modifier = Modifier.weight(1f)
                             .padding(horizontal = 8.dp),
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF64BD67))
@@ -200,7 +256,7 @@ fun InformacionAlumno(navController: NavController, loginViewModel: LoginViewMod
                     }
 
                     Button(
-                        onClick = { /* Acción para registrar incidencia */ },
+                        onClick = { showDialog2 = true },
                         modifier = Modifier.weight(1f)
                             .padding(horizontal = 8.dp),
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFCB5252))
@@ -275,6 +331,352 @@ fun InformacionAlumno(navController: NavController, loginViewModel: LoginViewMod
                 }
             }
         }
+
+
+        if (showDialog) {
+
+
+            fun cerrarDialogo() {
+                showDialog = false
+                showError = false
+                razon = ""
+                tipo = ""
+            }
+
+            Dialog(onDismissRequest = { cerrarDialogo() }) {
+                Box(
+                    modifier = Modifier
+                        .background(Color.White, shape = RoundedCornerShape(8.dp))
+                        .padding(16.dp)
+                ) {
+                    Column {
+                        // Botón de cierre (X)
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.TopEnd
+                        ) {
+                            IconButton(onClick = { cerrarDialogo() }) {
+                                Icon(Icons.Default.Close, contentDescription = "Cerrar")
+                            }
+                        }
+
+                        // Título
+                        Text(
+                            text = "Registrar asistencia",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+
+                        // Mensaje con la hora actual
+                        Text(
+                            text = "Se registrará la asistencia del alumno a las $horaActual. ¿Está de acuerdo?",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+
+                        // Campo de Razón
+                        TextField(
+                            value = razon,
+                            onValueChange = { razon = it },
+                            label = { Text("Razón") },
+                            isError = !razonValida && razon.isNotEmpty(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        )
+                        if (!razonValida && razon.isNotEmpty()) {
+                            Text(
+                                text = "La razón debe tener al menos 5 letras.",
+                                color = Color.Red,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                        }
+
+                        // Campo de Tipo (Dropdown)
+                        ExposedDropdownMenuBox(
+                            expanded = expanded,
+                            onExpandedChange = { expanded = it }
+                        ) {
+                            TextField(
+                                value = tipo,
+                                onValueChange = { },
+                                label = { Text("Tipo") },
+                                readOnly = true,
+                                trailingIcon = {
+                                    Icon(Icons.Default.ArrowDropDown, contentDescription = "Desplegar")
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            ExposedDropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
+                            ) {
+                                tipos.forEach { item ->
+                                    DropdownMenuItem(
+                                        onClick = {
+                                            tipo = item
+                                            expanded = false
+                                        },
+                                        text = { Text(text = item) }
+                                    )
+                                }
+                            }
+                        }
+                        if (!tipoValido && showError) {
+                            Text(
+                                text = "Debe seleccionar un tipo.",
+                                color = Color.Red,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+
+                        // Mensaje de error general si intenta dar "Sí" sin llenar los campos
+                        if (showError) {
+                            Text(
+                                text = "Debe completar todos los campos correctamente.",
+                                color = Color.Red,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+
+                        // Botones "Sí" y "No"
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Button(
+                                onClick = {
+                                    if (razonValida && tipoValido) {
+                                        cerrarDialogo()
+                                        showSuccessDialog = true // Muestra el diálogo de éxito
+                                    } else {
+                                        showError = true // Muestra el mensaje de error
+                                    }
+                                },
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            ) {
+                                Text("Sí")
+                            }
+                            Button(
+                                onClick = { cerrarDialogo() },
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            ) {
+                                Text("No")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+// Dialogo de éxito
+        if (showSuccessDialog) {
+            Dialog(onDismissRequest = { showSuccessDialog = false }) {
+                Box(
+                    modifier = Modifier
+                        .background(Color.White, shape = RoundedCornerShape(8.dp))
+                        .padding(16.dp)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Reporte de asistencia creado con éxito",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+
+                        Button(
+                            onClick = { showSuccessDialog = false },
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        ) {
+                            Text("Aceptar")
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+        if (showDialog2) {
+
+
+            fun cerrarDialogo() {
+                showDialog2 = false
+                showError = false
+                razon = ""
+                tipo = ""
+            }
+
+            Dialog(onDismissRequest = { cerrarDialogo() }) {
+                Box(
+                    modifier = Modifier
+                        .background(Color.White, shape = RoundedCornerShape(8.dp))
+                        .padding(16.dp)
+                ) {
+                    Column {
+                        // Botón de cierre (X)
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.TopEnd
+                        ) {
+                            IconButton(onClick = { cerrarDialogo() }) {
+                                Icon(Icons.Default.Close, contentDescription = "Cerrar")
+                            }
+                        }
+
+                        // Título
+                        Text(
+                            text = "Registrar incidencia",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+
+                        // Mensaje con la hora actual
+                        Text(
+                            text = "Se registrará la incidencia del alumno a las $horaActual. ¿Está de acuerdo?",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+
+                        // Campo de Razón
+                        TextField(
+                            value = razon,
+                            onValueChange = { razon = it },
+                            label = { Text("Razón") },
+                            isError = !razonValida && razon.isNotEmpty(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        )
+                        if (!razonValida && razon.isNotEmpty()) {
+                            Text(
+                                text = "La razón debe tener al menos 5 letras.",
+                                color = Color.Red,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                        }
+
+                        // Campo de Tipo (Dropdown)
+                        ExposedDropdownMenuBox(
+                            expanded = expanded,
+                            onExpandedChange = { expanded = it }
+                        ) {
+                            TextField(
+                                value = tipo,
+                                onValueChange = { },
+                                label = { Text("Tipo") },
+                                readOnly = true,
+                                trailingIcon = {
+                                    Icon(Icons.Default.ArrowDropDown, contentDescription = "Desplegar")
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            ExposedDropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
+                            ) {
+                                tipos2.forEach { item ->
+                                    DropdownMenuItem(
+                                        onClick = {
+                                            tipo = item
+                                            expanded = false
+                                        },
+                                        text = { Text(text = item) }
+                                    )
+                                }
+                            }
+                        }
+                        if (!tipoValido && showError) {
+                            Text(
+                                text = "Debe seleccionar un tipo.",
+                                color = Color.Red,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+
+                        // Mensaje de error general si intenta dar "Sí" sin llenar los campos
+                        if (showError) {
+                            Text(
+                                text = "Debe completar todos los campos correctamente.",
+                                color = Color.Red,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+
+                        // Botones "Sí" y "No"
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Button(
+                                onClick = {
+                                    if (razonValida && tipoValido) {
+                                        cerrarDialogo()
+                                        showSuccessDialog = true // Muestra el diálogo de éxito
+                                    } else {
+                                        showError = true // Muestra el mensaje de error
+                                    }
+                                },
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            ) {
+                                Text("Sí")
+                            }
+                            Button(
+                                onClick = { cerrarDialogo() },
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            ) {
+                                Text("No")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+// Dialogo de éxito
+        if (showSuccessDialog2) {
+            Dialog(onDismissRequest = { showSuccessDialog2 = false }) {
+                Box(
+                    modifier = Modifier
+                        .background(Color.White, shape = RoundedCornerShape(8.dp))
+                        .padding(16.dp)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Reporte de incidencia creado con éxito",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+
+                        Button(
+                            onClick = { showSuccessDialog2 = false },
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        ) {
+                            Text("Aceptar")
+                        }
+                    }
+                }
+            }
+        }
+
+
+
     }
 }
 

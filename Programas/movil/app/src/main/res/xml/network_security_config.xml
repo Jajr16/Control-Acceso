@@ -60,5 +60,9 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">10.100.98.129</domain>
     </domain-config>
+
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">192.168.100.8</domain>
+    </domain-config>
 </network-security-config>
 
