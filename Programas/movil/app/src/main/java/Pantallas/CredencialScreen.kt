@@ -5,6 +5,8 @@ import Pantallas.components.ValidateSession
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,15 +30,16 @@ fun CredencialScreen(
     boleta: String,
     loginViewModel: LoginViewModel
 ) {
-
     ValidateSession(navController = navController) {
         val alumnosCredencial by viewModel.alumnosCredencial.collectAsState(initial = emptyList())
         val alumno = alumnosCredencial.firstOrNull()
-        val isLoading by viewModel.loadingState.collectAsState(initial = false)
+        var showAsistenciaDialog by remember { mutableStateOf(false) }
+        var showEscanearDialog by remember { mutableStateOf(false) }
 
         LaunchedEffect(boleta) {
             viewModel.fetchCredencialAlumnos(boleta)
         }
+
         Scaffold(
             bottomBar = { MenuBottomBar(navController = navController, loginViewModel.getUserRole()) }
         ) { padding ->
@@ -47,26 +50,19 @@ fun CredencialScreen(
                     .padding(padding)
                     .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
-
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "Credencial del Alumno",
                     fontSize = 30.sp,
                     fontWeight = FontWeight.Normal,
-                    color = Color.White
+                    color = Color.Black
                 )
 
-                Divider(
-                    modifier = Modifier
-                        .width(270.dp),
-                    thickness = 1.dp,
-                    color = Color.White
-                )
+                Divider(modifier = Modifier.width(270.dp), thickness = 1.dp, color = Color.Black)
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Imagen del alumno
                 AsyncImage(
                     model = if (!alumno?.ImagenCredencial.isNullOrBlank()) alumno?.ImagenCredencial else R.drawable.placeholder_image,
                     contentDescription = "Foto del alumno",
@@ -80,31 +76,86 @@ fun CredencialScreen(
                 InfoCard("Boleta", alumno?.boleta ?: "No disponible")
                 InfoCard("CURP", alumno?.curp ?: "No disponible")
                 InfoCard("Carrera", alumno?.carrera ?: "No disponible")
-                InfoCard("Unidad Academica", alumno?.unidadAcademica ?: "No disponible")
+                InfoCard("Unidad Académica", alumno?.unidadAcademica ?: "No disponible")
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Botones de acción
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(
-                        onClick = { /* TODO: Implementar funcionalidad */ },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6c1d45))
+                        onClick = { showAsistenciaDialog = true },
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
                     ) {
-                        Text("Registrar Asistencia", color = Color.White)
+                        Text("Registrar asistencia")
                     }
                     Button(
-                        onClick = { /* TODO: Implementar funcionalidad */ },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6c1d45))
+                        onClick = { showEscanearDialog = true },
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
                     ) {
-                        Text("Escanear Credencial", color = Color.White)
+                        Text("Escanear credencial")
                     }
                 }
             }
         }
+
+        if (showAsistenciaDialog) {
+            AlertDialog(
+                onDismissRequest = { showAsistenciaDialog = false },
+                title = { Text("Confirmación", fontWeight = FontWeight.Bold) },
+                text = { Text("¿Estás seguro de querer registrar la asistencia del alumno?") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showAsistenciaDialog = false
+                            // TODO: Agregar la lógica para registrar la asistencia
+                        }
+                    ) {
+                        Text("Aceptar")
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = { showAsistenciaDialog = false }
+                    ) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
+
+        if (showEscanearDialog) {
+            AlertDialog(
+                onDismissRequest = { showEscanearDialog = false },
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Filled.Warning, contentDescription = "Alerta", tint = Color(0xFFFFC107))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("¡Atención!", fontWeight = FontWeight.Bold)
+                    }
+                },
+                text = { Text("Si tienes dudas sobre la identidad del alumno, escanea su credencial para confirmar su identidad.") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showEscanearDialog = false
+                            navController.navigate("qrScanner")
+                        }
+                    ) {
+                        Text("Aceptar")
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = { showEscanearDialog = false }
+                    ) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
     }
 }
-
-

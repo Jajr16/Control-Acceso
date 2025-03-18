@@ -44,8 +44,7 @@ fun ConsultarScreen(
         Scaffold(
             topBar = {
                 MenuTopBar(
-                    true, true, loginViewModel,
-                    navController
+                    true, true, loginViewModel, navController
                 )
             },
             bottomBar = { MenuBottomBar(navController = navController, loginViewModel.getUserRole()) }
@@ -83,7 +82,7 @@ fun ConsultarScreen(
                                     alumno.apellidoP.contains(query, ignoreCase = true) ||
                                     alumno.apellidoM.contains(query, ignoreCase = true)
                         },
-                        onItemClick = { alumno -> navController.navigate("credencial/${alumno.boleta}") },
+                        onItemClick = { alumno -> navController.navigate("detallealumnos/${alumno.boleta}") },
                         placeholder = "Buscar por nombre o boleta",
                         itemContent = { alumno ->
                             Column(

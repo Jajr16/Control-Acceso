@@ -10,7 +10,7 @@ import retrofit2.http.Query
 
 interface DetallesApi {
 
-    @GET("alumno/detalle/{boleta}") suspend fun getalumnosDetalle(): List<DetalleAlumnos>
+    @GET("alumno/detalle/{boleta}") suspend fun getalumnosDetalle(@Path("boleta") boleta: String): List<DetalleAlumnos>
 
     @GET("alumno/credencial/{boleta}")
     suspend fun getalumnosCredencial(@Path("boleta") boleta: String): List<CredencialAlumnos>

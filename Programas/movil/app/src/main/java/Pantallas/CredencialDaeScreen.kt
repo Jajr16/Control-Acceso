@@ -44,7 +44,6 @@ fun CredencialDAEScreen(navController: NavController, loginViewModel: LoginViewM
 
     // Obtener la URL del código QR escaneado
     val url = navController.currentBackStackEntry?.arguments?.getString("url")
-    println("No se mando la url")
 
     ValidateSession(navController = navController) {
         Scaffold(
