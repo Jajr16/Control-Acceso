@@ -92,7 +92,7 @@ class AlumnosViewModel : ViewModel() {
     }
 
     // Función para actualizar la asistencia de un alumno
-    suspend fun updateAsistencia(boleta: String, idETS: Int, aceptado: Boolean) {
+    suspend fun updateAsistencia(boleta: String, idETS: Int, aceptado: Int) {
         try {
             val response = RetrofitInstance.aceptadoApi.updateAceptado(UpdateAceptadoRequest(boleta, idETS, aceptado))
 

@@ -10,7 +10,7 @@ data class AlumnosInfo(
     val sexo: String,
     val correo: String,
     val carrera: String,
-    val aceptado: Boolean // Nueva propiedad agregada
+    val aceptado: Int // Nueva propiedad agregada
 )
 
 
