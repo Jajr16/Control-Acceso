@@ -61,7 +61,7 @@ fun DetalleAlumnosScreen(
                     .background(BlueBackground)
                     .padding(padding)
                     .padding(horizontal = 16.dp)
-                    .verticalScroll(scrollState), // Habilitar scroll
+                    .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -81,12 +81,13 @@ fun DetalleAlumnosScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 AsyncImage(
-                    model = if (!alumno?.imagenCredencial.isNullOrBlank()) alumno?.imagenCredencial else R.drawable.placeholder_image,
+                    model = alumno?.imagenCredencial.takeUnless { it.isNullOrBlank() } ?: R.drawable.placeholder_image,
                     contentDescription = "Foto del alumno",
                     modifier = Modifier
                         .size(100.dp)
                         .clip(CircleShape)
                 )
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 InfoCard("Nombre", "${alumno?.nombreAlumno ?: ""} ${alumno?.apellidoPAlumno ?: ""} ${alumno?.apellidoMAlumno ?: ""}")
@@ -123,62 +124,90 @@ fun DetalleAlumnosScreen(
             AlertDialog(
                 onDismissRequest = { showAsistenciaDialog = false },
                 title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Filled.Warning, contentDescription = "Advertencia", tint = Color(0xFFFFC107))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        //Text("Confirmación", fontWeight = FontWeight.Bold)
+                        Icon(
+                            Icons.Filled.Warning,
+                            contentDescription = "Advertencia",
+                            tint = Color(0xFFFFC107),
+                            modifier = Modifier.size(32.dp)
+                        )
                     }
                 },
-                text = { Text("¿Estás seguro de querer registrar la asistencia del alumno?") },
+                text = {
+                    Text(
+                        "¿Estás seguro de querer registrar la asistencia del alumno?",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
                 confirmButton = {
-                    Button(
-                        onClick = {
-                            showAsistenciaDialog = false
-                            // TODO: Agregar la lógica para registrar la asistencia
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(
+                            onClick = { showAsistenciaDialog = false }
+                        ) {
+                            Text("Cancelar")
                         }
-                    ) {
-                        Text("Aceptar")
-                    }
-                },
-                dismissButton = {
-                    Button(
-                        onClick = { showAsistenciaDialog = false }
-                    ) {
-                        Text("Cancelar")
+                        Button(
+                            onClick = {
+                                showAsistenciaDialog = false
+                                // TODO: Agregar la lógica para registrar la asistencia
+                            }
+                        ) {
+                            Text("Aceptar")
+                        }
                     }
                 }
             )
         }
 
+
         if (showEscanearDialog) {
             AlertDialog(
                 onDismissRequest = { showEscanearDialog = false },
                 title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Filled.Warning, contentDescription = "Alerta", tint = Color(0xFFFFC107))
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            Icons.Filled.Warning,
+                            contentDescription = "Alerta",
+                            tint = Color(0xFFFFC107),
+                            modifier = Modifier.size(32.dp) // Ajusta el tamaño si es necesario
+                        )
                     }
                 },
-                text = { Text("Si tienes dudas sobre la identidad del alumno, escanea su credencial para confirmar su identidad.") },
+                text = {
+                    Text(
+                        "Si tienes dudas sobre la identidad del alumno, escanea su credencial para confirmar su identidad.",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
                 confirmButton = {
-                    Button(
-                        onClick = {
-                            showEscanearDialog = false
-                            navController.navigate("scanQr")
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(
+                            onClick = { showEscanearDialog = false }
+                        ) {
+                            Text("Cancelar")
                         }
-                    ) {
-                        Text("Aceptar")
-                    }
-                },
-                dismissButton = {
-                    Button(
-                        onClick = { showEscanearDialog = false }
-                    ) {
-                        Text("Cancelar")
+                        Button(
+                            onClick = {
+                                showEscanearDialog = false
+                                navController.navigate("scanQr")
+                            }
+                        ) {
+                            Text("Aceptar")
+                        }
                     }
                 }
             )
@@ -186,7 +215,7 @@ fun DetalleAlumnosScreen(
     }
 }
 
-@Composable
+        @Composable
 fun InfoCard(title: String, content: String) {
     Card(
         modifier = Modifier

@@ -15,6 +15,6 @@ interface DetallesApi {
     @GET("alumno/credencial/{boleta}")
     suspend fun getalumnosCredencial(@Path("boleta") boleta: String): List<CredencialAlumnos>
 
-        @GET("/ImageDAE/capturar")
-        suspend fun getCredencial(@Query("url") url: String): Response<ResponseBody>
+    @GET("/ImageDAE/capturar")
+    suspend fun getCredencial(@Query("url") url: String, @Query("boleta") boleta: String): Response<ResponseBody>
 }

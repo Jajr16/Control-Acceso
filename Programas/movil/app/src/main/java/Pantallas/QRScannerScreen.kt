@@ -97,13 +97,33 @@ fun QRScannerScreen(navController: NavController, loginViewModel: LoginViewModel
                             result.displayValue?.let { qrCode ->
                                 if (qrCode.isNotEmpty()) {
                                     println("Código QR escaneado: $qrCode")
-                                    navController.navigate("CredencialDAE?url=${Uri.encode(qrCode)}")
+
+                                    // Parsear el código QR para obtener la URL y la boleta
+                                    val url = qrCode.substringAfter("url=").substringBefore("&boleta=")
+                                    val boleta = qrCode.substringAfter("boleta=")
+
+                                    if (url.isNotEmpty() && boleta.isNotEmpty()) {
+                                        // Codificar la URL y la boleta
+                                        val encodedUrl = Uri.encode(url)
+                                        val encodedBoleta = Uri.encode(boleta)
+
+                                        // Construir la ruta de navegación
+                                        val route = "CredencialDAE?url=$encodedUrl&boleta=$encodedBoleta"
+
+                                        // Navegar a la pantalla CredencialDAE
+                                        navController.navigate(route)
+                                    } else {
+                                        println("Error: El código QR no contiene una URL o boleta válida.")
+                                        Toast.makeText(context, "Código QR no válido", Toast.LENGTH_SHORT).show()
+                                    }
                                 } else {
-                                    println("El código QR no contiene una URL válida.")
+                                    println("El código QR está vacío.")
+                                    Toast.makeText(context, "Código QR vacío", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         }
                     )
+
                     // Cuadro en el centro para marcar el área de escaneo
                     Box(
                         modifier = Modifier
