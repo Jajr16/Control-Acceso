@@ -1,4 +1,5 @@
 [versions]
+accompanistInsets = "0.28.0"
 accompanistPermissions = "0.36.0"
 agp = "8.6.0"
 androidxCameraCore = "1.0.2"
@@ -11,7 +12,12 @@ faceDetection = "17.0.2"
 faceDetectionVersion = "16.1.5"
 googleFaceDetection = "16.0.4"
 gradle = "8.0.2"
+hiltAndroid = "2.44"
+hiltAndroidCompiler = "2.44"
 kotlin = "2.1.0"
+composeCompiler = "1.5.1"
+hilt = "2.44"
+googleServices = "4.4.2"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -37,6 +43,11 @@ firebaseMessagingKtx = "24.1.0"
 roomKtx = "2.6.1"
 
 [libraries]
+firebase-database-ktx = { module = "com.google.firebase:firebase-database-ktx" }
+kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+hiltAndroid = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
+hiltCompiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
+accompanist-insets = { module = "com.google.accompanist:accompanist-insets", version.ref = "accompanistInsets" }
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCamera2" }
 androidx-camera-camera2-v102 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCamera2Version" }
@@ -54,7 +65,7 @@ face-detection = { module = "com.google.mlkit:face-detection", version = "16.1.7
 face-detection-v1604 = { module = "com.google.mlkit:face-detection", version.ref = "googleFaceDetection" }
 face-detection-v1615 = { module = "com.google.mlkit:face-detection", version.ref = "faceDetectionVersion" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
-gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
+hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -71,6 +82,7 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
 androidx-benchmark-macro = { group = "androidx.benchmark", name = "benchmark-macro", version.ref = "benchmarkMacro" }
+libs-hilt-android = { module = "libs:hilt-android" }
 logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor" }
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
@@ -85,6 +97,8 @@ androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = 
 
 
 [plugins]
-android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hiltAndroid" }

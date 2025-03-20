@@ -2,13 +2,15 @@ package com.example.prueba3
 
 import Pantallas.Camara
 import Pantallas.CalendarScreen
+import Pantallas.ChatScreen
 import Pantallas.ConsultarScreen
 import Pantallas.CreateAccountScreen
 import Pantallas.CredencialDaeScreen
 import Pantallas.CredencialScreen
 import Pantallas.DetalleAlumnosScreen
 import Pantallas.ETSInscriptionProcessScreen
-//import Pantallas.EtsCardButton
+import com.google.firebase.FirebaseApp
+import com.google.firebase.ktx.Firebase
 import Pantallas.EtsDetailScreen
 import Pantallas.EtsListScreen
 import Pantallas.EtsListScreenAlumno
@@ -22,14 +24,13 @@ import Pantallas.NotificationsScreen
 import Pantallas.Reporte
 import Pantallas.WelcomeScreen
 import Pantallas.WelcomeScreenDocente
-import RetroFit.RetrofitInstance
-import android.content.Context
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,13 +45,15 @@ import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.DiasETSModel
 import com.example.prueba3.Views.MensajesViewModel
-import com.example.prueba3.Views.PersonaViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 import com.example.prueba3.ui.theme.Prueba3Theme
+import dagger.hilt.android.AndroidEntryPoint
 import java.lang.Integer.parseInt
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+@RequiresApi(Build.VERSION_CODES.O)
 override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
@@ -65,8 +68,8 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
     val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
     val loginViewModel = LoginViewModel(sharedPreferences)
-    val personaViewModel = PersonaViewModel()
     val DiasETSModel = DiasETSModel()
+    val mensajesViewModel = MensajesViewModel()
 
     enableEdgeToEdge()
     setContent {
@@ -168,7 +171,20 @@ override fun onCreate(savedInstanceState: Bundle?) {
                         arguments = listOf(navArgument("user") { type = NavType.StringType })
                     ) { backStackEntry ->
                         val user = backStackEntry.arguments?.getString("user") ?: ""
-                        MensajesScreen(navController, user, loginViewModel, MensajesViewModel())
+                        MensajesScreen(navController, user, loginViewModel, mensajesViewModel)
+                    }
+
+                    composable(route = "Chat/{destinatario}/{nombre}",
+                        arguments = listOf(
+                            navArgument("destinatario") { type = NavType.StringType },
+                            navArgument("nombre") { type = NavType.StringType }
+                        )
+                    ) {
+                        backStackEntry ->
+                        val destinatario = backStackEntry.arguments?.getString("destinatario") ?: ""
+                        val nombre = backStackEntry.arguments?.getString("nombre") ?: ""
+
+                        ChatScreen(navController, destinatario, nombre, loginViewModel, mensajesViewModel)
                     }
 
                     composable(

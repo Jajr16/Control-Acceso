@@ -1,8 +1,18 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.gms.google-services")
-    alias(libs.plugins.compose.compiler)
+    id("kotlin-kapt")
+}
+
+kapt {
+    javacOptions {
+        // These options are normally set automatically via the Hilt Gradle plugin, but we
+        // set them manually to workaround a bug in the Kotlin 1.5.20
+        option("-Adagger.fastInit=ENABLED")
+        option("-Adagger.hilt.android.internal.disableAndroidSuperclassValidation=true")
+    }
 }
 
 android {
@@ -49,6 +59,11 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+    packagingOptions {
+        exclude("META-INF/gradle/incremental.annotation.processors")
+        exclude("META-INF/AL2.0")
+        exclude("META-INF/LGPL2.1")
     }
 }
 
@@ -118,8 +133,16 @@ dependencies {
     implementation(kotlin("script-runtime"))
 
 //    IMPORTAR FIREBASE
+    kapt(libs.hilt.android.compiler)
+    implementation(libs.kotlinStdlib)
+    implementation(libs.hiltAndroid)
+    kapt(libs.hiltCompiler)
+
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
     implementation(libs.firebase.analytics)
 
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation(libs.accompanist.insets)
+    implementation(libs.hilt.android.compiler)
+    kapt("com.google.dagger:hilt-android-compiler:2.44")
 }
