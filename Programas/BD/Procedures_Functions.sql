@@ -129,42 +129,40 @@ RETURNS TABLE(
     NombreA VARCHAR,
     ApellidoP VARCHAR,
     ApellidoM VARCHAR,
-    Sexo VARCHAR,  -- Ahora se obtiene el nombre del sexo
+    Sexo VARCHAR,
     Correo VARCHAR,
     Carrera VARCHAR,
-    Aceptado BOOLEAN
+    Aceptado INTEGER
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
     SELECT 
-        ai.inscripcionets_idets AS idETS,  -- ID del ETS
-        ai.inscripcionets_boleta AS Boleta, -- Boleta del alumno
-        a.curp AS CURP, -- CURP del alumno
-        p.nombre AS NombreA, -- Nombre del alumno
-        p.apellido_p AS ApellidoP, -- Apellido paterno
-        p.apellido_m AS ApellidoM, -- Apellido materno
-        s.nombre AS Sexo, -- Se une con la tabla 'sexo' para obtener el nombre
-        a.correoi AS Correo, -- Correo institucional
-        a.idpa::VARCHAR AS Carrera, -- ID de la carrera convertido a texto
-        ai.aceptado AS Aceptado -- Estado de aceptación
-    FROM asistenciainscripcion ai
-    INNER JOIN alumno a ON ai.inscripcionets_boleta = a.boleta
+        ai.idets AS idETS,  
+        ai.boleta AS Boleta, 
+        a.curp AS CURP, 
+        p.nombre AS NombreA, 
+        p.apellido_p AS ApellidoP, 
+        p.apellido_m AS ApellidoM, 
+        s.nombre AS Sexo, 
+        a.correoi AS Correo, 
+        a.idpa::VARCHAR AS Carrera, 
+        COALESCE(ax.estado, 0) AS Aceptado
+    FROM inscripcionets ai
+    INNER JOIN alumno a ON ai.boleta = a.boleta
     INNER JOIN persona p ON a.curp = p.curp
-    INNER JOIN sexo s ON p.sexo = s.id_sexo -- JOIN con la tabla 'sexo' para obtener el nombre
-    WHERE ai.inscripcionets_idets = etsprueba;
+    INNER JOIN sexo s ON p.sexo = s.id_sexo
+    LEFT JOIN ingreso_salon ax ON ai.boleta = ax.boleta
+    WHERE ai.idets = etsprueba;
 END;
 $$;
 
 
+DROP FUNCTION ObtenerAsistenciaDetalles
 
-DROP FUNCTION obtenerasistenciadetalles(integer)
 
-select * from programaacademico;
-select * from unidadaprendizaje;
-
-SELECT * FROM ObtenerAsistenciaDetalles(52);
+SELECT * FROM ObtenerAsistenciaDetalles(1);
 
 CREATE OR REPLACE FUNCTION obtenerpersona(
     boletaC VARCHAR(18)
@@ -308,6 +306,46 @@ EXECUTE FUNCTION crear_usuariopPS();
 
 select*from persona;
 
+-- FUNCIÓN PARA EL TRIGGER DE ASISTENCIAINCRIPCION
+
+CREATE OR REPLACE FUNCTION insertar_asistenciainscripcion()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Insertar en asistenciainscripcion usando los valores de la nueva fila en inscripcionets
+    INSERT INTO asistenciainscripcion (fecha_asistencia, inscripcionets_boleta, inscripcionets_idets, aceptado, asistio, resultado_rn)
+    SELECT e.fecha, NEW.boleta, NEW.idets, false, false, false
+    FROM ets e
+    WHERE e.idets = NEW.idets
+    AND NOT EXISTS (
+        SELECT 1
+        FROM asistenciainscripcion fa
+        WHERE fa.inscripcionets_boleta = NEW.boleta
+          AND fa.inscripcionets_idets = NEW.idets
+    );
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- TRIGGER PARA ASISTENCIAINCRIPCION
+
+CREATE TRIGGER trigger_insertar_asistenciainscripcion
+AFTER INSERT ON inscripcionets
+FOR EACH ROW
+EXECUTE FUNCTION insertar_asistenciainscripcion();
+
+-- PRUEBA DE LA LOGICA DEL TRIGGER DE ASISTENCIAINCRIPCION
+
+INSERT INTO asistenciainscripcion (fecha_asistencia, inscripcionets_boleta, inscripcionets_idets, aceptado, asistio, resultado_rn)
+SELECT e.fecha, i.boleta, i.idets, false, false, false
+FROM inscripcionets i
+JOIN ets e ON i.idets = e.idets
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM asistenciainscripcion fa
+    WHERE fa.inscripcionets_boleta = i.boleta
+      AND fa.inscripcionets_idets = i.idets
+);
 
 -- ON UPDATE CASCADE ON DELETE CASCADE 
 ALTER TABLE public.personalacademico

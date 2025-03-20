@@ -62,11 +62,11 @@ class AlumnosViewModel : ViewModel() {
     }
 
     // ======= Mostrar Informacion del alumno ===========
-    fun fetchDetalleAlumnos() {
+    fun fetchDetalleAlumnos(boleta: String) {
         viewModelScope.launch {
             try {
                 _loadingState.value = true
-                val alumnoState = RetrofitInstance.alumnosDetalle.getalumnosDetalle()
+                val alumnoState = RetrofitInstance.alumnosDetalle.getalumnosDetalle(boleta)
                 _alumnosDetalle.value = alumnoState
             }catch (e: Exception) {
                 _alumnosDetalle.value = emptyList()
@@ -92,7 +92,7 @@ class AlumnosViewModel : ViewModel() {
     }
 
     // Función para actualizar la asistencia de un alumno
-    suspend fun updateAsistencia(boleta: String, idETS: Int, aceptado: Boolean) {
+    suspend fun updateAsistencia(boleta: String, idETS: Int, aceptado: Int) {
         try {
             val response = RetrofitInstance.aceptadoApi.updateAceptado(UpdateAceptadoRequest(boleta, idETS, aceptado))
 

@@ -5,7 +5,7 @@ import com.example.prueba3.Clases.UpdateAceptadoRequest
 import retrofit2.HttpException
 
 // Función que hace la solicitud para actualizar el estado de aceptación
-suspend fun updateAceptado(boleta: String, idETS: Int, aceptado: Boolean) {
+suspend fun updateAceptado(boleta: String, idETS: Int, aceptado: Int) {
     val request = UpdateAceptadoRequest(boleta, idETS, aceptado)
 
     try {

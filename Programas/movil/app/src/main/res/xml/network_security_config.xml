@@ -52,7 +52,7 @@
         <domain includeSubdomains="true">172.100.73.133</domain>
     </domain-config>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">192.168.0.108</domain>
+        <domain includeSubdomains="true">192.168.1.108</domain>
     </domain-config>
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">192.168.135.49</domain>
@@ -63,5 +63,27 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">172.100.85.61</domain>
     </domain-config>
+
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">192.168.100.8</domain>
+    </domain-config>
+
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">172.100.93.211</domain>
+    </domain-config>
+
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">192.168.206.53</domain>
+    </domain-config>
+
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">192.168.100.7</domain>
+    </domain-config>
+
+
+
+
+
+
 </network-security-config>
 

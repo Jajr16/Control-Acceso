@@ -44,8 +44,7 @@ fun ConsultarScreen(
         Scaffold(
             topBar = {
                 MenuTopBar(
-                    true, true, loginViewModel,
-                    navController
+                    true, true, loginViewModel, navController
                 )
             },
             bottomBar = { MenuBottomBar(navController = navController, loginViewModel.getUserRole()) }
@@ -57,7 +56,6 @@ fun ConsultarScreen(
                     .padding(padding)
                     .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
-
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
@@ -69,20 +67,22 @@ fun ConsultarScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Si está cargando
                 if (isLoading) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(text = "Cargando...", style = MaterialTheme.typography.bodyLarge)
                     }
                 } else {
+                    // Buscador con la lista filtrada
                     BuscadorConLista(
-                        lista = alumnosListado,
+                        lista = filteredList,
                         filtro = { alumno, query ->
                             alumno.boleta.contains(query, ignoreCase = true) ||
                                     alumno.nombre.contains(query, ignoreCase = true) ||
                                     alumno.apellidoP.contains(query, ignoreCase = true) ||
                                     alumno.apellidoM.contains(query, ignoreCase = true)
                         },
-                        onItemClick = { alumno -> navController.navigate("credencial/${alumno.boleta}") },
+                        onItemClick = { alumno -> navController.navigate("detallealumnos/${alumno.boleta}") },
                         placeholder = "Buscar por nombre o boleta",
                         itemContent = { alumno ->
                             Column(
@@ -102,52 +102,9 @@ fun ConsultarScreen(
                             }
                         }
                     )
-//                    if (filteredList.isNotEmpty()) {
-//                    LazyColumn(
-//                        modifier = Modifier.fillMaxSize(),
-//                        contentPadding = PaddingValues(8.dp)
-//                    ) {
-//                        items(filteredList) { alumno ->
-//                            Card(
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .padding(vertical = 4.dp)
-//                                    .clickable { navController.navigate("scanQr") },
-//                                colors = CardDefaults.cardColors(containerColor = Color.White),
-//                                elevation = CardDefaults.cardElevation(4.dp)
-//                            )
-//                            {
-//                                Column(
-//                                    modifier = Modifier
-//                                        .fillMaxWidth()
-//                                        .padding(16.dp)
-//                                ) {
-//                                    Text(
-//                                        text = "Boleta: ${alumno.boleta}",
-//                                        fontWeight = FontWeight.Normal,
-//                                        fontSize = 16.sp
-//                                    )
-//                                    Text(
-//                                        text = "Nombre: ${alumno.nombre} ${alumno.apellidoP} ${alumno.apellidoM}",
-//                                        fontSize = 16.sp
-//                                    )
-//                                }
-//                            }
-//                        }
-//                    }
-//                } else {
-//                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-//                            Text(
-//                                text = "No hay alumnos para mostrar.",
-//                                color = Color.White,
-//                                style = MaterialTheme.typography.bodyLarge
-//                            )
-//                        }
-//                }
                 }
 
             }
-
         }
     }
 }
