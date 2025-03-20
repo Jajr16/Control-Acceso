@@ -1,17 +1,18 @@
 package com.example.prueba3.Clases
 
 data class DetalleAlumnos(
-    val foto: String?,
+    val imagenCredencial: String?,
+    val nombreAlumno: String,
+    val apellidoPAlumno: String,
+    val apellidoMAlumno: String,
     val boleta: String,
-    val nombre: String,
-    val apellidoP: String,
-    val apellidoM: String,
-    val ets: String,
-    val docente: String,
-    val salon: Int,
-    val turno: String,
+    val nombreETS: String,
+    val nombreTurno: String,
+    val salon: Integer,
     val fecha: String,
-    val error: Int,
+    val nombreDocente: String,
+    val apellidoPDocente: String,
+    val apellidoMDocente: String,
 )
 
 data class CredencialAlumnos(

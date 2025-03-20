@@ -14,6 +14,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -29,7 +30,7 @@ fun MenuTopBar(
     showMsgButton: Boolean,
     loginViewModel: LoginViewModel,
     navController: NavController,
-    searchBar: @Composable (() -> Unit)? = null // Pasamos el SearchBar como parámetro
+    Component: @Composable (() -> Unit)? = null // Pasamos el SearchBar como parámetro
 ) {
     val username = loginViewModel.getUserName()
 
@@ -37,8 +38,8 @@ fun MenuTopBar(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 27.dp, start = 10.dp, end = 10.dp)
-            .height(if (searchBar != null) 60.dp else 40.dp),
-        title = {}, // El título ahora es vacío, ya que no lo necesitamos
+            .height(if (Component != null) 60.dp else 40.dp),
+        title = {},
         navigationIcon = {
             if (showBackButton) {
                 IconButton(onClick = { navController.navigateUp() },
@@ -62,13 +63,14 @@ fun MenuTopBar(
                     )
                 }
             }
-            if (searchBar != null) {
+            if (Component != null) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = if (showBackButton) 56.dp else 0.dp)
+                        .padding(start = if (showBackButton) 56.dp else 0.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    searchBar()
+                    Component()
                 }
             }
         },

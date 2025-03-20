@@ -80,7 +80,7 @@ fun LoginScreen(
                 when (it.rol) {
                     "Alumno" -> navController.navigate("Menu Alumno") {
                         popUpTo(navController.graph.startDestinationId) { inclusive = true } }
-                    "Personal Seguridad" -> navController.navigate("Menu") {
+                    "Personal Seguridad" -> navController.navigate("scanQr") {
                         popUpTo("login") { inclusive = true } }
                     "Personal Academico", "Docente" -> navController.navigate("Menu Docente") {
                         popUpTo("login") { inclusive = true } }

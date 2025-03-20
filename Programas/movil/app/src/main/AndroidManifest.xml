@@ -7,6 +7,8 @@
         android:required="false" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
@@ -14,7 +16,11 @@
         android:maxSdkVersion="32"
         tools:ignore="ScopedStorage" />
 
+    <uses-permission android:name="com.google.firebase.INSTANCE_ID" />
+    <uses-permission android:name="com.google.firebase.MESSAGING" />
+
     <application
+        android:name=".MyApplication"
         android:enableOnBackInvokedCallback="true"
         android:networkSecurityConfig="@xml/network_security_config"
         android:allowBackup="true"
@@ -27,6 +33,15 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.Prueba3"
         tools:targetApi="31">
+        <service
+            android:name=".MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service android:name=".MessageUpdateService" android:exported="false"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

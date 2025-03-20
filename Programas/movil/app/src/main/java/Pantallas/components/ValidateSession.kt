@@ -45,24 +45,6 @@ fun ValidateSession(navController: NavController, onValidSession: @Composable ()
 
             clearSession(navController)
         }
-
-//        // Si no estamos en una ruta válida o ya estamos redirigiendo, no hacer nada
-//        if (currentRoute == null || isRedirecting.value) {
-//            isRedirecting.value = true
-//            navController.navigate("login") {
-//                popUpTo(navController.graph.startDestinationId) { inclusive = true }
-//            }
-//            clearSession(navController)
-//        }
-//
-//        // Si la pantalla actual está en la lista de excluidas, no hacer nada
-//        if (currentRoute in excludedScreens) {
-//            isRedirecting.value = true
-//            navController.navigate("login") {
-//                popUpTo(navController.graph.startDestinationId) { inclusive = true }
-//            }
-//            clearSession(navController)
-//        }
     } else if (sharedPreferences.getString("userRole", null) != null ||
         sharedPreferences.getString("userRole", null) != ""){
         println("El userRola es: $userRole")

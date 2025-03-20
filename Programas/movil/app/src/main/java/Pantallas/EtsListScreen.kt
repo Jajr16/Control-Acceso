@@ -44,7 +44,7 @@ import com.example.prueba3.ui.theme.BlueBackground
 fun EtsListScreen(navController: NavController,
                   viewModel: EtsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
                   loginViewModel: LoginViewModel
-                  ) {
+) {
     val userRole = loginViewModel.getUserRole()
 
     ValidateSession(navController = navController) {
