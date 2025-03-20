@@ -34,12 +34,15 @@ import androidx.navigation.NavController
 import com.example.prueba3.Views.EtsInfoViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.ui.theme.BlueBackground
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 @Composable
 fun EtsDetailScreen(
@@ -58,6 +61,12 @@ fun EtsDetailScreen(
 
         LaunchedEffect(idETS) {
             viewModel.fetchEtsDetail(idETS)
+        }
+
+        var savedRole by remember { mutableStateOf<String?>(null) }
+
+        LaunchedEffect(Unit) {
+            savedRole = loginViewModel.getUserRole()
         }
 
         Scaffold(
@@ -87,7 +96,7 @@ fun EtsDetailScreen(
                     },
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier
-                        .padding(top = 50.dp)
+                        .padding(top = 20.dp)
                         .fillMaxWidth(),
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -168,6 +177,8 @@ fun EtsDetailScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
+
+
                 // Botón fijo debajo de las tarjetas, sin afectar el BottomBar
                 Box(
                     modifier = Modifier
@@ -175,11 +186,25 @@ fun EtsDetailScreen(
                         .padding(bottom = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Button(
-                        onClick = { navController.navigate("ListaAlumnos/$idETS") },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6c1d45))
-                    ) {
-                        Text(text = "Ir a la lista de alumnos", color = Color.White)
+
+                    if (savedRole == "Personal Academico" || savedRole == "Docente") {
+
+                        Button(
+                            onClick = { navController.navigate("ListaAlumnos/$idETS") },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6c1d45))
+                        ) {
+                            Text(text = "Ir a la lista de alumnos", color = Color.White)
+                        }
+
+                    }else if(savedRole == "Personal Seguridad"){
+
+                        Button(
+                            onClick = { navController.navigate("ListaAlumnos/$idETS") },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6c1d45))
+                        ) {
+                            Text(text = "Ale pon tu boton XD", color = Color.White)
+                        }
+
                     }
                 }
             }

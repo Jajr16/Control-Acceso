@@ -170,8 +170,7 @@ fun InfoRow(label: String, value: String) {
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = value,
-                style = MaterialTheme.typography.bodyMedium, // Texto más pequeño
+                text = value,                style = MaterialTheme.typography.bodyMedium, // Texto más pequeño
                 color = Color.Black,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.End

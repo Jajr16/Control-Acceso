@@ -44,7 +44,7 @@ import com.example.prueba3.ui.theme.BlueBackground
 fun EtsListScreen(navController: NavController,
                   viewModel: EtsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
                   loginViewModel: LoginViewModel
-                  ) {
+) {
     val userRole = loginViewModel.getUserRole()
 
     ValidateSession(navController = navController) {
@@ -82,7 +82,7 @@ fun EtsListScreen(navController: NavController,
                 modifier = Modifier
                     .fillMaxSize()
                     .background(BlueBackground)
-                    .padding(start = 16.dp, top = 0.dp, end = 16.dp)
+                    .padding(start = 16.dp, top = 0.dp, end = 16.dp, bottom = 0.dp)
             ) {
 
                 // Barra de búsqueda
@@ -90,13 +90,13 @@ fun EtsListScreen(navController: NavController,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 50.dp)
+                        .padding(top = 0.dp, bottom = 0.dp)
                 ) {
                     Text(
                         text = "Lista de ETS",
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 0.dp, top = 80.dp)
                             .align(Alignment.CenterHorizontally),
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
@@ -105,7 +105,7 @@ fun EtsListScreen(navController: NavController,
 
                     Divider(
                         modifier = Modifier
-                            .padding(vertical = 8.dp)
+                            .padding(vertical = 0.dp)
                             .width(270.dp),
                         thickness = 1.dp,
                         color = Color.LightGray
@@ -113,7 +113,7 @@ fun EtsListScreen(navController: NavController,
                 }
 
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 if (isLoading) {
                     Box(
@@ -132,7 +132,7 @@ fun EtsListScreen(navController: NavController,
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(padding)
+                            .padding(bottom = 0.dp, top = 20.dp)
                     ) {
 //                      ============= BUSCADOR =============
                         BuscadorConLista(
@@ -175,7 +175,7 @@ fun EtsListScreen(navController: NavController,
                                             .clickable(onClick = { selectedFilter = "Todos" })
                                             .weight(1f)
                                             .height(35.dp)
-                                            .padding(4.dp)
+                                            .padding(2.dp)
                                     ) {
                                         Text(
                                             text = "Todos",
@@ -196,7 +196,7 @@ fun EtsListScreen(navController: NavController,
                                             .clickable(onClick = { selectedFilter = "Mis ETS" })
                                             .weight(1f)
                                             .height(35.dp)
-                                            .padding(4.dp)
+                                            .padding(2.dp)
                                     ) {
                                         Text(
                                             text = "Mis ETS",
@@ -207,7 +207,7 @@ fun EtsListScreen(navController: NavController,
                                     }
                                 }
 
-                                Spacer(modifier = Modifier.height(15.dp))
+                                //Spacer(modifier = Modifier.height(15.dp))
                             }
                         )
                     }

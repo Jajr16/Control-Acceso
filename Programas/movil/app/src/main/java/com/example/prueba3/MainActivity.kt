@@ -5,8 +5,9 @@ import Pantallas.CalendarScreen
 import Pantallas.ChatScreen
 import Pantallas.ConsultarScreen
 import Pantallas.CreateAccountScreen
-import Pantallas.CredencialDAEScreen
+import Pantallas.CredencialDaeScreen
 import Pantallas.CredencialScreen
+import Pantallas.DetalleAlumnosScreen
 import Pantallas.ETSInscriptionProcessScreen
 import com.google.firebase.FirebaseApp
 import com.google.firebase.ktx.Firebase
@@ -109,6 +110,17 @@ override fun onCreate(savedInstanceState: Bundle?) {
                         )
                     }
 
+                    composable("detallealumnos/{boleta}") { backStackEntry ->
+                        val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
+                        DetalleAlumnosScreen(
+                            navController = navController,
+                            loginViewModel = loginViewModel,
+                            viewModel = alumnosViewModel,
+                            boleta = boleta
+                        )
+                    }
+
+
                     composable("LETS") { EtsListScreen(navController, loginViewModel = loginViewModel) }
                     composable("InfoA") { InformacionAlumno(navController, loginViewModel = loginViewModel) }
                     composable("Reporte") { Reporte(navController, loginViewModel = loginViewModel) }
@@ -119,8 +131,21 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
 
                     composable("Calendar") { CalendarScreen(navController, loginViewModel, DiasETSModel) }
-                    composable("CredencialDAE") { CredencialDAEScreen(navController, loginViewModel) }
-
+                    composable(
+                        route = "CredencialDAE?url={url}&boleta={boleta}", // Define la ruta con dos argumentos
+                        arguments = listOf(
+                            navArgument("url") { // Define el argumento "url"
+                                type = NavType.StringType // Especifica que es de tipo String
+                            },
+                            navArgument("boleta") { // Define el argumento "boleta"
+                                type = NavType.StringType // Especifica que es de tipo String
+                            }
+                        )
+                    ) { backStackEntry ->
+                        val url = backStackEntry.arguments?.getString("url")
+                        val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
+                        CredencialDaeScreen(navController, loginViewModel, url, viewModel = alumnosViewModel, boleta)
+                    }
 
                     composable("ConsultarAlumnos") {
                         ConsultarScreen(navController, viewModel = alumnosViewModel, loginViewModel = loginViewModel)
