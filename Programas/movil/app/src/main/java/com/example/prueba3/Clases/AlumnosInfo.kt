@@ -1,6 +1,6 @@
 package com.example.prueba3.Clases
 
-data class AlumnosInfo(
+data class  AlumnosInfo(
     val idETS: Int,
     val boleta: String,
     val cURP: String,

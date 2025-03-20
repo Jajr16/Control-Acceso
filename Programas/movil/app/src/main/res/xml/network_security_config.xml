@@ -76,6 +76,11 @@
         <domain includeSubdomains="true">192.168.206.53</domain>
     </domain-config>
 
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">192.168.100.7</domain>
+    </domain-config>
+
+
 
 
 
