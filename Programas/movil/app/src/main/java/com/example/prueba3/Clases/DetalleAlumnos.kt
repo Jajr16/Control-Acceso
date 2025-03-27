@@ -1,5 +1,8 @@
 package com.example.prueba3.Clases
 
+import java.sql.Time
+import java.util.Date
+
 data class DetalleAlumnos(
     val imagenCredencial: String?,
     val nombreAlumno: String,
@@ -24,4 +27,19 @@ data class CredencialAlumnos(
     val curp: String,
     val carrera: String,
     val unidadAcademica: String
+)
+
+data class credencialResponse(
+    val imagen: String,
+    val credenciales: List<CredencialAlumnos>
+)
+
+data class regitrarAsistencia (
+    val boleta: String,
+    val nombre: String,
+    val apellidoP: String,
+    val apellidoM: String,
+    val idETS: String,
+    val fecha: Date,
+    val horaIngreso: Time
 )

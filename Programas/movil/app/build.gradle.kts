@@ -134,6 +134,9 @@ dependencies {
     implementation(libs.face.detection.v1604)
     implementation(kotlin("script-runtime"))
 
+    implementation ("androidx.compose.material:material:1.5.4")
+    implementation ("androidx.compose.material:material-icons-extended:1.5.4")
+
 //    IMPORTAR FIREBASE
     kapt(libs.hilt.android.compiler)
     implementation(libs.kotlinStdlib)
