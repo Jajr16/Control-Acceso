@@ -2,6 +2,7 @@ package com.example.prueba3.Views
 
 import RetroFit.RetrofitInstance
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -10,6 +11,7 @@ import com.example.prueba3.Clases.CredencialAlumnos
 import com.example.prueba3.Clases.DetalleAlumnos
 import com.example.prueba3.Clases.ListaInfor
 import com.example.prueba3.Clases.UpdateAceptadoRequest
+import com.example.prueba3.Clases.regitrarAsistencia
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -30,6 +32,14 @@ class AlumnosViewModel : ViewModel() {
     private val _loadingState = MutableStateFlow(true)
     val loadingState: StateFlow<Boolean> = _loadingState
 
+    private val _alumnoRegistro = MutableStateFlow<List<regitrarAsistencia>>(emptyList())
+    val alumnoRegistro: StateFlow<List<regitrarAsistencia>> = _alumnoRegistro
+
+    private val _registroSuccess = mutableStateOf(false)
+    val registroSuccess = mutableStateOf(false)
+
+    private val _errorMessage = mutableStateOf<String?>(null)
+    val errorMessage = mutableStateOf<String?>(null)
 
     // Función para obtener los datos de alumnos
     fun fetchAlumno(ETSid: String) {
@@ -89,6 +99,33 @@ class AlumnosViewModel : ViewModel() {
                 _loadingState.value = false
             }
         }
+    }
+
+    //========== Registrar el ingreso a la instalacion del alumno
+    fun registrarAsistencia(boleta: String) {
+        viewModelScope.launch {
+            try {
+                _loadingState.value = true
+                _errorMessage.value = null
+                val response = RetrofitInstance.alumnosDetalle.getregistrarEntrada(boleta)
+
+                if (response.isNotEmpty()) {
+                    _alumnoRegistro.value = response
+                    _registroSuccess.value = true
+                } else {
+                    _errorMessage.value = "No se pudo registrar la asistencia"
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Error: ${e.message}"
+            } finally {
+                _loadingState.value = false
+            }
+        }
+    }
+
+    fun clearRegistrationState() {
+        _registroSuccess.value = false
+        _errorMessage.value = null
     }
 
     // Función para actualizar la asistencia de un alumno

@@ -52,7 +52,7 @@
         <domain includeSubdomains="true">172.100.73.133</domain>
     </domain-config>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">192.168.1.108</domain>
+        <domain includeSubdomains="true">192.168.1.69</domain>
     </domain-config>
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">192.168.135.49</domain>
