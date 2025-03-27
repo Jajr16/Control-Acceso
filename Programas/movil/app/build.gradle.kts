@@ -112,6 +112,7 @@ dependencies {
     implementation(libs.androidx.ui.test.android)
     implementation(libs.firebase.messaging.ktx)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.transport.api)
     testImplementation(libs.junit)
     implementation(libs.material3)
     androidTestImplementation(libs.androidx.junit)

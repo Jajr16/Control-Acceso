@@ -41,6 +41,8 @@ playServicesMlkitBarcodeScanning = "18.3.1"
 uiTestAndroid = "1.7.5"
 firebaseMessagingKtx = "24.1.0"
 roomKtx = "2.6.1"
+transportApi = "3.0.0"
+firebasePerfKtx = "21.0.5"
 
 [libraries]
 firebase-database-ktx = { module = "com.google.firebase:firebase-database-ktx" }
@@ -94,6 +96,8 @@ play-services-mlkit-barcode-scanning = { group = "com.google.android.gms", name 
 androidx-ui-test-android = { group = "androidx.compose.ui", name = "ui-test-android", version.ref = "uiTestAndroid" }
 firebase-messaging-ktx = { group = "com.google.firebase", name = "firebase-messaging-ktx", version.ref = "firebaseMessagingKtx" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
+transport-api = { group = "com.google.android.datatransport", name = "transport-api", version.ref = "transportApi" }
+firebase-perf-ktx = { group = "com.google.firebase", name = "firebase-perf-ktx", version.ref = "firebasePerfKtx" }
 
 
 [plugins]
