@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.prueba3.Clases.AlumnoEspecifico
 import com.example.prueba3.Clases.AlumnosInfo
 import com.example.prueba3.Clases.CredencialAlumnos
 import com.example.prueba3.Clases.DetalleAlumnos
@@ -21,6 +22,9 @@ class AlumnosViewModel : ViewModel() {
     private val _alumnosListado = MutableStateFlow<List<ListaInfor>>(emptyList())
     val alumnosListado: StateFlow<List<ListaInfor>> = _alumnosListado
 
+    private val _alumnoEspecifico = MutableStateFlow<AlumnoEspecifico?>(null)
+    val alumnoEspecifico: StateFlow<AlumnoEspecifico?> = _alumnoEspecifico
+
     private val _alumnosDetalle = MutableStateFlow<List<DetalleAlumnos>>(emptyList())
     val alumnosDetalle: StateFlow<List<DetalleAlumnos>> = _alumnosDetalle
 
@@ -29,6 +33,30 @@ class AlumnosViewModel : ViewModel() {
 
     private val _loadingState = MutableStateFlow(true)
     val loadingState: StateFlow<Boolean> = _loadingState
+
+
+    private val _fotoAlumno = MutableStateFlow<ByteArray?>(null)
+    val fotoAlumno: StateFlow<ByteArray?> = _fotoAlumno
+
+
+    // ======== Obtener la foto del alumno ============
+    fun fetchFotoAlumno(boleta: String) {
+        viewModelScope.launch {
+            try {
+                _loadingState.value = true
+                val responseBody = RetrofitInstance.alumnoEspecifico.getFotoAlumno(boleta)
+
+                // Convertimos el contenido de ResponseBody a ByteArray
+                val fotoBytes = responseBody.bytes()
+                _fotoAlumno.value = fotoBytes
+            } catch (e: Exception) {
+                println("Error al obtener la foto: ${e.localizedMessage}")
+                _fotoAlumno.value = null
+            } finally {
+                _loadingState.value = false
+            }
+        }
+    }
 
 
     // Función para obtener los datos de alumnos
@@ -90,6 +118,22 @@ class AlumnosViewModel : ViewModel() {
             }
         }
     }
+
+    fun fetchAlumnoEspecifico(boleta: String) {
+        viewModelScope.launch {
+            try {
+                _loadingState.value = true
+                val response = RetrofitInstance.alumnoEspecifico.getAlumnoEspecifico(boleta)
+                _alumnoEspecifico.value = response
+            } catch (e: Exception) {
+                _alumnoEspecifico.value = null
+                println("Error al obtener datos específicos: ${e.localizedMessage}")
+            } finally {
+                _loadingState.value = false
+            }
+        }
+    }
+
 
     // Función para actualizar la asistencia de un alumno
     suspend fun updateAsistencia(boleta: String, idETS: Int, aceptado: Int) {

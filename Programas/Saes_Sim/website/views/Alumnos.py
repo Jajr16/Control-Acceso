@@ -8,6 +8,55 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 import json
 
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+from django.http import JsonResponse
+
+# En views.py
+from django.views.decorators.csrf import csrf_exempt
+
+
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+import os
+
+from django.http import JsonResponse, HttpResponse
+import json
+import os
+
+@csrf_exempt
+def obtener_imagen(request):
+    if request.method == 'POST':
+        try:
+            print("Cuerpo de la solicitud:", request.body)
+            # Obtener la ruta de la imagen desde la petición
+            data = json.loads(request.body)
+            ruta_imagen = data.get('ruta_imagen')
+
+            if not ruta_imagen:
+                return JsonResponse({'error': 'Ruta de imagen no proporcionada'}, status=400)
+
+            # base_path = 'D:/Repositorio/Control-Acceso4/Control-Acceso/Programas/Saes_Sim/'
+            #ruta_imagen_completa = os.path.join(base_path, ruta_imagen)
+
+            print(f"Ruta de la imagen: {ruta_imagen}")
+
+            if not os.path.exists(ruta_imagen):
+                return JsonResponse({'error': 'Ruta de imagen no encontrada'}, status=404)
+
+            # Leer la imagen y devolverla como respuesta
+            with open(ruta_imagen, 'rb') as imagen_file:
+                return HttpResponse(imagen_file.read(), content_type="image/jpeg")
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
+
+
 def carreras(request):
     escuela = request.GET.get("escuela")
     

@@ -148,7 +148,7 @@ fun ListaAlumnosScreen(
                                 ) {
                                     // Botón con boleta y nombre
                                     Button(
-                                        onClick = { navController.navigate("InfoA") },
+                                        onClick = { navController.navigate("InfoA/$idETS/${alumno.boleta}") },
                                         modifier = Modifier.weight(0.8f),
                                         colors = ButtonDefaults.buttonColors(Color(0xFFFFFFFF)) // Color más oscuro
                                     ) {
@@ -181,7 +181,7 @@ fun ListaAlumnosScreen(
 
                                     IconButton(
                                         onClick = {
-                                            navController.navigate("Reporte")
+                                            navController.navigate("Reporte/$idETS/${alumno.boleta}/${alumno.aceptado}")
                                         },
                                         modifier = Modifier
                                             .size(50.dp)

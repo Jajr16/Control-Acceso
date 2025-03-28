@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'website',
     'captcha',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -50,6 +51,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://192.168.100.7:8080",  # Agrega aquí tu IP y puerto
 ]
 
 ROOT_URLCONF = 'Saes_Sim.urls'
@@ -136,3 +142,8 @@ CAPTCHA_FONT_SIZE = 36
 CAPTCHA_BACKGROUND_COLOR = '#ffffff'
 CAPTCHA_FOREGROUND_COLOR = '#000000'
 CAPTCHA_NOISE_FUNCTIONS = ('captcha.helpers.noise_arcs', 'captcha.helpers.noise_dots')
+
+CSRF_COOKIE_DOMAIN = None  # Acepta cualquier dominio (en entornos de desarrollo)
+CSRF_COOKIE_HTTPONLY = False  # Permite acceso a la cookie desde JavaScript
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.100.7']  # Incluye tu IP
