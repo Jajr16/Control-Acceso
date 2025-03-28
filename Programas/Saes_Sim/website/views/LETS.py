@@ -48,6 +48,7 @@ class NETSView(View):
             idPeriodo = int(form.cleaned_data['idPeriodo'])
             turno = form.cleaned_data['Turno']
             fecha = form.cleaned_data['Fecha'].strftime('%Y-%m-%d')
+            hora = form.cleaned_data['hora'].strftime('%H:%M')
             cupo = form.cleaned_data['Cupo']
             idUA = form.cleaned_data['idUA']
             duracion = form.cleaned_data['Duracion']
@@ -56,6 +57,7 @@ class NETSView(View):
                 "idPeriodo": idPeriodo,
                 "turno": turno,
                 "fecha": fecha,
+                "hora": hora,
                 "cupo": cupo,
                 "idUA": idUA,
                 "duracion": duracion,

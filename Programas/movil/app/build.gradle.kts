@@ -146,4 +146,6 @@ dependencies {
     implementation(libs.accompanist.insets)
     implementation(libs.hilt.android.compiler)
     kapt("com.google.dagger:hilt-android-compiler:2.44")
+
+    implementation("com.google.firebase:firebase-appdistribution:3.1.0")
 }

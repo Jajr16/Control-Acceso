@@ -126,6 +126,7 @@ class ETSForm(forms.Form):
     )
     Fecha = forms.DateField(widget=forms.DateInput(attrs={'type': 'date',
                                                         'min': date.today().strftime('%Y-%m-%d'),}))
+    hora = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))  
     Cupo = forms.IntegerField(min_value=1)
     Duracion = forms.IntegerField(min_value=1)
     docente = forms.ChoiceField(label="Docente", required=False)
