@@ -4,6 +4,6 @@ data class UpdateAceptadoRequest(
 
     val Boleta: String,
     val idETS: Int,
-    val aceptado: Boolean
+    val aceptado: Int
 
 )

@@ -30,11 +30,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.prueba3.R
 import com.example.prueba3.Views.AlumnosViewModel
+import com.example.prueba3.Views.EtsInfoViewModel
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 import kotlinx.coroutines.CoroutineScope
@@ -46,17 +49,21 @@ fun ListaAlumnosScreen(
     navController: NavController,
     idETS: String,
     viewModel: AlumnosViewModel,
-    loginViewModel: LoginViewModel
+    loginViewModel: LoginViewModel,
+    viewModel2: EtsInfoViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     ValidateSession(navController = navController) {
         val alumnosList by viewModel.alumnosList.collectAsState()
         val isLoading by remember { viewModel.loadingState }.collectAsState()
+        val etsDetail by remember { viewModel2.etsDetailState }.collectAsState()
 
         val userRole = loginViewModel.getUserRole()
 
         // Llama al ViewModel para obtener los datos al cambiar el idETS
         LaunchedEffect(idETS) {
             viewModel.fetchAlumno(idETS)
+            val idETS2 = idETS.toInt()
+            viewModel2.fetchEtsDetail(idETS2)
         }
 
         Scaffold(
@@ -85,7 +92,12 @@ fun ListaAlumnosScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "ETS Big Data",
+                        text = if (etsDetail != null) {
+                            val ets3 = etsDetail!!.ets
+                            "ETS de ${ets3.unidadAprendizaje} ${ets3.idPeriodo} "
+                        } else {
+                            "Detalles del ETS"
+                        },
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(top = 6.dp),
                         fontWeight = FontWeight.Bold,
@@ -117,7 +129,7 @@ fun ListaAlumnosScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(top = 100.dp), // Ajusta el padding superior para evitar superposición
+                            .padding(top = 150.dp), // Ajusta el padding superior para evitar superposición
                         contentPadding = PaddingValues(16.dp)
                     ) {
                         items(alumnosList) { alumno ->
@@ -155,10 +167,16 @@ fun ListaAlumnosScreen(
                                     }
 
                                     // Botón redondo con estado
-                                    val (color, icon) = when (alumno.aceptado) {
-                                        true -> Color(0xFF4CAF50) to Icons.Filled.Check
-                                        false -> Color(0xFFF44336) to Icons.Filled.Close
-                                        else -> Color.Gray to Icons.Filled.Info
+                                    val iconResId = when (alumno.aceptado) {
+                                        -1 -> R.drawable.icono4
+                                        0 -> R.drawable.icono8
+                                        1 -> R.drawable.icono1
+                                        2 -> R.drawable.icono2
+                                        3 -> R.drawable.icono3
+                                        4 -> R.drawable.icono5
+                                        5 -> R.drawable.icono6
+                                        6 -> R.drawable.icono7
+                                        else -> R.drawable.icono1
                                     }
 
                                     IconButton(
@@ -172,9 +190,9 @@ fun ListaAlumnosScreen(
                                             .clip(RoundedCornerShape(12.dp)) // Bordes redondeados
                                     ) {
                                         Icon(
-                                            imageVector = icon,
+                                            painter = painterResource(id = iconResId), // Usar PNG
                                             contentDescription = "Estado",
-                                            tint = color,
+
                                             modifier = Modifier.size(40.dp)
                                         )
                                     }
