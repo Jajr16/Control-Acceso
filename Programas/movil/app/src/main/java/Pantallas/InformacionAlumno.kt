@@ -3,6 +3,7 @@ package Pantallas
 import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -41,6 +42,8 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -57,16 +60,27 @@ import androidx.compose.ui.res.painterResource
 import com.example.prueba3.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.window.Dialog
+import com.example.prueba3.Views.AlumnosViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun InformacionAlumno(navController: NavController, loginViewModel: LoginViewModel) {
+fun InformacionAlumno(navController: NavController,idETS: String,boleta: String, loginViewModel: LoginViewModel, viewModel: AlumnosViewModel) {
 
     // Variables para aviso del boton "Registrar asistencia"
+    val fotoAlumno by viewModel.fotoAlumno.collectAsState()
+    val alumnoEspecifico by viewModel.alumnoEspecifico.collectAsState()
+
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchAlumnoEspecifico(boleta)
+        viewModel.fetchFotoAlumno(boleta)
+    }
 
     var showDialog by remember { mutableStateOf(false) }
     var razon by remember { mutableStateOf("") }
@@ -99,6 +113,9 @@ fun InformacionAlumno(navController: NavController, loginViewModel: LoginViewMod
     var showSuccessDialog2 by remember { mutableStateOf(false) }
 
     ValidateSession(navController = navController) {
+
+
+
         val userRole = loginViewModel.getUserRole()
 
         Scaffold(topBar = {
@@ -145,93 +162,121 @@ fun InformacionAlumno(navController: NavController, loginViewModel: LoginViewMod
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             // Foto del alumno (más grande)
-                            Image(
-                                painter = painterResource(id = R.drawable.icon_camara), // Cambia por tu recurso de imagen
-                                contentDescription = "Foto de perfil",
-                                modifier = Modifier
-                                    .size(150.dp) // Foto más grande
-                                    .clip(CircleShape)
-                                    .border(2.dp, Color.Gray, CircleShape)
-                            )
+                            if (fotoAlumno != null) {
+                                val bitmap = BitmapFactory.decodeByteArray(fotoAlumno, 0, fotoAlumno!!.size)
+                                Image(
+                                    bitmap = bitmap.asImageBitmap(),
+                                    contentDescription = "Foto de perfil",
+                                    modifier = Modifier
+                                        .size(150.dp)
+                                        .clip(CircleShape)
+                                        .border(2.dp, Color.Gray, CircleShape),
+                                    contentScale = ContentScale.Crop
 
-                            // Datos del alumno y programa académico
-                            Column(
-                                modifier = Modifier
-                                    .padding(start = 16.dp)
-                                    .weight(1f)
-                            ) {
-                                // Alumno
-                                Text(
-                                    text = "Alumno:",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.Gray,
-                                    modifier = Modifier.padding(bottom = 4.dp)
                                 )
-                                Text(
-                                    text = "Huertas Ramírez Daniel Martín",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.Black,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(bottom = 12.dp)
-                                )
-
-                                // Programa académico
-                                Text(
-                                    text = "Programa académico:",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.Gray,
-                                    modifier = Modifier.padding(bottom = 4.dp)
-                                )
-                                Text(
-                                    text = "Ingeniería en inteligencia artificial",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.Black,
-                                    fontWeight = FontWeight.Bold
+                            } else {
+                                Image(
+                                    painter = painterResource(id = R.drawable.icon_camara), // Foto predeterminada
+                                    contentDescription = "Foto de perfil",
+                                    modifier = Modifier
+                                        .size(150.dp)
+                                        .clip(CircleShape)
+                                        .border(2.dp, Color.Gray, CircleShape),
+                                    contentScale = ContentScale.Crop
                                 )
                             }
+
+                            // Datos del alumno y programa académico
+
+                            alumnoEspecifico?.let { alumno ->
+                                Column(
+                                    modifier = Modifier
+                                        .padding(start = 16.dp)
+                                        .fillMaxWidth()
+                                ) {
+                                    // Alumno
+                                    Text(
+                                        text = "Alumno:",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Gray,
+                                        modifier = Modifier.padding(bottom = 4.dp)
+                                    )
+                                    Text(
+                                        text = "${alumno.apellidoP.trim()} ${alumno.apellidoM.trim()} ${alumno.nombre.trim()}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Black,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(bottom = 12.dp)
+                                    )
+
+                                    // Programa académico
+                                    Text(
+                                        text = "Programa académico:",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Gray,
+                                        modifier = Modifier.padding(bottom = 4.dp)
+                                    )
+                                    Text(
+                                        text = alumno.unidadAcademica.trim(),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Black,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            } ?: run {
+                                Text(
+                                    text = "No se encontraron datos.",
+                                    color = Color.Red,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
+
                         }
 
                         // Fila inferior: Boleta y CURP
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // Boleta
-                            Column(
-                                modifier = Modifier.weight(1f)
+                        alumnoEspecifico?.let { alumno ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = "Boleta:",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.Gray
-                                )
-                                Text(
-                                    text = "2021330022",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.Black,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                                // Boleta
+                                Column(
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(
+                                        text = "Boleta:",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Gray
+                                    )
+                                    Text(
+                                        text = alumno.boleta.trim(),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Black,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
 
-                            // CURP
-                            Column(
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(
-                                    text = "CURP:",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.Gray
-                                )
-                                Text(
-                                    text = "HURD030120HDFRMNA0",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.Black,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                // CURP
+                                Column(
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(
+                                        text = "CURP:",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Gray
+                                    )
+                                    Text(
+                                        text = alumno.curp.trim(),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Black,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                             }
                         }
+
                     }
                 }
 
@@ -306,7 +351,7 @@ fun InformacionAlumno(navController: NavController, loginViewModel: LoginViewMod
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(
-                        onClick = { /* Acción para verificar QR */ },
+                        onClick = { navController.navigate("scanQr") },
                         modifier = Modifier.weight(1f)
                             .padding(horizontal = 8.dp),
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)

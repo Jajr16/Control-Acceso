@@ -120,8 +120,8 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
 
                     composable("LETS") { EtsListScreen(navController, loginViewModel = loginViewModel) }
-                    composable("InfoA") { InformacionAlumno(navController, loginViewModel = loginViewModel) }
-                    composable("Reporte") { Reporte(navController, loginViewModel = loginViewModel) }
+
+
                     composable("LETSA") { EtsListScreenAlumno(navController, loginViewModel = loginViewModel) }
                     composable("scanQr") { QRScannerScreen(navController, loginViewModel = loginViewModel) }
                     composable("info") { ETSInscriptionProcessScreen(navController, loginViewModel) }
@@ -156,6 +156,36 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     composable("ConsultarAlumnos") {
                         ConsultarScreen(navController, viewModel = alumnosViewModel, loginViewModel = loginViewModel)
                     }
+
+                    composable(
+                        "Reporte/{idETS}/{boleta}/{aceptado}",
+                        arguments = listOf(
+                            navArgument("idETS") { type = NavType.StringType },
+                            navArgument("boleta") { type = NavType.StringType },
+                            navArgument("aceptado") { type = NavType.IntType }
+                        )
+                    ) { backStackEntry ->
+                        val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
+                        val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
+                        val aceptado = backStackEntry.arguments?.getInt("aceptado") ?: 0
+                        Reporte(navController, idETS, boleta, loginViewModel, viewModel = alumnosViewModel,aceptado)
+                    }
+
+
+
+                    composable(
+                        "InfoA/{idETS}/{boleta}",
+                        arguments = listOf(
+                            navArgument("idETS") { type = NavType.StringType },
+                            navArgument("boleta") { type = NavType.StringType }
+                        )
+                    ) { backStackEntry ->
+                        val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
+                        val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
+                        InformacionAlumno(navController, idETS, boleta, loginViewModel,viewModel = alumnosViewModel)
+                    }
+
+
 
                     composable(
                         "ListaAlumnos/{idETS}",

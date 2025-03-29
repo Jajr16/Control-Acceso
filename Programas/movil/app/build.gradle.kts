@@ -6,6 +6,7 @@ plugins {
     id("kotlin-kapt")
 }
 
+
 kapt {
     javacOptions {
         // These options are normally set automatically via the Hilt Gradle plugin, but we
@@ -71,7 +72,7 @@ dependencies {
 
 // PERMISOS
     implementation("io.coil-kt:coil-compose:2.5.0")
-
+    implementation(libs.firebase.appdistribution)
     implementation(libs.accompanist.permissions)
     implementation(libs.face.detection)
 
@@ -112,6 +113,7 @@ dependencies {
     implementation(libs.androidx.ui.test.android)
     implementation(libs.firebase.messaging.ktx)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.transport.api)
     testImplementation(libs.junit)
     implementation(libs.material3)
     androidTestImplementation(libs.androidx.junit)
@@ -148,4 +150,6 @@ dependencies {
     implementation(libs.accompanist.insets)
     implementation(libs.hilt.android.compiler)
     kapt("com.google.dagger:hilt-android-compiler:2.44")
+
+    implementation("com.google.firebase:firebase-appdistribution:3.1.0")
 }

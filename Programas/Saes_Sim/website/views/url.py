@@ -1,2 +1,4 @@
 # URL de la API
-url = "http://172.100.73.133:8080/saes/"
+
+url = "http://192.168.100.7:8080/saes/"
+

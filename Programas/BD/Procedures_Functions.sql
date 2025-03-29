@@ -112,6 +112,34 @@ BEGIN
 END;
 $$;
 
+-- Función para buscar datos especificos de un alumno
+
+CREATE OR REPLACE FUNCTION buscardatosestudiante(boleta_input VARCHAR)
+RETURNS TABLE (
+    boleta VARCHAR,
+    curp VARCHAR,
+    apellido_p VARCHAR,
+    apellido_m VARCHAR,
+    nombre VARCHAR,
+    unidadAcademica VARCHAR
+) AS $$
+BEGIN
+    -- Retornar los datos deseados
+    RETURN QUERY
+    SELECT 
+        e.boleta,
+        e.curp,
+        p.apellido_p,
+        p.apellido_m,
+        p.nombre,
+        pa.nombre AS unidadAcademica
+    FROM alumno e
+    INNER JOIN persona p ON e.curp = p.curp
+    INNER JOIN programaacademico pa ON e.idpa = pa.idpa
+    WHERE e.boleta = boleta_input;
+END;
+$$ LANGUAGE plpgsql;
+
 select *from login('2022630467', '123');
 SELECT * FROM usuario;
 SELECT crypt('123', gen_salt('bf'));

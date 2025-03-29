@@ -3,6 +3,7 @@ package Pantallas
 import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
+import android.graphics.BitmapFactory
 import android.text.Layout
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -49,14 +50,22 @@ import com.example.prueba3.R
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import com.example.prueba3.Views.AlumnosViewModel
 
 //painter = painterResource(id = R.drawable.info),
 
 
 @Composable
-fun Reporte(navController: NavController, loginViewModel: LoginViewModel) {
+fun Reporte(navController: NavController,idETS: String,boleta: String, loginViewModel: LoginViewModel, viewModel: AlumnosViewModel,aceptado: Int) {
     ValidateSession(navController = navController) {
         val userRole = loginViewModel.getUserRole()
+        val fotoAlumno by viewModel.fotoAlumno.collectAsState()
+
+        LaunchedEffect(Unit) {
+            viewModel.fetchFotoAlumno(boleta)
+        }
 
         Scaffold(
             topBar = {
@@ -93,14 +102,42 @@ fun Reporte(navController: NavController, loginViewModel: LoginViewModel) {
                     contentAlignment = Alignment.Center // Centra la foto
                 ) {
                     // Foto circular (grande)
-                    Image(
-                        painter = painterResource(id = R.drawable.info),
-                        contentDescription = "Foto de perfil",
-                        modifier = Modifier
-                            .size(160.dp) // Tamaño grande para la foto
-                            .clip(CircleShape)
-                            .border(2.dp, Color.White, CircleShape)
-                    )
+                    if (fotoAlumno != null) {
+                        val bitmap = BitmapFactory.decodeByteArray(fotoAlumno, 0, fotoAlumno!!.size)
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = "Foto de perfil",
+                            modifier = Modifier
+                                .size(150.dp)
+                                .clip(CircleShape)
+                                .border(2.dp, Color.Gray, CircleShape),
+                            contentScale = ContentScale.Crop
+
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(id = R.drawable.icon_camara), // Foto predeterminada
+                            contentDescription = "Foto de perfil",
+                            modifier = Modifier
+                                .size(150.dp)
+                                .clip(CircleShape)
+                                .border(2.dp, Color.Gray, CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
+                    val iconResId = when (aceptado) {
+                        -1 -> R.drawable.icono4
+                        0 -> R.drawable.icono8
+                        1 -> R.drawable.icono1
+                        2 -> R.drawable.icono2
+                        3 -> R.drawable.icono3
+                        4 -> R.drawable.icono5
+                        5 -> R.drawable.icono6
+                        6 -> R.drawable.icono7
+                        else -> R.drawable.icono1
+                    }
+
 
                     // Icono pequeño superpuesto en la esquina inferior derecha de la foto
                     Box(
@@ -109,7 +146,7 @@ fun Reporte(navController: NavController, loginViewModel: LoginViewModel) {
                             .offset(x = 50.dp, y = 50.dp) // Desplaza ligeramente hacia la derecha y abajo
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Person,
+                            painter = painterResource(id = iconResId),
                             contentDescription = "Icono de perfil",
                             modifier = Modifier
                                 .size(60.dp) // Tamaño pequeño para el ícono

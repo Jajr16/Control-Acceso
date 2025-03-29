@@ -19,4 +19,5 @@ urlpatterns = [
     path('NInscripciones/', views.NInsView.as_view(), name='ninscripciones'),
     path('Inscripciones/', views.InsView.as_view(), name='inscripciones'),
     path('carreras/', views.carreras, name='carreras'),
+    path('api/obtener-imagen/', views.obtener_imagen, name='obtener_imagen'),
 ]
