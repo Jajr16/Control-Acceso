@@ -459,7 +459,6 @@ fun CredencialDaeScreen(
         if (url != null) {
             scope.launch {
                 try {
-                    // Llamada a la API para obtener la imagen y la información del alumno
                     val response = RetrofitInstance.alumnosDetalle.getCredencial(url)
 
                     if (response.isSuccessful && response.body() != null) {
