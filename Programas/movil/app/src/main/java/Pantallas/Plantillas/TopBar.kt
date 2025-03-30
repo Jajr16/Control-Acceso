@@ -53,7 +53,8 @@ fun MenuTopBar(
             }
         },
         actions = {
-            if (showMsgButton) {
+            if (showMsgButton && (loginViewModel.getUserRole() == "Alumno"
+                        || loginViewModel.getUserRole() == "Personal Academico")) {
                 IconButton(onClick = { navController.navigate("Mensajes/${username}") }) {
                     Icon(
                         painter = painterResource(id = R.drawable.chat),
