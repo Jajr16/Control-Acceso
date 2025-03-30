@@ -334,34 +334,6 @@ EXECUTE FUNCTION crear_usuariopPS();
 
 select*from persona;
 
--- FUNCIÓN PARA EL TRIGGER DE ASISTENCIAINCRIPCION
-
-CREATE OR REPLACE FUNCTION insertar_asistenciainscripcion()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- Insertar en asistenciainscripcion usando los valores de la nueva fila en inscripcionets
-    INSERT INTO asistenciainscripcion (fecha_asistencia, inscripcionets_boleta, inscripcionets_idets, aceptado, asistio, resultado_rn)
-    SELECT e.fecha, NEW.boleta, NEW.idets, false, false, false
-    FROM ets e
-    WHERE e.idets = NEW.idets
-    AND NOT EXISTS (
-        SELECT 1
-        FROM asistenciainscripcion fa
-        WHERE fa.inscripcionets_boleta = NEW.boleta
-          AND fa.inscripcionets_idets = NEW.idets
-    );
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- TRIGGER PARA ASISTENCIAINCRIPCION
-
-CREATE TRIGGER trigger_insertar_asistenciainscripcion
-AFTER INSERT ON inscripcionets
-FOR EACH ROW
-EXECUTE FUNCTION insertar_asistenciainscripcion();
-
 -- PRUEBA DE LA LOGICA DEL TRIGGER DE ASISTENCIAINCRIPCION
 
 INSERT INTO asistenciainscripcion (fecha_asistencia, inscripcionets_boleta, inscripcionets_idets, aceptado, asistio, resultado_rn)
