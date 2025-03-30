@@ -58,7 +58,6 @@ fun MensajesScreen(
     ValidateSession(navController = navController) {
 
         val listaPersonasToChat by remember {mensajesViewModel.listaUsuarios}.collectAsState()
-
         val userRole = loginViewModel.getUserRole()
 
         LaunchedEffect(Unit) {
@@ -96,11 +95,26 @@ fun MensajesScreen(
                     },
                     modifier = Modifier.wrapContentHeight(),
                 ) {
-                    val filteredPeopleToChat =
-                        listaPersonasToChat.filter { it.nombre.contains(query, true) }
+                    val filteredPeopleToChat = listaPersonasToChat.filter {
+                        when (userRole) {
+                            "Alumno" -> it.tipoU == "Personal Academico"
+                            "Personal Academico" -> it.tipoU == "Alumno"
+                                    || it.tipoU == "Personal Academico"
+                            else -> false
+                        }
+                    }
+
+                    val filteredMeToChat = filteredPeopleToChat.filter {
+                        when (user) {
+                            user -> it.usuario != user
+                            else -> false
+                        }
+                    }
+
+                    val searchResults = filteredMeToChat.filter { it.nombre.contains(query, true) }
 
                     LazyColumn {
-                        items(filteredPeopleToChat) {
+                        items(searchResults) {
                             Text(
                                 text = it.nombre,
                                 modifier = Modifier
@@ -154,9 +168,11 @@ fun MensajesScreen(
                         mensajeError?.let { Text(text = it, color = Color.White) }
                     } else {
                         if (chats.isEmpty()) {
-                            Column (
+                            Column(
                                 modifier = Modifier
-                                    .align(Alignment.Center)
+                                    .fillMaxSize()
+                                    .padding(padding)
+                                    .align(Alignment.Center),
                             )
                             {
                                 Text(text = "Aún no has hablado con nadie.", color = Color.White)

@@ -47,10 +47,8 @@ import com.example.prueba3.Views.DiasETSModel
 import com.example.prueba3.Views.MensajesViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 import com.example.prueba3.ui.theme.Prueba3Theme
-import dagger.hilt.android.AndroidEntryPoint
 import java.lang.Integer.parseInt
 
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -155,7 +153,6 @@ override fun onCreate(savedInstanceState: Bundle?) {
                             boleta = boleta
                         )
                     }
-
                     composable("ConsultarAlumnos") {
                         ConsultarScreen(navController, viewModel = alumnosViewModel, loginViewModel = loginViewModel)
                     }

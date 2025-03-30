@@ -376,7 +376,7 @@ fun CredencialDaeScreen(
                                             showAsistenciaDialog = false
                                             showMensajeAsistencia = true
                                             alumnoInfo?.boleta?.let { boleta ->
-                                                //viewModel.registrarAsistencia(boleta)
+                                                viewModel.registrarAsistencia(boleta)
                                             }
                                         }
                                     ) {

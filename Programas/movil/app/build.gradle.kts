@@ -72,7 +72,6 @@ dependencies {
 
 // PERMISOS
     implementation("io.coil-kt:coil-compose:2.5.0")
-    implementation(libs.firebase.appdistribution)
     implementation(libs.accompanist.permissions)
     implementation(libs.face.detection)
 
@@ -135,6 +134,9 @@ dependencies {
     implementation(kotlin("script-runtime"))
     implementation(libs.accompanist.permissions.v0261alpha)
 
+    implementation ("androidx.compose.material:material:1.5.4")
+    implementation ("androidx.compose.material:material-icons-extended:1.5.4")
+
 //    IMPORTAR FIREBASE
     kapt(libs.hilt.android.compiler)
     implementation(libs.kotlinStdlib)
@@ -148,6 +150,4 @@ dependencies {
     implementation(libs.accompanist.insets)
     implementation(libs.hilt.android.compiler)
     kapt("com.google.dagger:hilt-android-compiler:2.44")
-
-    implementation("com.google.firebase:firebase-appdistribution:3.1.0")
 }
