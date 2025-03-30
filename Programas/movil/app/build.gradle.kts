@@ -133,6 +133,7 @@ dependencies {
 
     implementation(libs.face.detection.v1604)
     implementation(kotlin("script-runtime"))
+    implementation(libs.accompanist.permissions.v0261alpha)
 
 //    IMPORTAR FIREBASE
     kapt(libs.hilt.android.compiler)

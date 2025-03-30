@@ -92,6 +92,10 @@
         val getListaUsuariosChat: Mensajes by lazy {
             retrofit.create(Mensajes::class.java)
         }
+
+        val apiRed: ApiRed by lazy {
+            retrofit.create(ApiRed::class.java)
+        }
     }
 
 

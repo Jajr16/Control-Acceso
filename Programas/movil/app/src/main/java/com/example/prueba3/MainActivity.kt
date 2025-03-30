@@ -88,7 +88,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     composable("camara/{boleta}/{idETS}") { backStackEntry ->
                         val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
                         val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
-                        Camara(navController, boleta, idETS)
+                        Camara(navController, boleta, idETS,loginViewModel = loginViewModel)
                     }
                     composable("notificaciones") { NotificationsScreen(navController) }
                     composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }
@@ -132,19 +132,28 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
                     composable("Calendar") { CalendarScreen(navController, loginViewModel, DiasETSModel) }
                     composable(
-                        route = "CredencialDAE?url={url}&boleta={boleta}", // Define la ruta con dos argumentos
+                        route = "CredencialDAE?url={url}&boleta={boleta}", // Ruta con dos argumentos
                         arguments = listOf(
-                            navArgument("url") { // Define el argumento "url"
-                                type = NavType.StringType // Especifica que es de tipo String
+                            navArgument("url") { // Argumento "url"
+                                type = NavType.StringType // Tipo String
+                                nullable = true // Permite valores nulos
                             },
-                            navArgument("boleta") { // Define el argumento "boleta"
-                                type = NavType.StringType // Especifica que es de tipo String
+                            navArgument("boleta") { // Argumento "boleta"
+                                type = NavType.StringType // Tipo String
+                                defaultValue = "" // Valor por defecto
                             }
                         )
                     ) { backStackEntry ->
                         val url = backStackEntry.arguments?.getString("url")
                         val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
-                        CredencialDaeScreen(navController, loginViewModel, url, viewModel = alumnosViewModel, boleta)
+
+                        CredencialDaeScreen(
+                            navController = navController,
+                            loginViewModel = loginViewModel,
+                            url = url,
+                            viewModel = alumnosViewModel,
+                            boleta = boleta
+                        )
                     }
 
                     composable("ConsultarAlumnos") {

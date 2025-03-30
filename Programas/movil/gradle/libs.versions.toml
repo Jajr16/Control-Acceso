@@ -1,6 +1,7 @@
 [versions]
 accompanistInsets = "0.28.0"
 accompanistPermissions = "0.36.0"
+accompanistPermissionsVersion = "0.26.1-alpha"
 agp = "8.6.0"
 androidxCameraCore = "1.0.2"
 androidxComposeMaterial3Material32 = "1.2.0"
@@ -46,6 +47,7 @@ transportApi = "3.0.0"
 firebasePerfKtx = "21.0.5"
 
 [libraries]
+accompanist-permissions-v0261alpha = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissionsVersion" }
 firebase-appdistribution = { module = "com.google.firebase:firebase-appdistribution", version.ref = "firebaseAppdistribution" }
 firebase-database-ktx = { module = "com.google.firebase:firebase-database-ktx" }
 kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
