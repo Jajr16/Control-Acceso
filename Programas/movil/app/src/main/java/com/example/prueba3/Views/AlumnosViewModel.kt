@@ -48,15 +48,6 @@ class AlumnosViewModel : ViewModel() {
     private val _fotoAlumno = MutableStateFlow<ByteArray?>(null)
     val fotoAlumno: StateFlow<ByteArray?> = _fotoAlumno
 
-    private val _alumnoRegistro = MutableStateFlow<List<regitrarAsistencia>>(emptyList())
-    val alumnoRegistro: StateFlow<List<regitrarAsistencia>> = _alumnoRegistro
-
-    private val _registroSuccess = mutableStateOf(false)
-    val registroSuccess = mutableStateOf(false)
-
-    private val _errorMessage = mutableStateOf<String?>(null)
-    val errorMessage = mutableStateOf<String?>(null)
-
 
     // ======== Obtener la foto del alumno ============
     fun fetchFotoAlumno(boleta: String) {
@@ -108,7 +99,7 @@ class AlumnosViewModel : ViewModel() {
         }
     }
 
-    /// ======= Mostrar Informacion del alumno ===========
+    // ======= Mostrar Informacion del alumno ===========
     fun fetchDetalleAlumnos(boleta: String) {
         viewModelScope.launch {
             try {
@@ -180,33 +171,6 @@ class AlumnosViewModel : ViewModel() {
         }
     }
 
-
-    //========== Registrar el ingreso a la instalacion del alumno
-    fun registrarAsistencia(boleta: String) {
-        viewModelScope.launch {
-            try {
-                _loadingState.value = true
-                _errorMessage.value = null
-                val response = RetrofitInstance.alumnosDetalle.getregistrarEntrada(boleta)
-
-                if (response.isNotEmpty()) {
-                    _alumnoRegistro.value = response
-                    _registroSuccess.value = true
-                } else {
-                    _errorMessage.value = "No se pudo registrar la asistencia"
-                }
-            } catch (e: Exception) {
-                _errorMessage.value = "Error: ${e.message}"
-            } finally {
-                _loadingState.value = false
-            }
-        }
-    }
-
-    fun clearRegistrationState() {
-        _registroSuccess.value = false
-        _errorMessage.value = null
-    }
 
     // Función para actualizar la asistencia de un alumno
     suspend fun updateAsistencia(boleta: String, idETS: Int, aceptado: Int) {

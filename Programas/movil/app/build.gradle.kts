@@ -132,7 +132,7 @@ dependencies {
 
     implementation(libs.face.detection.v1604)
     implementation(kotlin("script-runtime"))
-    implementation(libs.accompanist.permissions.v0261alpha)
+
 
     implementation ("androidx.compose.material:material:1.5.4")
     implementation ("androidx.compose.material:material-icons-extended:1.5.4")
