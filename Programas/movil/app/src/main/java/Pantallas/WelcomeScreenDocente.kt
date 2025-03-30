@@ -58,6 +58,14 @@ fun WelcomeScreenDocente(navController: NavController, loginViewModel: LoginView
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
+//                OptionButton(
+//                    title = "Reconocimiento facial yeah yeah",
+//                    icon = ImageVector.vectorResource(id = R.drawable.qrc),
+//                    onClick = { navController.navigate("scanQr") },
+//                    modifier = Modifier.size(150.dp)
+//                )
+
+                Spacer(modifier = Modifier.width(20.dp))
 
                 OptionButton(
                     title = "ETS",

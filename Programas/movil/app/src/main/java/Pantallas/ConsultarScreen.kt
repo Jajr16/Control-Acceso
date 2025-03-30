@@ -67,13 +67,11 @@ fun ConsultarScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Si está cargando
                 if (isLoading) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(text = "Cargando...", style = MaterialTheme.typography.bodyLarge)
                     }
                 } else {
-                    // Buscador con la lista filtrada
                     BuscadorConLista(
                         lista = filteredList,
                         filtro = { alumno, query ->

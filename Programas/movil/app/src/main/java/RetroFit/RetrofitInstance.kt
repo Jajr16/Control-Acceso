@@ -10,7 +10,7 @@
 
 
     object RetrofitInstance {
-            private const val BASE_URL = "http://192.168.1.131:8080/"
+            private const val BASE_URL = "http://192.168.1.67:8080/"
 
         private val okHttpClient = OkHttpClient.Builder()
             .connectTimeout(120, TimeUnit.SECONDS)  // Timeout de conexión
@@ -52,6 +52,10 @@
 
         val alumnosCredencial: DetallesApi by lazy {
             retrofit.create(DetallesApi::class.java)
+        }
+
+        val alumnoEspecifico: AlumnoEspecificoApi by lazy {
+            retrofit.create(AlumnoEspecificoApi::class.java)
         }
 
         // Instancia de AceptadoApi

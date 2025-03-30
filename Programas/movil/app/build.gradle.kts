@@ -6,6 +6,7 @@ plugins {
     id("kotlin-kapt")
 }
 
+
 kapt {
     javacOptions {
         // These options are normally set automatically via the Hilt Gradle plugin, but we
@@ -71,7 +72,7 @@ dependencies {
 
 // PERMISOS
     implementation("io.coil-kt:coil-compose:2.5.0")
-
+    implementation(libs.firebase.appdistribution)
     implementation(libs.accompanist.permissions)
     implementation(libs.face.detection)
 
@@ -112,6 +113,7 @@ dependencies {
     implementation(libs.androidx.ui.test.android)
     implementation(libs.firebase.messaging.ktx)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.transport.api)
     testImplementation(libs.junit)
     implementation(libs.material3)
     androidTestImplementation(libs.androidx.junit)
@@ -131,6 +133,9 @@ dependencies {
 
     implementation(libs.face.detection.v1604)
     implementation(kotlin("script-runtime"))
+
+    implementation ("androidx.compose.material:material:1.5.4")
+    implementation ("androidx.compose.material:material-icons-extended:1.5.4")
 
 //    IMPORTAR FIREBASE
     kapt(libs.hilt.android.compiler)
