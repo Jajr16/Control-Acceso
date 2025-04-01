@@ -22,6 +22,8 @@ import Pantallas.QRScannerScreen
 import Pantallas.WelcomeScreenAlumno
 import Pantallas.NotificationsScreen
 import Pantallas.Reporte
+import Pantallas.ScreenAsignaremplazo
+import Pantallas.SolicitarRemplazo
 import Pantallas.WelcomeScreen
 import Pantallas.WelcomeScreenDocente
 import android.os.Build
@@ -45,6 +47,7 @@ import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.DiasETSModel
 import com.example.prueba3.Views.MensajesViewModel
+import com.example.prueba3.Views.ReemplazoViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 import com.example.prueba3.ui.theme.Prueba3Theme
 import java.lang.Integer.parseInt
@@ -126,6 +129,9 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     composable("scanQr") { QRScannerScreen(navController, loginViewModel = loginViewModel) }
                     composable("info") { ETSInscriptionProcessScreen(navController, loginViewModel) }
                     composable("CrearCuenta") { CreateAccountScreen(navController) }
+
+//                    composable("solicitaReemplazo") { SolicitarRemplazo(navController, loginViewModel, ReemplazoViewModel) }
+                    composable("asignarReemplazo") { ScreenAsignaremplazo(navController, loginViewModel) }
 
 
                     composable("Calendar") { CalendarScreen(navController, loginViewModel, DiasETSModel) }

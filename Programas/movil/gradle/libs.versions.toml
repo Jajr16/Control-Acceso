@@ -42,6 +42,7 @@ firebaseMessagingKtx = "24.1.0"
 roomKtx = "2.6.1"
 transportApi = "3.0.0"
 firebasePerfKtx = "21.0.5"
+composeMaterial = "1.4.1"
 
 [libraries]
 firebase-database-ktx = { module = "com.google.firebase:firebase-database-ktx" }
@@ -97,6 +98,7 @@ firebase-messaging-ktx = { group = "com.google.firebase", name = "firebase-messa
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 transport-api = { group = "com.google.android.datatransport", name = "transport-api", version.ref = "transportApi" }
 firebase-perf-ktx = { group = "com.google.firebase", name = "firebase-perf-ktx", version.ref = "firebasePerfKtx" }
+androidx-compose-material = { group = "androidx.wear.compose", name = "compose-material", version.ref = "composeMaterial" }
 
 
 [plugins]
