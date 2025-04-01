@@ -3,9 +3,12 @@ package Pantallas
 import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -19,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -28,13 +32,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.prueba3.R
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.ui.theme.BlueBackground
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun DetalleAlumnosScreen(
@@ -48,18 +53,28 @@ fun DetalleAlumnosScreen(
         val alumno = alumnosDetalle.firstOrNull()
         val isLoading by viewModel.loadingState.collectAsState(initial = false)
 
+        // State for photo loading
+        var photoLoading by remember { mutableStateOf(true) }
+        var photoError by remember { mutableStateOf(false) }
+        var photoBitmap by remember { mutableStateOf<Bitmap?>(null) }
+
         var showAsistenciaDialog by remember { mutableStateOf(false) }
         var showEscanearDialog by remember { mutableStateOf(false) }
 
+        // Load student details
         LaunchedEffect(boleta) {
             viewModel.fetchDetalleAlumnos(boleta)
         }
+
+
 
         Scaffold(
             topBar = {
                 MenuTopBar(true, true, loginViewModel, navController)
             },
-            bottomBar = { MenuBottomBar(navController = navController, loginViewModel.getUserRole()) }
+            bottomBar = {
+                MenuBottomBar(navController = navController, loginViewModel.getUserRole())
+            }
         ) { padding ->
             Column(
                 modifier = Modifier
@@ -86,40 +101,43 @@ fun DetalleAlumnosScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                val painter = rememberAsyncImagePainter(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(alumno?.imagenCredencial)
-                        .crossfade(true)
-//                        .error(R.drawable.error_image)
-                        .placeholder(R.drawable.placeholder_image)
-                        .build(),
-                    contentScale = ContentScale.Crop
-                )
-
+                // Student photo display
                 Box(
-                    contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .size(100.dp)
+                        .size(150.dp)
                         .clip(CircleShape)
+                        .border(2.dp, Color.Gray, CircleShape),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Image(
-                        painter = painter,
-                        contentDescription = "Foto del alumno",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-
-                    if (painter.state is AsyncImagePainter.State.Loading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(50.dp),
-                            color = Color.White
-                        )
+                    when {
+                        photoLoading -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(50.dp),
+                                color = Color.White
+                            )
+                        }
+                        photoBitmap != null -> {
+                            Image(
+                                bitmap = photoBitmap!!.asImageBitmap(),
+                                contentDescription = "Foto del alumno",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                        else -> {
+                            Image(
+                                painter = painterResource(id = R.drawable.placeholder_image),
+                                contentDescription = "Foto no disponible",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
                     }
                 }
 
-                if (painter.state is AsyncImagePainter.State.Error) {
+                if (photoError && !photoLoading) {
                     Text(
-                        text = "Error al cargar la imagen",
+                        text = "No se pudo cargar la foto",
                         color = Color.Red,
                         modifier = Modifier.padding(top = 8.dp)
                     )
@@ -127,6 +145,7 @@ fun DetalleAlumnosScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Student information
                 InfoCard("Nombre", "${alumno?.nombreAlumno ?: ""} ${alumno?.apellidoPAlumno ?: ""} ${alumno?.apellidoMAlumno ?: ""}")
                 InfoCard("Boleta", alumno?.boleta ?: "No disponible")
                 InfoCard("ETS inscrito", alumno?.nombreETS ?: "No disponible")
@@ -137,6 +156,7 @@ fun DetalleAlumnosScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Action buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -147,32 +167,61 @@ fun DetalleAlumnosScreen(
                     ) {
                         Text("Registrar Asistencia", color = Color.Black)
                     }
-                    Button(
-                        onClick = { showEscanearDialog = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.White)
-                    ) {
-                        Text("Escanear Credencial", color = Color.Black)
-                    }
                 }
             }
         }
 
-        // Diálogos (se mantienen igual que en tu código original)
+        // Attendance dialog
         if (showAsistenciaDialog) {
             AlertDialog(
                 onDismissRequest = { showAsistenciaDialog = false },
-                title = { /* ... */ },
-                text = { /* ... */ },
-                confirmButton = { /* ... */ }
+                title = { Text("Confirmar asistencia", fontWeight = FontWeight.Bold) },
+                text = { Text("¿Deseas registrar la asistencia de ${alumno?.nombreAlumno}?") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showAsistenciaDialog = false
+                            alumno?.boleta?.let { viewModel.registrarAsistencia(it) }
+                        }
+                    ) {
+                        Text("Confirmar")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { showAsistenciaDialog = false }) {
+                        Text("Cancelar")
+                    }
+                }
             )
         }
 
+        // Scan dialog
         if (showEscanearDialog) {
             AlertDialog(
                 onDismissRequest = { showEscanearDialog = false },
-                title = { /* ... */ },
-                text = { /* ... */ },
-                confirmButton = { /* ... */ }
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Filled.Warning, contentDescription = "Advertencia", tint = Color.Yellow)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Escanear credencial")
+                    }
+                },
+                text = { Text("Esta función te permitirá escanear la credencial física del alumno.") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showEscanearDialog = false
+                            navController.navigate("scan_screen_route")
+                        }
+                    ) {
+                        Text("Continuar")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { showEscanearDialog = false }) {
+                        Text("Cancelar")
+                    }
+                }
             )
         }
     }
