@@ -36,15 +36,6 @@ class AlumnosViewModel : ViewModel() {
     private val _loadingState = MutableStateFlow(true)
     val loadingState: StateFlow<Boolean> = _loadingState
 
-    private val _alumnoRegistro = MutableStateFlow<List<regitrarAsistencia>>(emptyList())
-    val alumnoRegistro: StateFlow<List<regitrarAsistencia>> = _alumnoRegistro
-
-    private val _registroSuccess = mutableStateOf(false)
-    val registroSuccess = mutableStateOf(false)
-
-    private val _errorMessage = mutableStateOf<String?>(null)
-    val errorMessage = mutableStateOf<String?>(null)
-
     private val _fotoAlumno = MutableStateFlow<ByteArray?>(null)
     val fotoAlumno: StateFlow<ByteArray?> = _fotoAlumno
 
@@ -68,6 +59,14 @@ class AlumnosViewModel : ViewModel() {
         }
     }
 
+    private val _alumnoRegistro = MutableStateFlow<List<regitrarAsistencia>>(emptyList())
+    val alumnoRegistro: StateFlow<List<regitrarAsistencia>> = _alumnoRegistro
+
+    private val _registroSuccess = mutableStateOf(false)
+    val registroSuccess = mutableStateOf(false)
+
+    private val _errorMessage = mutableStateOf<String?>(null)
+    val errorMessage = mutableStateOf<String?>(null)
 
     // Función para obtener los datos de alumnos
     fun fetchAlumno(ETSid: String) {
@@ -170,7 +169,6 @@ class AlumnosViewModel : ViewModel() {
             }
         }
     }
-
 
     // Función para actualizar la asistencia de un alumno
     suspend fun updateAsistencia(boleta: String, idETS: Int, aceptado: Int) {
