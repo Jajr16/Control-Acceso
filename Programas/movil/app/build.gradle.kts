@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.prueba3"
-        minSdk = 24
+        minSdk = 25
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -72,6 +72,7 @@ dependencies {
 
 // PERMISOS
     implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation(libs.firebase.appdistribution)
     implementation(libs.accompanist.permissions)
     implementation(libs.face.detection)
 
@@ -113,6 +114,7 @@ dependencies {
     implementation(libs.firebase.messaging.ktx)
     implementation(libs.androidx.room.ktx)
     implementation(libs.transport.api)
+    implementation(libs.androidx.compose.material)
     testImplementation(libs.junit)
     implementation(libs.material3)
     androidTestImplementation(libs.androidx.junit)

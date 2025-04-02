@@ -94,14 +94,13 @@ fun ConsultarScreen(
                                     fontSize = 16.sp
                                 )
                                 Text(
-                                    text = "Nombre: ${alumno.nombre} ${alumno.apellidoP} ${alumno.apellidoM}",
+                                    text = "${alumno.nombre} ${alumno.apellidoP} ${alumno.apellidoM}",
                                     fontSize = 16.sp
                                 )
                             }
                         }
                     )
                 }
-
             }
         }
     }

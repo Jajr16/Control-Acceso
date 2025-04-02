@@ -12,14 +12,14 @@ import retrofit2.http.Part
 
 interface ApiRed {
     @Multipart
-    @POST("/upload/")
+    @POST("/red/")
     suspend fun uploadImage(
         @Part image: MultipartBody.Part,
-        @Part("boleta") boleta: RequestBody
+        @Part("boleta") boleta: RequestBody,
+        @Part("idETS") idETS: RequestBody // Mantenemos RequestBody
     ): ServerResponse
 }
 
-// Clase para manejar la respuesta del servidor
 data class ServerResponse(
     val status: String,
     val detalles: String
