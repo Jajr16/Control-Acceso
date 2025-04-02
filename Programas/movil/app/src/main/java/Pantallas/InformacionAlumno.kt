@@ -3,33 +3,26 @@ package Pantallas
 import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
-import android.graphics.BitmapFactory
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
-import androidx.compose.material.Checkbox
-import androidx.compose.material.CheckboxDefaults
-import androidx.compose.material.DropdownMenu
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExposedDropdownMenuBox
-import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -62,19 +55,48 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.Dialog
 import com.example.prueba3.Views.AlumnosViewModel
+import com.example.prueba3.Views.CamaraViewModel
+import com.example.prueba3.Views.InformacionAlumnoViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun InformacionAlumno(navController: NavController,idETS: String,boleta: String, loginViewModel: LoginViewModel, viewModel: AlumnosViewModel) {
+fun InformacionAlumno(
+    navController: NavController,
+    idETS: String,
+    boleta: String,
+    loginViewModel: LoginViewModel,
+    viewModel: AlumnosViewModel,
+    camaraViewModel: CamaraViewModel,
+    informacionAlumnoViewModel: InformacionAlumnoViewModel
+
+) {
+
+    val bitmap = camaraViewModel.imagenBitmap.value
+    val precision = camaraViewModel.precision.value
+    Log.d("InformacionAlumno", "Precision: $precision") // Log para depuración
+
+
+    Log.d("InformacionAlumno", "Bitmap from ViewModel: $bitmap")
+
+
+
+    LaunchedEffect(boleta, idETS) {
+        camaraViewModel.updateBoletaAndIdETS(boleta, idETS)
+    }
+
 
     // Variables para aviso del boton "Registrar asistencia"
     val fotoAlumno by viewModel.fotoAlumno.collectAsState()
     val alumnoEspecifico by viewModel.alumnoEspecifico.collectAsState()
+
+
+
 
 
     LaunchedEffect(Unit) {
@@ -82,7 +104,13 @@ fun InformacionAlumno(navController: NavController,idETS: String,boleta: String,
         viewModel.fetchFotoAlumno(boleta)
     }
 
-    var showDialog by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { // Ejecutar solo una vez
+        camaraViewModel.setPythonResponse(null) // Limpiar el estado del ViewModel
+    }
+
+
+
+
     var razon by remember { mutableStateOf("") }
     var tipo by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) } // Estado para controlar la visibilidad del menú
@@ -94,7 +122,14 @@ fun InformacionAlumno(navController: NavController,idETS: String,boleta: String,
 
     val horaActual = remember { SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()) }
     var showError by remember { mutableStateOf(false) }
-    var showSuccessDialog by remember { mutableStateOf(false) }
+
+
+    var showErrorDialog2 by remember { mutableStateOf(false) }
+
+
+
+    // Nuevo estado para el diálogo de error
+    var errorMessage by remember { mutableStateOf("") } // Mensaje de error
 
     val razonValida = razon.length >= 5
     val tipoValido = tipo.isNotEmpty()
@@ -102,6 +137,7 @@ fun InformacionAlumno(navController: NavController,idETS: String,boleta: String,
     // Variables para aviso del boton "Registrar incidencia"
 
     var showDialog2 by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
     val tipos2 = listOf(
         "Rechazado: Verificado por el profesor.",
         "Rechazado: Verificado con el reconocimiento facial.",
@@ -109,11 +145,9 @@ fun InformacionAlumno(navController: NavController,idETS: String,boleta: String,
     )
 
 
-
     var showSuccessDialog2 by remember { mutableStateOf(false) }
 
     ValidateSession(navController = navController) {
-
 
 
         val userRole = loginViewModel.getUserRole()
@@ -123,7 +157,7 @@ fun InformacionAlumno(navController: NavController,idETS: String,boleta: String,
                 true, true, loginViewModel,
                 navController
             )
-        },bottomBar = { MenuBottomBar(navController, userRole) }) { padding ->
+        }, bottomBar = { MenuBottomBar(navController, userRole) }) { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -162,21 +196,21 @@ fun InformacionAlumno(navController: NavController,idETS: String,boleta: String,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             // Foto del alumno (más grande)
-                            if (fotoAlumno != null) {
-                                val bitmap = BitmapFactory.decodeByteArray(fotoAlumno, 0, fotoAlumno!!.size)
+                            if (bitmap != null) {
+                                //Log.d("InformacionAlumno", "Bitmap is not null, showing image")
                                 Image(
                                     bitmap = bitmap.asImageBitmap(),
-                                    contentDescription = "Foto de perfil",
+                                    contentDescription = "Foto del alumno",
                                     modifier = Modifier
                                         .size(150.dp)
                                         .clip(CircleShape)
                                         .border(2.dp, Color.Gray, CircleShape),
                                     contentScale = ContentScale.Crop
-
                                 )
                             } else {
+                                //Log.d("InformacionAlumno", "Bitmap is null, showing default image")
                                 Image(
-                                    painter = painterResource(id = R.drawable.icon_camara), // Foto predeterminada
+                                    painter = painterResource(id = R.drawable.icon_camara),
                                     contentDescription = "Foto de perfil",
                                     modifier = Modifier
                                         .size(150.dp)
@@ -378,13 +412,33 @@ fun InformacionAlumno(navController: NavController,idETS: String,boleta: String,
         }
 
 
+        // Observar el resultado del envío
+        val envioExitoso by informacionAlumnoViewModel.envioExitoso.collectAsState(initial = null)
+        val errorEnvio by informacionAlumnoViewModel.errorEnvio.collectAsState(initial = null)
+        val context = LocalContext.current
+
+        LaunchedEffect(errorEnvio) {
+            errorEnvio?.let { mensaje ->
+                errorMessage = mensaje
+                showErrorDialog2 = true
+                informacionAlumnoViewModel.clearErrorEnvio() // Limpiar el estado
+            }
+        }
+
+        LaunchedEffect(envioExitoso) {
+            envioExitoso?.let { mensaje ->
+                showSuccessDialog2 = true
+                informacionAlumnoViewModel.clearEnvioExitoso() // Limpiar el estado
+            }
+        }
+
+
+
+
         if (showDialog) {
-
-
             fun cerrarDialogo() {
                 showDialog = false
                 showError = false
-                razon = ""
                 tipo = ""
             }
 
@@ -419,25 +473,6 @@ fun InformacionAlumno(navController: NavController,idETS: String,boleta: String,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
 
-                        // Campo de Razón
-                        TextField(
-                            value = razon,
-                            onValueChange = { razon = it },
-                            label = { Text("Razón") },
-                            isError = !razonValida && razon.isNotEmpty(),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 8.dp)
-                        )
-                        if (!razonValida && razon.isNotEmpty()) {
-                            Text(
-                                text = "La razón debe tener al menos 5 letras.",
-                                color = Color.Red,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
-                        }
-
                         // Campo de Tipo (Dropdown)
                         ExposedDropdownMenuBox(
                             expanded = expanded,
@@ -449,7 +484,10 @@ fun InformacionAlumno(navController: NavController,idETS: String,boleta: String,
                                 label = { Text("Tipo") },
                                 readOnly = true,
                                 trailingIcon = {
-                                    Icon(Icons.Default.ArrowDropDown, contentDescription = "Desplegar")
+                                    Icon(
+                                        Icons.Default.ArrowDropDown,
+                                        contentDescription = "Desplegar"
+                                    )
                                 },
                                 modifier = Modifier.fillMaxWidth()
                             )
@@ -497,11 +535,21 @@ fun InformacionAlumno(navController: NavController,idETS: String,boleta: String,
                         ) {
                             Button(
                                 onClick = {
-                                    if (razonValida && tipoValido) {
-                                        cerrarDialogo()
-                                        showSuccessDialog = true // Muestra el diálogo de éxito
+                                    if (tipoValido) {
+                                        informacionAlumnoViewModel.enviarDatosAlServidor(
+                                            null, // Envía null para la razón
+                                            tipo,
+                                            boleta,
+                                            idETS,
+                                            camaraViewModel.precision.value?.toString(),
+                                            horaActual,
+                                            camaraViewModel.imagenBitmap.value,
+                                            context
+                                        )
+                                        showError = false
+                                        showSuccessDialog2 = true
                                     } else {
-                                        showError = true // Muestra el mensaje de error
+                                        showError = true
                                     }
                                 },
                                 modifier = Modifier.padding(horizontal = 8.dp)
@@ -518,30 +566,64 @@ fun InformacionAlumno(navController: NavController,idETS: String,boleta: String,
                     }
                 }
             }
-        }
 
-// Dialogo de éxito
-        if (showSuccessDialog) {
-            Dialog(onDismissRequest = { showSuccessDialog = false }) {
-                Box(
-                    modifier = Modifier
-                        .background(Color.White, shape = RoundedCornerShape(8.dp))
-                        .padding(16.dp)
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
+
+            // Diálogo de éxito
+            if (showSuccessDialog2) {
+                Dialog(onDismissRequest = { showSuccessDialog2 = false }) {
+                    Box(
+                        modifier = Modifier
+                            .background(Color.White, shape = RoundedCornerShape(8.dp))
+                            .padding(16.dp)
                     ) {
-                        Text(
-                            text = "Reporte de asistencia creado con éxito",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-
-                        Button(
-                            onClick = { showSuccessDialog = false },
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text("Aceptar")
+                            Text(
+                                text = "Reporte de asistencia creado con éxito",
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+
+                            Button(
+                                onClick = { showSuccessDialog2 = false },
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            ) {
+                                Text("Aceptar")
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Diálogo de error
+            if (showErrorDialog2) {
+                Dialog(onDismissRequest = { showErrorDialog2 = false }) {
+                    Box(
+                        modifier = Modifier
+                            .background(Color.White, shape = RoundedCornerShape(8.dp))
+                            .padding(16.dp)
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Error al crear el reporte de asistencia",
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            Text(
+                                text = errorMessage,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+
+                            Button(
+                                onClick = { showErrorDialog2 = false },
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            ) {
+                                Text("Aceptar")
+                            }
                         }
                     }
                 }
@@ -550,9 +632,8 @@ fun InformacionAlumno(navController: NavController,idETS: String,boleta: String,
 
 
 
+
         if (showDialog2) {
-
-
             fun cerrarDialogo() {
                 showDialog2 = false
                 showError = false
@@ -610,6 +691,8 @@ fun InformacionAlumno(navController: NavController,idETS: String,boleta: String,
                             )
                         }
 
+
+
                         // Campo de Tipo (Dropdown)
                         ExposedDropdownMenuBox(
                             expanded = expanded,
@@ -621,7 +704,10 @@ fun InformacionAlumno(navController: NavController,idETS: String,boleta: String,
                                 label = { Text("Tipo") },
                                 readOnly = true,
                                 trailingIcon = {
-                                    Icon(Icons.Default.ArrowDropDown, contentDescription = "Desplegar")
+                                    Icon(
+                                        Icons.Default.ArrowDropDown,
+                                        contentDescription = "Desplegar"
+                                    )
                                 },
                                 modifier = Modifier.fillMaxWidth()
                             )
@@ -670,10 +756,20 @@ fun InformacionAlumno(navController: NavController,idETS: String,boleta: String,
                             Button(
                                 onClick = {
                                     if (razonValida && tipoValido) {
-                                        cerrarDialogo()
-                                        showSuccessDialog = true // Muestra el diálogo de éxito
+                                        informacionAlumnoViewModel.enviarDatosAlServidor(
+                                            razon,
+                                            tipo,
+                                            boleta,
+                                            idETS,
+                                            camaraViewModel.precision.value?.toString(), // Envía el valor nulo tal cual
+                                            horaActual,
+                                            camaraViewModel.imagenBitmap.value, // Envía el valor nulo tal cual
+                                            context
+                                        )
+                                        showError = false
+                                        //showSuccessDialog2 = true
                                     } else {
-                                        showError = true // Muestra el mensaje de error
+                                        showError = true
                                     }
                                 },
                                 modifier = Modifier.padding(horizontal = 8.dp)
@@ -690,38 +786,68 @@ fun InformacionAlumno(navController: NavController,idETS: String,boleta: String,
                     }
                 }
             }
-        }
 
-// Dialogo de éxito
-        if (showSuccessDialog2) {
-            Dialog(onDismissRequest = { showSuccessDialog2 = false }) {
-                Box(
-                    modifier = Modifier
-                        .background(Color.White, shape = RoundedCornerShape(8.dp))
-                        .padding(16.dp)
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
+            // Diálogo de éxito
+            if (showSuccessDialog2) {
+                Dialog(onDismissRequest = { showSuccessDialog2 = false }) {
+                    Box(
+                        modifier = Modifier
+                            .background(Color.White, shape = RoundedCornerShape(8.dp))
+                            .padding(16.dp)
                     ) {
-                        Text(
-                            text = "Reporte de incidencia creado con éxito",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-
-                        Button(
-                            onClick = { showSuccessDialog2 = false },
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text("Aceptar")
+                            Text(
+                                text = "Reporte de incidencia creado con éxito",
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+
+                            Button(
+                                onClick = { showSuccessDialog2 = false },
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            ) {
+                                Text("Aceptar")
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Diálogo de error
+            if (showErrorDialog2) {
+                Dialog(onDismissRequest = { showErrorDialog2 = false }) {
+                    Box(
+                        modifier = Modifier
+                            .background(Color.White, shape = RoundedCornerShape(8.dp))
+                            .padding(16.dp)
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Error al crear el reporte de incidencia",
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            Text(
+                                text = errorMessage,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+
+                            Button(
+                                onClick = { showErrorDialog2 = false },
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            ) {
+                                Text("Aceptar")
+                            }
                         }
                     }
                 }
             }
         }
-
-
-
     }
 }
 

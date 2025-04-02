@@ -93,9 +93,12 @@
             retrofit.create(Mensajes::class.java)
         }
 
-        val apiRed: ApiRed by lazy {
-            retrofit.create(ApiRed::class.java)
+        val apiReporte: ApiReporte by lazy {
+            retrofit.create(ApiReporte::class.java)
         }
+
+
+
     }
 
 

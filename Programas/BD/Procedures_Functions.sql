@@ -326,6 +326,28 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+CREATE OR REPLACE FUNCTION obtener_docente_rfc(p_idets INTEGER) RETURNS VARCHAR AS $$
+DECLARE
+    v_docente_rfc VARCHAR;
+BEGIN
+    -- Obtener docente_rfc de la tabla aplica
+    SELECT docente_rfc INTO v_docente_rfc
+    FROM aplica
+    WHERE idets = p_idets;
+
+    -- Verificar si se encontró el docente_rfc
+    IF v_docente_rfc IS NULL THEN
+        RETURN 'No se encontró docente RFC para idets ' || p_idets;
+    ELSE
+        RETURN v_docente_rfc;
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN 'Error al obtener docente RFC: ' || SQLERRM;
+END;
+$$ LANGUAGE plpgsql;
+
 -- TRIGGER QUE EJECUTA LA FUNCIÓN PARA CREAR EL USUARIO DE PERSONAL DE SEGURIDAD
 CREATE OR REPLACE TRIGGER create_userPS
 AFTER INSERT ON personalseguridad

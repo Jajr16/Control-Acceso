@@ -3,16 +3,11 @@ package Pantallas
 import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
-import RetroFit.RetrofitInstance
 import android.Manifest
-import android.content.ContentValues
-import android.content.Context
+import android.graphics.BitmapFactory
 import android.os.Build
-import android.os.Environment
-import android.provider.MediaStore
 import android.util.Log
 import android.view.ViewGroup
-import android.view.WindowInsetsAnimation
 import android.widget.Toast
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -26,7 +21,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.FabPosition
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -34,7 +30,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,38 +46,35 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.prueba3.R
+import com.example.prueba3.Views.CamaraViewModel
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.google.android.gms.common.api.Response
-import com.google.mlkit.vision.face.FaceDetection
-import com.google.mlkit.vision.face.FaceDetectorOptions
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.ResponseBody
-import retrofit2.Call
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import java.util.concurrent.Executor
+
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun Camara(navController: NavController, boleta: String, idETS: String, loginViewModel: LoginViewModel) {
+fun Camara(
+    navController: NavController,
+    boleta: String,
+    idETS: String,
+    loginViewModel: LoginViewModel,
+    cameraViewModel: CamaraViewModel,
+
+    ) {
+
+    val context = LocalContext.current
+
+
+
     ValidateSession(navController = navController) {
         val permissions = rememberMultiplePermissionsState(
             permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -90,13 +87,39 @@ fun Camara(navController: NavController, boleta: String, idETS: String, loginVie
                 )
             }
         )
-        val context = LocalContext.current
+
         val camaraController = remember { LifecycleCameraController(context) }
         val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current
         val userRole = loginViewModel.getUserRole()
 
+        val pythonResponse = cameraViewModel.pythonResponse.collectAsState().value
+
+        val errorMessage = cameraViewModel.errorMessage.collectAsState().value
+        val precision = cameraViewModel.precision.value // Acceder directamente al valor
+
+        var showResultDialog by remember { mutableStateOf(false) }
+        var reconocimientoExitoso by remember { mutableStateOf(false) }
+
+
         LaunchedEffect(key1 = Unit) {
             permissions.launchMultiplePermissionRequest()
+        }
+
+
+
+        LaunchedEffect(key1 = pythonResponse) {
+            pythonResponse?.let {
+                reconocimientoExitoso = it.precision != null
+                showResultDialog = true
+            }
+        }
+
+
+
+        LaunchedEffect(errorMessage) {
+            if (errorMessage != null) {
+                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+            }
         }
 
         Scaffold(
@@ -109,16 +132,15 @@ fun Camara(navController: NavController, boleta: String, idETS: String, loginVie
             bottomBar = {
                 MenuBottomBar(navController = navController, userRole)
             },
-            containerColor = Color.Transparent, // Color transparente para el contenedor
-            contentColor = Color.White // Color del contenido
+            containerColor = Color.Transparent,
+            contentColor = Color.White
         ) { paddingValues ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(BlueBackground) // Aplica el color de fondo aquí
+                    .background(BlueBackground)
                     .padding(paddingValues)
             ) {
-                // Título
                 Text(
                     text = "Tome la fotografía",
                     style = MaterialTheme.typography.titleLarge,
@@ -130,13 +152,11 @@ fun Camara(navController: NavController, boleta: String, idETS: String, loginVie
                     textAlign = TextAlign.Center
                 )
 
-                // Cámara
                 if (permissions.allPermissionsGranted) {
                     CamaraComposable(
                         camaraController,
                         lifecycle,
-                        modifier = Modifier
-                            .weight(1f) // Expande la cámara
+                        modifier = Modifier.weight(1f)
                     )
                 } else {
                     Text(
@@ -149,7 +169,6 @@ fun Camara(navController: NavController, boleta: String, idETS: String, loginVie
                     )
                 }
 
-                // Botón de captura
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -159,10 +178,11 @@ fun Camara(navController: NavController, boleta: String, idETS: String, loginVie
                     FloatingActionButton(
                         onClick = {
                             val executor = ContextCompat.getMainExecutor(context)
-                            tomarFoto(camaraController, executor) { bytes ->
-                                GlobalScope.launch(Dispatchers.IO) {
-                                    enviarFotoAlServidor(bytes, boleta, idETS, context) // Pasa idETS aquí
-                                }
+                            tomarFoto(camaraController, executor, cameraViewModel) { bytes ->
+                                val imageRequestBody = bytes.toRequestBody("image/jpeg".toMediaTypeOrNull(), 0, bytes.size)
+                                val imagePart = MultipartBody.Part.createFormData("image", "foto.jpg", imageRequestBody)
+                                val boletaRequestBody = boleta.toRequestBody("text/plain".toMediaTypeOrNull())
+                                cameraViewModel.uploadImage(imagePart, boletaRequestBody)
                             }
                         }
                     ) {
@@ -175,8 +195,22 @@ fun Camara(navController: NavController, boleta: String, idETS: String, loginVie
                 }
             }
         }
-    }
 
+        if (showResultDialog) {
+            ResultDialog(
+                exito = reconocimientoExitoso,
+                precision = precision,
+                onDismiss = {
+                    showResultDialog = false
+                    if (reconocimientoExitoso) {
+                        navController.navigate("InfoA/$idETS/$boleta")
+                    }
+                }
+            )
+
+        }
+
+    }
 }
 
 @Composable
@@ -188,7 +222,7 @@ fun CamaraComposable(
     camaraController.cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
     camaraController.bindToLifecycle(lifecycle)
     AndroidView(
-        modifier = modifier.fillMaxSize(), // Usar fillMaxSize()
+        modifier = modifier.fillMaxSize(),
         factory = {
             PreviewView(it).apply {
                 layoutParams = ViewGroup.LayoutParams(
@@ -205,6 +239,7 @@ fun CamaraComposable(
 private fun tomarFoto(
     camaraController: LifecycleCameraController,
     executor: Executor,
+    cameraViewModel: CamaraViewModel,
     enviarFotoAlServidor: (ByteArray) -> Unit
 ) {
     camaraController.takePicture(
@@ -215,6 +250,12 @@ private fun tomarFoto(
                 val bytes = ByteArray(buffer.remaining())
                 buffer.get(bytes)
                 image.close()
+
+                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                cameraViewModel.setImagen(bitmap) // Actualiza imagenBitmap directamente
+
+                Log.d("Camara", "ViewModel Bitmap: ${cameraViewModel.imagenBitmap.value}")
+
                 enviarFotoAlServidor(bytes)
             }
 
@@ -225,36 +266,73 @@ private fun tomarFoto(
     )
 }
 
+@Composable
+fun ResultDialog(exito: Boolean, precision: Float?, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(if (exito) "Reconocimiento Facial Exitoso" else "Reconocimiento Facial Fallido") },
+        text = {
+            if (exito) {
+                if (precision != null) {
+                    val precisionPorcentaje = precision * 100
+                    if (precision >= 0.8) {
+                        Text("Es casi seguro que el alumno es quien dice ser. \nPrecisión del reconocimiento facial: ${precisionPorcentaje}%")
 
-fun enviarFotoAlServidor(bytes: ByteArray, boleta: String, idETS: String, context: Context) {
-    val apiService = RetrofitInstance.apiRed
+                    }
+                    if (precision >= 0.6 && precision < 0.8){
+                        Text("Es dudosa la identidad del alumno. \nPrecisión del reconocimiento facial: ${precisionPorcentaje}%")
 
-    val imageRequestBody = bytes.toRequestBody("image/jpeg".toMediaTypeOrNull(), 0, bytes.size)
-    val imagePart = MultipartBody.Part.createFormData("image", "foto.jpg", imageRequestBody)
+                    }
+                    if (precision < 0.6){
+                        Text("El casi seguro que el alumno no es quien dice ser. \nPrecisión del reconocimiento facial: ${precisionPorcentaje}%")
 
-    val boletaRequestBody = boleta.toRequestBody("text/plain".toMediaTypeOrNull())
 
-    // idETS como RequestBody con text/plain
-    val idETSRequestBody = idETS.toRequestBody("text/plain".toMediaTypeOrNull())
-
-    GlobalScope.launch(Dispatchers.IO) {
-        try {
-            val response = apiService.uploadImage(imagePart, boletaRequestBody, idETSRequestBody)
-
-            withContext(Dispatchers.Main) {
-                Toast.makeText(
-                    context,
-                    "Status: ${response.status}\nDetalles: ${response.detalles}",
-                    Toast.LENGTH_LONG
-                ).show()
+                    }
+                }
+            } else {
+                Text("No se pudo realizar el reconocimiento facial.")
             }
-        } catch (e: Exception) {
-            withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("OK")
             }
         }
-    }
+    )
 }
+
+
+
+
+//fun enviarFotoAlServidor(bytes: ByteArray, boleta: String, idETS: String, context: Context) {
+//    val apiService = RetrofitInstance.apiRed
+//
+//    val imageRequestBody = bytes.toRequestBody("image/jpeg".toMediaTypeOrNull(), 0, bytes.size)
+//    val imagePart = MultipartBody.Part.createFormData("image", "foto.jpg", imageRequestBody)
+//
+//    val boletaRequestBody = boleta.toRequestBody("text/plain".toMediaTypeOrNull())
+//
+//    // idETS como RequestBody con text/plain
+//    val idETSRequestBody = idETS.toRequestBody("text/plain".toMediaTypeOrNull())
+//
+//    GlobalScope.launch(Dispatchers.IO) {
+//        try {
+//            val response = apiService.uploadImage(imagePart, boletaRequestBody, idETSRequestBody)
+//
+//            withContext(Dispatchers.Main) {
+//                Toast.makeText(
+//                    context,
+//                    "Status: ${response.status}\nDetalles: ${response.detalles}",
+//                    Toast.LENGTH_LONG
+//                ).show()
+//            }
+//        } catch (e: Exception) {
+//            withContext(Dispatchers.Main) {
+//                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+//            }
+//        }
+//    }
+//}
 
 
 
