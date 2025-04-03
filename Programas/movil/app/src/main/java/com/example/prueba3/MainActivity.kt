@@ -134,7 +134,7 @@ class MainActivity : ComponentActivity() {
                     composable("asignarReemplazo") { ScreenAsignaremplazo(navController, loginViewModel) }
 
 
-                    composable("Calendar") { CalendarScreen(navController, loginViewModel, DiasETSModel) }
+                    composable("Calendar") { CalendarScreen(navController, loginViewModel, diasETSModel) }
                     composable(
                         route = "CredencialDAE?url={url}&boleta={boleta}", // Ruta con dos argumentos
                         arguments = listOf(
