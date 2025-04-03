@@ -54,6 +54,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarDuration
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
 
 @OptIn(ExperimentalEncodingApi::class)
 @Composable
@@ -76,12 +78,19 @@ fun CredencialDaeScreen(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    val fotoAlumno by viewModel.fotoAlumno.collectAsState()
+    var showMensajeAsistencia by remember { mutableStateOf(false) }
+
+    LaunchedEffect(boleta) {
+        viewModel.fetchFotoAlumno(boleta)
+    }
+
     ValidateSession(navController = navController) {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 MenuTopBar(
-                    true, true, loginViewModel,
+                    false, false, loginViewModel,
                     navController,
                 )
             },
@@ -92,8 +101,8 @@ fun CredencialDaeScreen(
                     .fillMaxSize()
                     .background(BlueBackground)
                     .padding(
-                        top = 90.dp,  // Padding para el top bar
-                        bottom = padding.calculateBottomPadding()  // Padding automático para bottom bar
+                        top = 90.dp,
+                        bottom = padding.calculateBottomPadding()
                     )
                     .verticalScroll(rememberScrollState())
             ) {
@@ -185,18 +194,32 @@ fun CredencialDaeScreen(
                                 .fillMaxWidth()
                                 .padding(16.dp)
                         ) {
-                            // Información del alumno
+                            // Información del alumno - MODIFICADO para usar fotoAlumno
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                AsyncImage(
-                                    model = alumnoInfo?.ImagenCredencial ?: R.drawable.placeholder_image,
-                                    contentDescription = "Foto del alumno",
-                                    modifier = Modifier
-                                        .size(100.dp)
-                                        .clip(CircleShape)
-                                )
+                                if (fotoAlumno != null) {
+                                    val bitmap = BitmapFactory.decodeByteArray(fotoAlumno, 0, fotoAlumno!!.size)
+                                    Image(
+                                        bitmap = bitmap.asImageBitmap(),
+                                        contentDescription = "Foto de perfil",
+                                        modifier = Modifier
+                                            .size(100.dp)
+                                            .clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                } else {
+                                    // Mostrar placeholder si no hay foto
+                                    Image(
+                                        painter = painterResource(id = R.drawable.placeholder_image),
+                                        contentDescription = "Foto de perfil",
+                                        modifier = Modifier
+                                            .size(100.dp)
+                                            .clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
 
                                 Column(
                                     modifier = Modifier
@@ -327,7 +350,6 @@ fun CredencialDaeScreen(
                             )
                         }
                     }
-                    var showMensajeAsistencia by remember { mutableStateOf(false) }
 
                     if (showAsistenciaDialog) {
                         if (alumno?.nombreETS.isNullOrEmpty()) {

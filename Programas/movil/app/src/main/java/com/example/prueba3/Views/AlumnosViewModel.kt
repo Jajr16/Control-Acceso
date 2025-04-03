@@ -45,6 +45,7 @@ class AlumnosViewModel : ViewModel() {
     private val _errorMessage = mutableStateOf<String?>(null)
     val errorMessage = mutableStateOf<String?>(null)
 
+
     private val _fotoAlumno = MutableStateFlow<ByteArray?>(null)
     val fotoAlumno: StateFlow<ByteArray?> = _fotoAlumno
 

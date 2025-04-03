@@ -20,6 +20,8 @@ import Pantallas.QRScannerScreen
 import Pantallas.WelcomeScreenAlumno
 import Pantallas.NotificationsScreen
 import Pantallas.Reporte
+import Pantallas.ScreenAsignaremplazo
+import Pantallas.SolicitarRemplazo
 import Pantallas.WelcomeScreen
 import Pantallas.WelcomeScreenDocente
 import android.os.Build
@@ -45,6 +47,7 @@ import com.example.prueba3.Views.CamaraViewModel
 import com.example.prueba3.Views.DiasETSModel
 import com.example.prueba3.Views.InformacionAlumnoViewModel
 import com.example.prueba3.Views.MensajesViewModel
+import com.example.prueba3.Views.ReemplazoViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 import com.example.prueba3.ui.theme.Prueba3Theme
 import java.lang.Integer.parseInt
@@ -127,22 +130,26 @@ class MainActivity : ComponentActivity() {
                         composable("info") { ETSInscriptionProcessScreen(navController, loginViewModel) }
                         composable("CrearCuenta") { CreateAccountScreen(navController) }
 
-                        composable("Calendar") { CalendarScreen(navController, loginViewModel, diasETSModel) }
-                        composable(
-                            route = "CredencialDAE?url={url}&boleta={boleta}", // Ruta con dos argumentos
-                            arguments = listOf(
-                                navArgument("url") { // Argumento "url"
-                                    type = NavType.StringType // Tipo String
-                                    nullable = true // Permite valores nulos
-                                },
-                                navArgument("boleta") { // Argumento "boleta"
-                                    type = NavType.StringType // Tipo String
-                                    defaultValue = "" // Valor por defecto
-                                }
-                            )
-                        ) { backStackEntry ->
-                            val url = backStackEntry.arguments?.getString("url")
-                            val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
+//                    composable("solicitaReemplazo") { SolicitarRemplazo(navController, loginViewModel, ReemplazoViewModel) }
+                    composable("asignarReemplazo") { ScreenAsignaremplazo(navController, loginViewModel) }
+
+
+                    composable("Calendar") { CalendarScreen(navController, loginViewModel, DiasETSModel) }
+                    composable(
+                        route = "CredencialDAE?url={url}&boleta={boleta}", // Ruta con dos argumentos
+                        arguments = listOf(
+                            navArgument("url") { // Argumento "url"
+                                type = NavType.StringType // Tipo String
+                                nullable = true // Permite valores nulos
+                            },
+                            navArgument("boleta") { // Argumento "boleta"
+                                type = NavType.StringType // Tipo String
+                                defaultValue = "" // Valor por defecto
+                            }
+                        )
+                    ) { backStackEntry ->
+                        val url = backStackEntry.arguments?.getString("url")
+                        val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
 
                             CredencialDaeScreen(
                                 navController = navController,

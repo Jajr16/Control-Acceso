@@ -4,7 +4,7 @@ import java.sql.Time
 import java.util.Date
 
 data class DetalleAlumnos(
-    val imagenCredencial: String?,
+//    val imagenCredencial: String?,
     val nombreAlumno: String,
     val apellidoPAlumno: String,
     val apellidoMAlumno: String,
@@ -19,7 +19,7 @@ data class DetalleAlumnos(
 )
 
 data class CredencialAlumnos(
-    val ImagenCredencial: String?,
+    val ImagenCredencial: String,
     val nombre: String,
     val apellidoP: String,
     val apellidoM: String,

@@ -1,9 +1,14 @@
 package Pantallas
 
 import Pantallas.Plantillas.MenuBottomBar
-import Pantallas.components.ValidateSession
-import androidx.compose.foundation.background
 import Pantallas.Plantillas.MenuTopBar
+import Pantallas.components.ValidateSession
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Log
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -17,16 +22,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.example.prueba3.R
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.ui.theme.BlueBackground
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun DetalleAlumnosScreen(
@@ -40,18 +53,28 @@ fun DetalleAlumnosScreen(
         val alumno = alumnosDetalle.firstOrNull()
         val isLoading by viewModel.loadingState.collectAsState(initial = false)
 
+        // State for photo loading
+        var photoLoading by remember { mutableStateOf(true) }
+        var photoError by remember { mutableStateOf(false) }
+        var photoBitmap by remember { mutableStateOf<Bitmap?>(null) }
+
         var showAsistenciaDialog by remember { mutableStateOf(false) }
         var showEscanearDialog by remember { mutableStateOf(false) }
 
+        // Load student details
         LaunchedEffect(boleta) {
             viewModel.fetchDetalleAlumnos(boleta)
         }
+
+
 
         Scaffold(
             topBar = {
                 MenuTopBar(true, true, loginViewModel, navController)
             },
-            bottomBar = { MenuBottomBar(navController = navController, loginViewModel.getUserRole()) }
+            bottomBar = {
+                MenuBottomBar(navController = navController, loginViewModel.getUserRole())
+            }
         ) { padding ->
             val scrollState = rememberScrollState() // Estado del scroll
 
@@ -80,16 +103,51 @@ fun DetalleAlumnosScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                AsyncImage(
-                    model = alumno?.imagenCredencial.takeUnless { it.isNullOrBlank() } ?: R.drawable.placeholder_image,
-                    contentDescription = "Foto del alumno",
+                // Student photo display
+                Box(
                     modifier = Modifier
-                        .size(100.dp)
+                        .size(150.dp)
                         .clip(CircleShape)
-                )
+                        .border(2.dp, Color.Gray, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    when {
+                        photoLoading -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(50.dp),
+                                color = Color.White
+                            )
+                        }
+                        photoBitmap != null -> {
+                            Image(
+                                bitmap = photoBitmap!!.asImageBitmap(),
+                                contentDescription = "Foto del alumno",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                        else -> {
+                            Image(
+                                painter = painterResource(id = R.drawable.placeholder_image),
+                                contentDescription = "Foto no disponible",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                    }
+                }
+
+                if (photoError && !photoLoading) {
+                    Text(
+                        text = "No se pudo cargar la foto",
+                        color = Color.Red,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Student information
                 InfoCard("Nombre", "${alumno?.nombreAlumno ?: ""} ${alumno?.apellidoPAlumno ?: ""} ${alumno?.apellidoMAlumno ?: ""}")
                 InfoCard("Boleta", alumno?.boleta ?: "No disponible")
                 InfoCard("ETS inscrito", alumno?.nombreETS ?: "No disponible")
@@ -100,116 +158,53 @@ fun DetalleAlumnosScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Action buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(
                         onClick = { showAsistenciaDialog = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFFFFF))
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White)
                     ) {
                         Text("Registrar Asistencia", color = Color.Black)
-                    }
-                    Button(
-                        onClick = { showEscanearDialog = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFFFFF))
-                    ) {
-                        Text("Escanear Credencial", color = Color.Black)
                     }
                 }
             }
         }
 
+        // Attendance dialog
         if (showAsistenciaDialog) {
             AlertDialog(
                 onDismissRequest = { showAsistenciaDialog = false },
-                title = {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
+                title = { Text("Confirmar asistencia", fontWeight = FontWeight.Bold) },
+                text = { Text("¿Deseas registrar la asistencia de ${alumno?.nombreAlumno}?") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showAsistenciaDialog = false
+                            alumno?.boleta?.let { viewModel.registrarAsistencia(it) }
+                        }
                     ) {
-                        Icon(
-                            Icons.Filled.Warning,
-                            contentDescription = "Advertencia",
-                            tint = Color(0xFFFFC107),
-                            modifier = Modifier.size(32.dp)
-                        )
+                        Text("Confirmar")
                     }
                 },
-                text = {
-                    Text(
-                        "¿Estás seguro de querer registrar la asistencia del alumno?",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                },
-                confirmButton = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        Button(
-                            onClick = { showAsistenciaDialog = false }
-                        ) {
-                            Text("Cancelar")
-                        }
-                        Button(
-                            onClick = {
-                                showAsistenciaDialog = false
-                                // TODO: Agregar la lógica para registrar la asistencia
-                            }
-                        ) {
-                            Text("Aceptar")
-                        }
+                dismissButton = {
+                    Button(onClick = { showAsistenciaDialog = false }) {
+                        Text("Cancelar")
                     }
                 }
             )
         }
 
 
+        // Scan dialog
         if (showEscanearDialog) {
             AlertDialog(
                 onDismissRequest = { showEscanearDialog = false },
-                title = {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Filled.Warning,
-                            contentDescription = "Alerta",
-                            tint = Color(0xFFFFC107),
-                            modifier = Modifier.size(32.dp) // Ajusta el tamaño si es necesario
-                        )
-                    }
-                },
-                text = {
-                    Text(
-                        "Si tienes dudas sobre la identidad del alumno, escanea su credencial para confirmar su identidad.",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                },
-                confirmButton = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        Button(
-                            onClick = { showEscanearDialog = false }
-                        ) {
-                            Text("Cancelar")
-                        }
-                        Button(
-                            onClick = {
-                                showEscanearDialog = false
-                                navController.navigate("scanQr")
-                            }
-                        ) {
-                            Text("Aceptar")
-                        }
-                    }
-                }
+                title = { /* ... */ },
+                text = { /* ... */ },
+                confirmButton = { /* ... */ }
             )
         }
     }
