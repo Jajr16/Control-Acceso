@@ -6,5 +6,8 @@ import retrofit2.http.POST
 
 interface ReemplazoApi {
         @POST("solicitud-reemplazo")
-        suspend fun enviarSolicitud(@Body solicitud: Reemplazo
+        suspend fun enviarSolicitud(@Body reemplazo: Reemplazo): List<Reemplazo>
+
+
+
     }
