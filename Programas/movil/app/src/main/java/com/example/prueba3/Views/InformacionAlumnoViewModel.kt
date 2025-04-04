@@ -41,6 +41,9 @@ class InformacionAlumnoViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             try {
+
+                Log.d("RetrofitResponse", "Mande: : $razon")
+
                 var imagenPart: MultipartBody.Part? = null
 
                 if (imagenBitmap != null) {
@@ -50,6 +53,9 @@ class InformacionAlumnoViewModel : ViewModel() {
                 }
 
                 val razonBody = razon?.toRequestBody("text/plain".toMediaTypeOrNull())
+
+                Log.d("RetrofitResponse", "Mande: : $razon")
+
                 val tipoBody = tipo.toRequestBody("text/plain".toMediaTypeOrNull())
                 val boletaBody = boleta.toRequestBody("text/plain".toMediaTypeOrNull())
                 val idETSBody = idETS.toRequestBody("text/plain".toMediaTypeOrNull())

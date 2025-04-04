@@ -106,6 +106,10 @@
             retrofit.create(ApiReporte::class.java)
         }
 
+        val apiReporteInfo: ApiReporteInfo by lazy {
+            retrofit.create(ApiReporteInfo::class.java)
+        }
+
 
 
     }

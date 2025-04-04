@@ -216,6 +216,88 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION obtener_datos_reporte(p_idets INTEGER, p_boleta VARCHAR)
+RETURNS TABLE (
+    curp VARCHAR,
+    nombre VARCHAR,
+    apellido_p VARCHAR,
+    apellido_m VARCHAR,
+    escuela VARCHAR,
+    carrera VARCHAR,
+    periodo VARCHAR,
+    tipo VARCHAR,
+    turno VARCHAR,
+    materia VARCHAR,
+    fecha_ingreso DATE,
+    hora_ingreso TIME,
+    nombre_docente VARCHAR,
+    tipo_estado VARCHAR,
+    presicion REAL,
+    motivo VARCHAR
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        p.curp,
+        p.nombre,
+        p.apellido_p,
+        p.apellido_m,
+        ua.nombre AS escuela,
+        pa.nombre AS carrera,
+        pe.periodo,
+        pe.tipo::VARCHAR,
+        t.nombre AS turno,
+        ua2.nombre AS materia,
+        isalon.fecha AS fecha_ingreso,
+        isalon.hora AS hora_ingreso,
+        isalon.docente AS nombre_docente,
+        te.tipo AS tipo_estado,
+        COALESCE(rn.precision, 0.0) AS presicion, -- Valor predeterminado
+        COALESCE(mr.motivo, 'No Motivo') AS motivo -- Valor predeterminado
+    FROM
+        alumno a
+    INNER JOIN
+        persona p ON a.curp = p.curp
+    INNER JOIN
+        unidadacademica ua ON p.id_escuela = ua.id_escuela
+    INNER JOIN
+        programaacademico pa ON a.idpa = pa.idpa
+    INNER JOIN
+        ets e ON e.idets = p_idets
+    INNER JOIN
+        periodoets pe ON e.id_periodo = pe.id_periodo
+    INNER JOIN
+        turno t ON e.turno = t.id_turno
+    INNER JOIN
+        unidadaprendizaje ua2 ON e.idua = ua2.idua
+    INNER JOIN
+        ingreso_salon isalon ON e.idets = isalon.idets AND a.boleta = isalon.boleta
+    INNER JOIN
+        tipo_estado te ON isalon.estado = te.idtipo
+    LEFT JOIN
+        resultadorn rn ON e.idets = rn.idets AND a.boleta = rn.boleta -- LEFT JOIN para permitir NULLs
+    LEFT JOIN
+        motivo_rechazo mr ON a.boleta = mr.boleta AND e.idets = mr.idets -- LEFT JOIN para permitir NULLs
+    WHERE
+        a.boleta = p_boleta AND e.idets = p_idets;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION obtener_imagen_alumno(p_idets INTEGER, p_boleta VARCHAR)
+RETURNS VARCHAR AS $$
+DECLARE
+    ruta_imagen VARCHAR;
+BEGIN
+    SELECT rn.imagen_alumno INTO ruta_imagen
+    FROM resultadorn rn
+    INNER JOIN ets e ON e.idets = rn.idets
+    INNER JOIN alumno a ON a.boleta = rn.boleta
+    WHERE e.idets = p_idets AND a.boleta = p_boleta;
+
+    RETURN ruta_imagen;
+END;
+$$ LANGUAGE plpgsql;
+
 -- ======================= TRIGGERS ===========================
 -- PARA VALIDAR UN PROGRAMA ACADÉMICO
 CREATE OR REPLACE FUNCTION validar_programa_academico()
