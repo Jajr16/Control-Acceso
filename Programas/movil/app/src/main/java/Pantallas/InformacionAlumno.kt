@@ -537,7 +537,7 @@ fun InformacionAlumno(
                                 onClick = {
                                     if (tipoValido) {
                                         informacionAlumnoViewModel.enviarDatosAlServidor(
-                                            null, // Envía null para la razón
+                                            razon, // Envía null para la razón
                                             tipo,
                                             boleta,
                                             idETS,
