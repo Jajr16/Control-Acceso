@@ -89,7 +89,7 @@ fun DetalleAlumnosScreen(
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Información del alumno",
+                    text = "Creación del reporte ",
                     fontSize = 30.sp,
                     fontWeight = FontWeight.Normal,
                     color = Color.White

@@ -251,4 +251,82 @@ class AlumnosViewModel : ViewModel() {
                 }
             }
         }
+
+    private val _ingresoResultado = MutableStateFlow<String?>(null)
+    val ingresoResultado: StateFlow<String?> = _ingresoResultado
+
+
+
+    fun verificarIngresoSalon(idets: Int, boleta: String) {
+        viewModelScope.launch {
+            try {
+                _loadingState.value = true
+                val response = RetrofitInstance.ingresoSalonApi.verificarIngreso(idets, boleta)
+                if (response.isSuccessful) {
+                    val jsonResponse = response.body()
+                    _ingresoResultado.value = jsonResponse?.get("resultado")?.asString
+                } else {
+                    _ingresoResultado.value = "Error en la respuesta del servidor: ${response.code()}"
+                }
+            } catch (e: Exception) {
+                _ingresoResultado.value = "Error de red: ${e.localizedMessage}"
+            } finally {
+                _loadingState.value = false
+            }
+        }
+    }
+
+    private val _eliminacionExitosa = MutableStateFlow<Boolean?>(null)
+    val eliminacionExitosa: StateFlow<Boolean?> = _eliminacionExitosa
+
+    private val _mensajeEliminacion = MutableStateFlow<String?>(null)
+    val mensajeEliminacion: StateFlow<String?> = _mensajeEliminacion
+
+    private val _eliminacionCompletada = MutableStateFlow<Boolean?>(null)
+    val eliminacionCompletada: StateFlow<Boolean?> = _eliminacionCompletada
+
+    fun eliminarReporte(boleta: String, idETS: Int) {
+        viewModelScope.launch {
+            try {
+                _loadingState.value = true
+                _eliminacionExitosa.value = null
+                _mensajeEliminacion.value = null
+                _eliminacionCompletada.value = null // Resetear el estado de completado
+
+                val response = RetrofitInstance.ingresoSalonApi.eliminarReporte(idETS, boleta)
+
+                if (response.isSuccessful) {
+                    val jsonResponse = response.body()
+                    _eliminacionExitosa.value = true
+                    _mensajeEliminacion.value = jsonResponse?.get("mensaje")?.asString ?: "Eliminación exitosa."
+                    // No verificar el ingreso inmediatamente aquí
+                } else {
+                    _eliminacionExitosa.value = false
+                    val errorBody = response.errorBody()?.string()
+                    val errorMessage = try {
+                        JSONObject(errorBody).getString("mensaje")
+                    } catch (e: Exception) {
+                        "Error al eliminar el reporte: Código ${response.code()}"
+                    }
+                    _mensajeEliminacion.value = errorMessage
+                }
+            } catch (e: Exception) {
+                _eliminacionExitosa.value = false
+                _mensajeEliminacion.value = "Error de red al eliminar el reporte: ${e.localizedMessage}"
+            } finally {
+                _loadingState.value = false
+            }
+        }
+    }
+
+    fun clearEliminacionEstado() {
+        _eliminacionExitosa.value = null
+        _mensajeEliminacion.value = null
+        _eliminacionCompletada.value = true // Indica que el proceso de eliminación (y el diálogo) ha finalizado
+    }
+
+    fun clearEliminacionCompletada() {
+        _eliminacionCompletada.value = null
+    }
+
 }
