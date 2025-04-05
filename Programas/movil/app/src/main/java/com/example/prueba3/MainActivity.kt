@@ -155,7 +155,7 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 loginViewModel = loginViewModel,
                                 url = url,
-                                viewModel = alumnosViewModel,
+                                alumnosViewModel,
                                 boleta = boleta
                             )
                         }

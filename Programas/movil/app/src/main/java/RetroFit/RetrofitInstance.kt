@@ -111,7 +111,9 @@
         }
 
 
-
+        val ingresoSalonApi: IngresoSalonApi by lazy {
+            retrofit.create(IngresoSalonApi::class.java)
+        }
     }
 
 

@@ -329,6 +329,54 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION verificar_ingreso_salon (p_boleta VARCHAR, p_idets INTEGER)
+RETURNS BOOLEAN
+AS $$
+BEGIN
+    RETURN EXISTS (SELECT 1 FROM ingreso_salon WHERE boleta = p_boleta AND idets = p_idets);
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+
+select * from verificar_ingreso_salon('2022630738',1)
+
+CREATE OR REPLACE FUNCTION eliminar_reporte_alumno(p_idets INTEGER, p_boleta VARCHAR)
+RETURNS BOOLEAN AS $$
+DECLARE
+    registros_eliminados INTEGER := 0;
+BEGIN
+    -- Eliminar de la tabla resultadorn (dependiente de ingreso_salon)
+    DELETE FROM resultadorn
+    WHERE idets = p_idets AND boleta = p_boleta;
+    IF FOUND THEN
+        registros_eliminados := registros_eliminados + 1;
+    END IF;
+
+    -- Eliminar de la tabla motivo_rechazo (dependiente de ingreso_salon)
+    DELETE FROM motivo_rechazo
+    WHERE idets = p_idets AND boleta = p_boleta;
+    IF FOUND THEN
+        registros_eliminados := registros_eliminados + 1;
+    END IF;
+
+    -- Eliminar de la tabla ingreso_salon (tabla principal)
+    DELETE FROM ingreso_salon
+    WHERE idets = p_idets AND boleta = p_boleta;
+    IF FOUND THEN
+        registros_eliminados := registros_eliminados + 1;
+    END IF;
+
+    -- Si al menos un registro fue eliminado, consideramos la operación exitosa
+    IF registros_eliminados > 0 THEN
+        RETURN TRUE;
+    ELSE
+        RETURN FALSE;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
 -- TRIGGER QUE EJECUTA LA FUNCIÓN PARA VALIDAR UN PROGRAMA
 CREATE TRIGGER trigger_validar_programa
 BEFORE INSERT OR UPDATE ON alumno

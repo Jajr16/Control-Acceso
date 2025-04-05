@@ -5,6 +5,7 @@ import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
 import android.graphics.BitmapFactory
 import android.text.Layout
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -72,9 +73,22 @@ fun Reporte(
         val reporteList by viewModel.reporte.collectAsState()
         val loading by viewModel.loadingState.collectAsState()
         val imagenBytes by viewModel.imagenBytes.collectAsState()
+        val ingresoResultado by viewModel.ingresoResultado.collectAsState()
 
-        LaunchedEffect(Unit) {
+        LaunchedEffect(idETS, boleta) { // Usa idETS y boleta como claves para volver a ejecutar al cambiar
+            Log.d("ReporteScreen", "Fetching reporte for IDETS: $idETS, Boleta: $boleta")
             viewModel.fetchReporte(idETS.toInt(), boleta)
+            Log.d("ReporteScreen", "Verifying ingreso for IDETS: $idETS, Boleta: $boleta")
+            viewModel.verificarIngresoSalon(idETS.toInt(), boleta) // Llama a la función de verificación
+        }
+
+        // Observa el StateFlow fuera del LaunchedEffect
+        LaunchedEffect(ingresoResultado) {
+            if (!ingresoResultado.isNullOrEmpty()) {
+                Log.d("ReporteScreen", "Resultado de verificarIngresoSalon (StateFlow): $ingresoResultado")
+            } else if (ingresoResultado == null) {
+                Log.d("ReporteScreen", "Resultado de verificarIngresoSalon (StateFlow): Aún no hay resultado o es nulo")
+            }
         }
 
         Scaffold(
@@ -87,6 +101,8 @@ fun Reporte(
                     .background(BlueBackground)
                     .padding(padding)
             ) {
+
+                if (ingresoResultado == "existe" && reporteList.isNotEmpty()) {
                 // Título
                 Text(
                     text = "Reporte",
@@ -99,23 +115,69 @@ fun Reporte(
                     textAlign = TextAlign.Center
                 )
 
-                // Contenedor para la foto y el ícono
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    // Mostrar la imagen si está disponible
-                    imagenBytes?.let { bytes ->
-                        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                        Image(
-                            bitmap.asImageBitmap(),
-                            contentDescription = "Imagen del alumno",
-                            modifier = Modifier.size(150.dp)
+                    Box(
+                        contentAlignment = Alignment.Center // Asegura que la imagen y el icono se centren dentro del contenedor circular
+                    ) {
+                        // Mostrar la imagen si está disponible
+                        if (imagenBytes != null) {
+                            val bitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes!!.size)
+                            Image(
+                                bitmap = bitmap.asImageBitmap(),
+                                contentDescription = "Foto de perfil",
+                                modifier = Modifier
+                                    .size(150.dp)
+                                    .clip(CircleShape)
+                                    .border(2.dp, Color.Gray, CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            // Mostrar un icono de cámara por defecto si no hay imagen
+                            Image(
+                                painter = painterResource(id = R.drawable.icon_camara), // Reemplaza con tu icono de cámara
+                                contentDescription = "Foto de perfil",
+                                modifier = Modifier
+                                    .size(150.dp)
+                                    .clip(CircleShape)
+                                    .border(2.dp, Color.Gray, CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+
+                        // Determinar el icono a mostrar basado en el valor de 'aceptado'
+                        val iconResId = when (aceptado) {
+                            -1 -> R.drawable.icono4
+                            0 -> R.drawable.icono8
+                            1 -> R.drawable.icono1
+                            2 -> R.drawable.icono2
+                            3 -> R.drawable.icono3
+                            4 -> R.drawable.icono5
+                            5 -> R.drawable.icono6
+                            6 -> R.drawable.icono7
+                            else -> R.drawable.icono1
+                        }
+
+                        // Icono pequeño superpuesto en la esquina inferior derecha de la foto
+                        Icon(
+                            painter = painterResource(id = iconResId),
+                            contentDescription = "Icono de estado",
+                            modifier = Modifier
+                                .size(60.dp) // Tamaño más pequeño para el icono superpuesto
+                                .align(Alignment.BottomEnd) // Alinea el icono a la esquina inferior derecha
+                                .padding(bottom = 4.dp, end = 4.dp), // Pequeño espacio desde los bordes
+                            tint = Color.Unspecified
                         )
                     }
                 }
+
+
+
+
 
                 // Contenido del reporte con LazyColumn (scroll integrado)
                 if (loading) {
@@ -149,7 +211,33 @@ fun Reporte(
                         }
                     }
                 }
+            }else if (ingresoResultado == "no existe") {
+                    // Mostrar mensaje de reporte no creado
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No se ha creado reporte para este alumno.",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 32.dp)
+                        )
+                    }
+
+                } else {
+                    // Mostrar un mensaje de carga mientras se verifica el ingreso
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = Color.White)
+                    }
+                }
             }
+
         }
     }
 }
