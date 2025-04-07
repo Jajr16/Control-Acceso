@@ -53,10 +53,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.layout.ContentScale
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.ui.layout.ContentScale
 
 @OptIn(ExperimentalEncodingApi::class)
 @Composable
@@ -330,7 +330,7 @@ fun CredencialDaeScreen(
                         }
                     }
 
-                    // Botones de acción
+                    // Botones de verificación
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()

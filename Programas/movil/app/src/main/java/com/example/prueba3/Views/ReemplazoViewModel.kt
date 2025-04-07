@@ -12,6 +12,9 @@ class ReemplazoViewModel : ViewModel() {
     private val _reemplazoState = MutableStateFlow<Reemplazo?>(null)
     val reemplazoState: StateFlow<Reemplazo?> = _reemplazoState
 
+    private val _reemplazoDocente = MutableStateFlow<List<Reemplazo>>(emptyList())
+    val reemplazoDocente: StateFlow<List<Reemplazo>> = _reemplazoDocente
+
     private val _loadingState = MutableStateFlow(false)
     val loadingState: StateFlow<Boolean> = _loadingState
 

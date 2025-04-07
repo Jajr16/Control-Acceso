@@ -89,7 +89,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     composable("camara/{boleta}/{idETS}") { backStackEntry ->
                         val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
                         val idETS = backStackEntry.arguments?.getString("idETS") ?: ""
-                        Camara(navController, boleta, idETS)
+                        Camara(navController, boleta, idETS,loginViewModel = loginViewModel)
                     }
                     composable("notificaciones") { NotificationsScreen(navController) }
                     composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }

@@ -334,19 +334,6 @@ EXECUTE FUNCTION crear_usuariopPS();
 
 select*from persona;
 
--- PRUEBA DE LA LOGICA DEL TRIGGER DE ASISTENCIAINCRIPCION
-
-INSERT INTO asistenciainscripcion (fecha_asistencia, inscripcionets_boleta, inscripcionets_idets, aceptado, asistio, resultado_rn)
-SELECT e.fecha, i.boleta, i.idets, false, false, false
-FROM inscripcionets i
-JOIN ets e ON i.idets = e.idets
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM asistenciainscripcion fa
-    WHERE fa.inscripcionets_boleta = i.boleta
-      AND fa.inscripcionets_idets = i.idets
-);
-
 -- ON UPDATE CASCADE ON DELETE CASCADE 
 ALTER TABLE public.personalacademico
 DROP CONSTRAINT fkoannh428gwaa99dj2ghpfnek7;

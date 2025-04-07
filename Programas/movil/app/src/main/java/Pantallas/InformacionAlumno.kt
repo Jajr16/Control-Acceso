@@ -363,7 +363,7 @@ fun InformacionAlumno(navController: NavController,idETS: String,boleta: String,
                     }
 
                     Button(
-                        onClick = { /* Acción para verificar con IA */ },
+                        onClick = { navController.navigate("camara/$boleta/$idETS") },
                         modifier = Modifier.weight(1f)
                             .padding(horizontal = 8.dp),
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)

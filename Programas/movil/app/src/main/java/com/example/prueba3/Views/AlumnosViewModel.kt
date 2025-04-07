@@ -50,6 +50,7 @@ class AlumnosViewModel : ViewModel() {
     val alumnoRegistro: StateFlow<List<regitrarAsistencia>> = _alumnoRegistro.asStateFlow()
 
 
+
     private val _fotoAlumno = MutableStateFlow<ByteArray?>(null)
     val fotoAlumno: StateFlow<ByteArray?> = _fotoAlumno
 

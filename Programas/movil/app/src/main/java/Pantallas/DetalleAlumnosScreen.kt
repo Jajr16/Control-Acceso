@@ -21,15 +21,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.example.prueba3.R
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.ui.theme.BlueBackground
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
@@ -160,7 +168,6 @@ fun DetalleAlumnosScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Botones de acción
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

@@ -72,6 +72,7 @@ dependencies {
 
 // PERMISOS
     implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation(libs.firebase.appdistribution)
     implementation(libs.accompanist.permissions)
     implementation(libs.face.detection)
 
