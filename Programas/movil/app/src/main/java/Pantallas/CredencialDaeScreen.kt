@@ -7,6 +7,7 @@ import Pantallas.components.ValidateSession
 import RetroFit.RetrofitInstance
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -64,9 +65,11 @@ fun CredencialDaeScreen(
     navController: NavController,
     loginViewModel: LoginViewModel,
     url: String?,
-    viewModel: AlumnosViewModel = viewModel(),
+    viewModel: AlumnosViewModel,
     boleta: String
 ) {
+
+
     var imageBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -84,16 +87,18 @@ fun CredencialDaeScreen(
     val registroSuccess by viewModel.registroSuccess.collectAsState()
 
 
-    LaunchedEffect(boleta) {
-        viewModel.fetchFotoAlumno(boleta)
-    }
+//    LaunchedEffect(boleta) {
+//        viewModel.fetchFotoAlumno(boleta)
+//    }
+
+
 
     LaunchedEffect(registroSuccess) {
         if (registroSuccess) {
             showMensajeAsistencia = true
             delay(3000)
             showMensajeAsistencia = false
-            viewModel.resetRegistroSuccess()
+//            viewModel.resetRegistroSuccess()
         }
     }
 
@@ -194,6 +199,7 @@ fun CredencialDaeScreen(
                 }
 
                 if (alumnoInfo != null) {
+
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -475,6 +481,13 @@ fun CredencialDaeScreen(
 
                         // Guardar la información del alumno
                         alumnoInfo = credencialResponse.credenciales.firstOrNull()
+
+                        val boletausable  = alumnoInfo?.boleta
+
+                        boletausable?.let { boletaNonNull ->
+                            viewModel.fetchFotoAlumno(boletaNonNull)
+                        }
+
                         isLoading = false
                     } else {
                         errorMessage = "Error al obtener la credencial"
@@ -493,4 +506,7 @@ fun CredencialDaeScreen(
             isLoading = false
         }
     }
+
+
+
 }

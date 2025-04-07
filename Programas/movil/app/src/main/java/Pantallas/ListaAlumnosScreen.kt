@@ -148,7 +148,7 @@ fun ListaAlumnosScreen(
                                 ) {
                                     // Botón con boleta y nombre
                                     Button(
-                                        onClick = { navController.navigate("InfoA/$idETS/${alumno.boleta}") },
+                                        onClick = { navController.navigate("InfoA/$idETS/${alumno.boleta}")},
                                         modifier = Modifier.weight(0.8f),
                                         colors = ButtonDefaults.buttonColors(Color(0xFFFFFFFF)) // Color más oscuro
                                     ) {
@@ -184,16 +184,17 @@ fun ListaAlumnosScreen(
                                             navController.navigate("Reporte/$idETS/${alumno.boleta}/${alumno.aceptado}")
                                         },
                                         modifier = Modifier
-                                            .size(50.dp)
+                                            .size(75.dp)
                                             .padding(8.dp)
-                                            .background(Color(0xFFF0F0F0)) // Gris claro
-                                            .clip(RoundedCornerShape(12.dp)) // Bordes redondeados
+                                            //.background(Color(0xFFF0F0F0)) // Gris claro
+                                            //clip(RoundedCornerShape(5.dp)) // Bordes redondeados
                                     ) {
                                         Icon(
                                             painter = painterResource(id = iconResId), // Usar PNG
                                             contentDescription = "Estado",
+                                            tint = Color.Unspecified,
+                                            modifier = Modifier.fillMaxSize()
 
-                                            modifier = Modifier.size(40.dp)
                                         )
                                     }
                                 }
