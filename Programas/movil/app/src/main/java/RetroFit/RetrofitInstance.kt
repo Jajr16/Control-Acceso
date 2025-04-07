@@ -78,7 +78,7 @@
         }
 
         //Instancia para solicitar Reemplazo
-        val getReemplazo: ReemplazoApi by lazy {
+        val reemplazoApi: ReemplazoApi by lazy {
             retrofit.create(ReemplazoApi::class.java)
         }
 

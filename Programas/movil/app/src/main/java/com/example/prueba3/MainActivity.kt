@@ -23,7 +23,7 @@ import Pantallas.WelcomeScreenAlumno
 import Pantallas.NotificationsScreen
 import Pantallas.Reporte
 import Pantallas.ScreenAsignaremplazo
-import Pantallas.SolicitarRemplazo
+import Pantallas.SolicitarReemplazo
 import Pantallas.WelcomeScreen
 import Pantallas.WelcomeScreenDocente
 import android.os.Build
@@ -130,7 +130,15 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     composable("info") { ETSInscriptionProcessScreen(navController, loginViewModel) }
                     composable("CrearCuenta") { CreateAccountScreen(navController) }
 
-//                    composable("solicitaReemplazo") { SolicitarRemplazo(navController, loginViewModel, ReemplazoViewModel) }
+                    composable("solicitarReemplazo/{nombreETS}") { backStackEntry ->
+                        val nombreETS = backStackEntry.arguments?.getString("nombreETS")
+                        SolicitarReemplazo(
+                            navController = navController,
+                            loginViewModel = loginViewModel,
+                            nombreETS = nombreETS
+                        )
+                    }
+
                     composable("asignarReemplazo") { ScreenAsignaremplazo(navController, loginViewModel) }
 
 

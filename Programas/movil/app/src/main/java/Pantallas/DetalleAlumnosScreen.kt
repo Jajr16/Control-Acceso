@@ -4,8 +4,6 @@ import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,8 +12,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,22 +20,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
 import com.example.prueba3.R
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.ui.theme.BlueBackground
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun DetalleAlumnosScreen(
@@ -52,21 +45,32 @@ fun DetalleAlumnosScreen(
         val alumnosDetalle by viewModel.alumnosDetalle.collectAsState(initial = emptyList())
         val alumno = alumnosDetalle.firstOrNull()
         val isLoading by viewModel.loadingState.collectAsState(initial = false)
+        val registroSuccess by viewModel.registroSuccess.collectAsState()
+//        val errorMessage by viewModel.errorMessage.collectAsState()
 
-        // State for photo loading
+        // States para la UI
         var photoLoading by remember { mutableStateOf(true) }
         var photoError by remember { mutableStateOf(false) }
         var photoBitmap by remember { mutableStateOf<Bitmap?>(null) }
-
         var showAsistenciaDialog by remember { mutableStateOf(false) }
         var showEscanearDialog by remember { mutableStateOf(false) }
+        var showMensajeAsistencia by remember { mutableStateOf(false) }
+        var fechaHoraRegistro by remember { mutableStateOf("") }
 
-        // Load student details
+        // Cargar detalles del alumno
         LaunchedEffect(boleta) {
             viewModel.fetchDetalleAlumnos(boleta)
         }
 
-
+        // Manejar éxito/error del registro
+        LaunchedEffect(registroSuccess) {
+            if (registroSuccess) {
+                showMensajeAsistencia = true
+                delay(3000)
+                showMensajeAsistencia = false
+                viewModel.resetRegistroSuccess()
+            }
+        }
 
         Scaffold(
             topBar = {
@@ -101,7 +105,7 @@ fun DetalleAlumnosScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Student photo display
+                // Foto del alumno
                 Box(
                     modifier = Modifier
                         .size(150.dp)
@@ -145,7 +149,7 @@ fun DetalleAlumnosScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Student information
+                // Información del alumno
                 InfoCard("Nombre", "${alumno?.nombreAlumno ?: ""} ${alumno?.apellidoPAlumno ?: ""} ${alumno?.apellidoMAlumno ?: ""}")
                 InfoCard("Boleta", alumno?.boleta ?: "No disponible")
                 InfoCard("ETS inscrito", alumno?.nombreETS ?: "No disponible")
@@ -156,73 +160,132 @@ fun DetalleAlumnosScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Action buttons
+                // Botones de acción
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(
-                        onClick = { showAsistenciaDialog = true },
+                        onClick = {
+                            showAsistenciaDialog = true
+                            fechaHoraRegistro = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(Date())
+                        },
+                        modifier = Modifier.weight(1f)
+                            .padding(horizontal = 8.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.White)
                     ) {
-                        Text("Registrar Asistencia", color = Color.Black)
+                        Text(
+                            text = "Registrar asistencia",
+                            color = Color.Black
+                        )
                     }
+                }
+
+                // Diálogo de confirmación de asistencia
+                if (showAsistenciaDialog) {
+                    if (alumno?.nombreETS.isNullOrEmpty()) {
+                        AlertDialog(
+                            onDismissRequest = { showAsistenciaDialog = false },
+                            title = { Text("Error", fontWeight = FontWeight.Bold) },
+                            text = {
+                                Text("El alumno no cuenta con ETS inscritos ó su ETS está programada en otra fecha.")
+                            },
+                            confirmButton = {
+                                Button(onClick = { showAsistenciaDialog = false }) {
+                                    Text("Aceptar")
+                                }
+                            }
+                        )
+                    } else {
+                        AlertDialog(
+                            onDismissRequest = { showAsistenciaDialog = false },
+                            title = {
+                                Text(
+                                    "Confirmar asistencia",
+                                    fontWeight = FontWeight.Bold
+                                )
+                            },
+                            text = {
+                                Column {
+                                    Text(
+                                        text = "El alumno ${alumno?.nombreAlumno ?: ""} ${alumno?.apellidoPAlumno ?: ""} con número de boleta ${alumno?.boleta ?: ""} está inscrito en:",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    Text(
+                                        text = "${alumno?.nombreETS ?: ""}",
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                        modifier = Modifier.padding(vertical = 4.dp)
+                                    )
+                                    Text(
+                                        text = "Fecha y hora de registro:",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.padding(top = 8.dp)
+                                    )
+                                    Text(
+                                        text = fechaHoraRegistro,
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                        modifier = Modifier.padding(top = 4.dp)
+                                    )
+                                    Text(
+                                        text = "¿Deseas registrar su asistencia?",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.padding(top = 16.dp)
+                                    )
+                                }
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        showAsistenciaDialog = false
+                                        viewModel.registrarAsistencia(boleta)
+                                    }
+                                ) {
+                                    Text("Aceptar")
+                                }
+                            },
+                            dismissButton = {
+                                Button(onClick = { showAsistenciaDialog = false }) {
+                                    Text("Cancelar")
+                                }
+                            }
+                        )
+                    }
+                }
+
+                // Mensaje de asistencia registrada
+                if (showMensajeAsistencia) {
+                    AlertDialog(
+                        onDismissRequest = { showMensajeAsistencia = false },
+                        title = {
+                            Text(
+                                "Asistencia registrada",
+                                color = Color.Green,
+                                fontWeight = FontWeight.Bold
+                            )
+                        },
+                        text = {
+                            Column {
+                                Text(
+                                    text = "La asistencia ha sido registrada correctamente",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                Text(
+                                    text = fechaHoraRegistro,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                    modifier = Modifier.padding(top = 8.dp)
+                                )
+                            }
+                        },
+                        confirmButton = {
+                            Button(onClick = { showMensajeAsistencia = false }) {
+                                Text("Aceptar")
+                            }
+                        }
+                    )
                 }
             }
-        }
-
-        // Attendance dialog
-        if (showAsistenciaDialog) {
-            AlertDialog(
-                onDismissRequest = { showAsistenciaDialog = false },
-                title = { Text("Confirmar asistencia", fontWeight = FontWeight.Bold) },
-                text = { Text("¿Deseas registrar la asistencia de ${alumno?.nombreAlumno}?") },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            showAsistenciaDialog = false
-                            alumno?.boleta?.let { viewModel.registrarAsistencia(it) }
-                        }
-                    ) {
-                        Text("Confirmar")
-                    }
-                },
-                dismissButton = {
-                    Button(onClick = { showAsistenciaDialog = false }) {
-                        Text("Cancelar")
-                    }
-                }
-            )
-        }
-
-        // Scan dialog
-        if (showEscanearDialog) {
-            AlertDialog(
-                onDismissRequest = { showEscanearDialog = false },
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.Warning, contentDescription = "Advertencia", tint = Color.Yellow)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Escanear credencial")
-                    }
-                },
-                text = { Text("Esta función te permitirá escanear la credencial física del alumno.") },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            showEscanearDialog = false
-                            navController.navigate("scan_screen_route")
-                        }
-                    ) {
-                        Text("Continuar")
-                    }
-                },
-                dismissButton = {
-                    Button(onClick = { showEscanearDialog = false }) {
-                        Text("Cancelar")
-                    }
-                }
-            )
         }
     }
 }
@@ -252,6 +315,7 @@ fun InfoCard(title: String, content: String) {
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.End
+
             )
         }
     }

@@ -15,7 +15,11 @@ import com.example.prueba3.Clases.UpdateAceptadoRequest
 import com.example.prueba3.Clases.regitrarAsistencia
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class AlumnosViewModel : ViewModel() {
     private val _alumnosList = MutableStateFlow<List<AlumnosInfo>>(emptyList())
@@ -36,14 +40,14 @@ class AlumnosViewModel : ViewModel() {
     private val _loadingState = MutableStateFlow(true)
     val loadingState: StateFlow<Boolean> = _loadingState
 
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    private val _registroSuccess = MutableStateFlow(false)
+    val registroSuccess: StateFlow<Boolean> = _registroSuccess.asStateFlow()
+
     private val _alumnoRegistro = MutableStateFlow<List<regitrarAsistencia>>(emptyList())
-    val alumnoRegistro: StateFlow<List<regitrarAsistencia>> = _alumnoRegistro
-
-    private val _registroSuccess = mutableStateOf(false)
-    val registroSuccess = mutableStateOf(false)
-
-    private val _errorMessage = mutableStateOf<String?>(null)
-    val errorMessage = mutableStateOf<String?>(null)
+    val alumnoRegistro: StateFlow<List<regitrarAsistencia>> = _alumnoRegistro.asStateFlow()
 
 
     private val _fotoAlumno = MutableStateFlow<ByteArray?>(null)
@@ -136,7 +140,15 @@ class AlumnosViewModel : ViewModel() {
             try {
                 _loadingState.value = true
                 _errorMessage.value = null
-                val response = RetrofitInstance.alumnosDetalle.getregistrarEntrada(boleta)
+
+                val fechaActual = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                val horaActual = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
+
+                val response = RetrofitInstance.alumnosDetalle.registrarAsistencia(
+                    boleta = boleta,
+                    fecha = fechaActual,
+                    hora = horaActual
+                )
 
                 if (response.isNotEmpty()) {
                     _alumnoRegistro.value = response
@@ -152,10 +164,12 @@ class AlumnosViewModel : ViewModel() {
         }
     }
 
-    fun clearRegistrationState() {
+    // Método para resetear el estado de registro
+    fun resetRegistroSuccess() {
         _registroSuccess.value = false
-        _errorMessage.value = null
     }
+
+    
 
     fun fetchAlumnoEspecifico(boleta: String) {
         viewModelScope.launch {

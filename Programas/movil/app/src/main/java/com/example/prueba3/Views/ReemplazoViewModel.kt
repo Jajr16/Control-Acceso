@@ -8,29 +8,36 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class ReemplazoViewModel : ViewModel(){
-
-    private val _reemplazoDocente = MutableStateFlow<List<Reemplazo>>(emptyList())
-    val reemplazoDocente: StateFlow<List<Reemplazo>> = _reemplazoDocente
+class ReemplazoViewModel : ViewModel() {
+    private val _reemplazoState = MutableStateFlow<Reemplazo?>(null)
+    val reemplazoState: StateFlow<Reemplazo?> = _reemplazoState
 
     private val _loadingState = MutableStateFlow(false)
     val loadingState: StateFlow<Boolean> = _loadingState
 
-    fun fetchreemplazoDocente(reemplazo: Reemplazo) {
+    private val _errorState = MutableStateFlow<String?>(null)
+    val errorState: StateFlow<String?> = _errorState
+
+    fun enviarSolicitudReemplazo(idETS: Int, docenteRFC: String, motivo: String) {
         viewModelScope.launch {
             try {
                 _loadingState.value = true
-                val responseDocente = RetrofitInstance.getReemplazo.enviarSolicitud(reemplazo)
-                _reemplazoDocente.value = responseDocente
+                _errorState.value = null
+
+                val solicitud = Reemplazo(
+                    idETS = idETS,
+                    docenteRFC = docenteRFC,
+                    motivo = motivo,
+                    estatus = "PENDIENTE" // El backend lo manejará como 0
+                )
+
+                val response = RetrofitInstance.reemplazoApi.enviarSolicitud(solicitud)
+                _reemplazoState.value = response
             } catch (e: Exception) {
-                e.printStackTrace()
+                _errorState.value = "Error al enviar solicitud: ${e.message}"
             } finally {
                 _loadingState.value = false
             }
         }
-    }
-
-    fun fetchReemplazoDocente(nuevoReemplazo: Reemplazo) {
-
     }
 }
