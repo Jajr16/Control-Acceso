@@ -3,6 +3,7 @@ package Pantallas
 import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
+import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.util.Log
 import android.widget.Toast
@@ -17,8 +18,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
@@ -66,6 +69,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@SuppressLint("DefaultLocale")
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun InformacionAlumno(
@@ -86,7 +90,15 @@ fun InformacionAlumno(
 
     Log.d("InformacionAlumno", "Bitmap from ViewModel: $bitmap")
 
+    // Obterner los valores de los parámetros iniciales
+    val idETSParam = remember { idETS }
+    val boletaParam = remember { boleta }
 
+    // Guarda los valores en el AlumnosViewModel al inicio
+    LaunchedEffect(Unit) {
+        viewModel.guardarIdETSFlujo(idETSParam)
+        viewModel.guardarBoletaFlujo(boletaParam)
+    }
 
     LaunchedEffect(boleta, idETS) {
         camaraViewModel.updateBoletaAndIdETS(boleta, idETS)
@@ -162,6 +174,7 @@ fun InformacionAlumno(
 
 
         val userRole = loginViewModel.getUserRole()
+        val scrollState = rememberScrollState()
 
         Scaffold(topBar = {
             MenuTopBar(
@@ -174,6 +187,10 @@ fun InformacionAlumno(
                     .fillMaxSize()
                     .background(BlueBackground) // Fondo oscuro azulado
                     .padding(padding)
+                    .verticalScroll(scrollState)
+                    .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
 
 
@@ -185,9 +202,10 @@ fun InformacionAlumno(
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
+
                     ) {
                         Text(
-                            text = "El reporte para este alumno ya fue creado con anterioridad. Desea eliminar el reporte",
+                            text = "El reporte para este alumno ya fue creado con anterioridad. ¿Desea eliminar el reporte?",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
@@ -412,38 +430,7 @@ fun InformacionAlumno(
                         }
                     }
 
-                    // Botones de acción
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        Button(
-                            onClick = { showDialog = true },
-                            modifier = Modifier.weight(1f)
-                                .padding(horizontal = 8.dp),
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF64BD67))
 
-                        ) {
-                            Text(
-                                text = "Registrar asistencia",
-                                color = Color.White
-                            )
-                        }
-
-                        Button(
-                            onClick = { showDialog2 = true },
-                            modifier = Modifier.weight(1f)
-                                .padding(horizontal = 8.dp),
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFCB5252))
-                        ) {
-                            Text(
-                                text = "Registrar incidencia",
-                                color = Color.White
-                            )
-                        }
-                    }
 
                     // Sección de problemas
                     Column(
@@ -463,7 +450,8 @@ fun InformacionAlumno(
                         // Lista de problemas
                         ProblemOption("El alumno no trae credencial")
                         ProblemOption("El alumno no coincide con la foto de su credencial")
-                        ProblemOption("Dudo de la autenticidad de la credencial")
+                        ProblemOption("Duda de la autenticidad de la credencial")
+                        ProblemOption("Duda de la identidad del alumno")
 
                         // Texto informativo para verificación
                         Text(
@@ -506,6 +494,76 @@ fun InformacionAlumno(
                             )
                         }
                     }
+
+                    Text(
+                        text = "Realiza los reportess con:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                    )
+
+                    // Botones de acción
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(
+                            onClick = { showDialog = true },
+                            modifier = Modifier.weight(1f)
+                                .padding(horizontal = 8.dp),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF64BD67))
+
+                        ) {
+                            Text(
+                                text = "Registrar asistencia",
+                                color = Color.White
+                            )
+                        }
+
+                        Button(
+                            onClick = { showDialog2 = true },
+                            modifier = Modifier.weight(1f)
+                                .padding(horizontal = 8.dp),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFCB5252))
+                        ) {
+                            Text(
+                                text = "Registrar incidencia",
+                                color = Color.White
+                            )
+                        }
+                    }
+
+
+
+                    // Mostrar la imagen si bitmap y precision no son null
+                    if (bitmap != null && precision != null) {
+                        ProblemOption("Fotos y precisión")
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally // Centrar horizontalmente
+                        ) {
+                            Image(
+                                bitmap = bitmap.asImageBitmap(),
+                                contentDescription = "Imagen verificada por IA",
+                                modifier = Modifier
+                                    .size(200.dp) // Ajusta el tamaño según necesites
+                                    .clip(RoundedCornerShape(8.dp)), // Opcional: añadir esquinas redondeadas
+                                contentScale = ContentScale.Fit // Ajustar la imagen dentro del tamaño
+                            )
+                            Text(
+                                text = "Similitud: ${String.format("%.2f", precision * 100)}%",
+                                color = Color.White,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+                    }
+
                 }
 
             }
@@ -616,8 +674,18 @@ fun InformacionAlumno(
                             )
                         }
 
+                        // Mensaje de error de reconocimiento facial
+                        if ((tipo.contains("reconocimiento facial") && precision == null && bitmap == null) && showError) {
+                            Text(
+                                text = "Para hacer un reporte de reconocimiento facial necesita haber hecho el proceso de verificar con IA.",
+                                color = Color.Red,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+
                         // Mensaje de error general si intenta dar "Sí" sin llenar los campos
-                        if (showError) {
+                        if (showError && !(tipo.contains("reconocimiento facial") && precision == null && bitmap == null)) {
                             Text(
                                 text = "Debe completar todos los campos correctamente.",
                                 color = Color.Red,
@@ -635,7 +703,10 @@ fun InformacionAlumno(
                         ) {
                             Button(
                                 onClick = {
-                                    if (tipoValido) {
+                                    val esReconocimientoFacial = tipo.contains("reconocimiento facial")
+                                    val verificacionIAHecha = precision != null && bitmap != null
+
+                                    if (tipoValido && (!esReconocimientoFacial || verificacionIAHecha)) {
                                         informacionAlumnoViewModel.enviarDatosAlServidor(
                                             razon, // Envía null para la razón
                                             tipo,
@@ -668,9 +739,12 @@ fun InformacionAlumno(
             }
 
 
-            // Diálogo de éxito
+
             if (showSuccessDialog2) {
-                Dialog(onDismissRequest = { showSuccessDialog2 = false }) {
+                Dialog(onDismissRequest = {
+                    showSuccessDialog2 = false
+                    navController.navigate("listaAlumnos/$idETS")
+                }) {
                     Box(
                         modifier = Modifier
                             .background(Color.White, shape = RoundedCornerShape(8.dp))
@@ -680,13 +754,16 @@ fun InformacionAlumno(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "Reporte de asistencia creado con éxito",
+                                text = "Asistencia registrada con éxito",
                                 style = MaterialTheme.typography.titleMedium,
                                 modifier = Modifier.padding(bottom = 16.dp)
                             )
 
                             Button(
-                                onClick = { showSuccessDialog2 = false },
+                                onClick = {
+                                    showSuccessDialog2 = false
+                                    navController.navigate("listaAlumnos/$idETS")
+                                },
                                 modifier = Modifier.align(Alignment.CenterHorizontally)
                             ) {
                                 Text("Aceptar")
@@ -836,8 +913,18 @@ fun InformacionAlumno(
                             )
                         }
 
+                        // Mensaje de error de reconocimiento facial
+                        if ((tipo.contains("reconocimiento facial") && precision == null && bitmap == null) && showError) {
+                            Text(
+                                text = "Para hacer un reporte de reconocimiento facial necesita haber hecho el proceso de verificar con IA.",
+                                color = Color.Red,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+
                         // Mensaje de error general si intenta dar "Sí" sin llenar los campos
-                        if (showError) {
+                        if (showError && !(tipo.contains("reconocimiento facial") && precision == null && bitmap == null)) {
                             Text(
                                 text = "Debe completar todos los campos correctamente.",
                                 color = Color.Red,
@@ -855,7 +942,11 @@ fun InformacionAlumno(
                         ) {
                             Button(
                                 onClick = {
-                                    if (razonValida && tipoValido) {
+
+                                    val esReconocimientoFacial = tipo.contains("reconocimiento facial")
+                                    val verificacionIAHecha = precision != null && bitmap != null
+
+                                    if ((razonValida && tipoValido) && (!esReconocimientoFacial || verificacionIAHecha)) {
                                         informacionAlumnoViewModel.enviarDatosAlServidor(
                                             razon,
                                             tipo,
@@ -866,6 +957,8 @@ fun InformacionAlumno(
                                             camaraViewModel.imagenBitmap.value, // Envía el valor nulo tal cual
                                             context
                                         )
+
+
                                         showError = false
                                         //showSuccessDialog2 = true
                                     } else {
@@ -887,9 +980,12 @@ fun InformacionAlumno(
                 }
             }
 
-            // Diálogo de éxito
+// Diálogo de éxito para incidencia
             if (showSuccessDialog2) {
-                Dialog(onDismissRequest = { showSuccessDialog2 = false }) {
+                Dialog(onDismissRequest = {
+                    showSuccessDialog2 = false
+                    navController.navigate("listaAlumnos/$idETS")
+                }) {
                     Box(
                         modifier = Modifier
                             .background(Color.White, shape = RoundedCornerShape(8.dp))
@@ -905,7 +1001,10 @@ fun InformacionAlumno(
                             )
 
                             Button(
-                                onClick = { showSuccessDialog2 = false },
+                                onClick = {
+                                    showSuccessDialog2 = false
+                                    navController.navigate("listaAlumnos/$idETS")
+                                },
                                 modifier = Modifier.align(Alignment.CenterHorizontally)
                             ) {
                                 Text("Aceptar")

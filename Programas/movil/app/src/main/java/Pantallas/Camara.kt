@@ -219,7 +219,7 @@ fun CamaraComposable(
     lifecycle: LifecycleOwner,
     modifier: Modifier = Modifier
 ) {
-    camaraController.cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+    camaraController.cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
     camaraController.bindToLifecycle(lifecycle)
     AndroidView(
         modifier = modifier.fillMaxSize(),

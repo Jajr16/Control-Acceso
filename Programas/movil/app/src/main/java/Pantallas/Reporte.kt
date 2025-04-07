@@ -91,6 +91,8 @@ fun Reporte(
             }
         }
 
+        val scrollState = rememberScrollState()
+
         Scaffold(
             topBar = { MenuTopBar(true, true, loginViewModel, navController) },
             bottomBar = { MenuBottomBar(navController, userRole) }
@@ -100,6 +102,7 @@ fun Reporte(
                     .fillMaxSize()
                     .background(BlueBackground)
                     .padding(padding)
+                    .verticalScroll(scrollState)
             ) {
 
                 if (ingresoResultado == "existe" && reporteList.isNotEmpty()) {
