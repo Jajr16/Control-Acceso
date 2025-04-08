@@ -13,7 +13,7 @@
 
 
     object RetrofitInstance {
-            private const val BASE_URL = "http://192.168.1.73:8080/"
+            private const val BASE_URL = "https://springboot-java-production-375d.up.railway.app/"
 
         private val okHttpClient = OkHttpClient.Builder()
             .connectTimeout(120, TimeUnit.SECONDS)  // Timeout de conexión
@@ -99,6 +99,10 @@
 
         val getListaUsuariosChat: Mensajes by lazy {
             retrofit.create(Mensajes::class.java)
+        }
+
+        val apiRed: ApiRed by lazy {
+            retrofit.create(ApiRed::class.java)
         }
     }
 
