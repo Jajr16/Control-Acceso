@@ -1,19 +1,16 @@
     package RetroFit
 
-    import android.util.Log
     import com.example.prueba3.LoginApi
     import com.example.prueba3.EtsApi
     import com.example.prueba3.EtsInfoApi
     import okhttp3.OkHttpClient
-    import okhttp3.ResponseBody
-    import retrofit2.Call
     import retrofit2.Retrofit
     import retrofit2.converter.gson.GsonConverterFactory
     import java.util.concurrent.TimeUnit
 
 
     object RetrofitInstance {
-            private const val BASE_URL = "https://springboot-java-production-375d.up.railway.app/"
+            private const val BASE_URL = "http://192.168.100.7:8080/"
 
         private val okHttpClient = OkHttpClient.Builder()
             .connectTimeout(120, TimeUnit.SECONDS)  // Timeout de conexión
@@ -77,7 +74,7 @@
         }
 
         //Instancia para solicitar Reemplazo
-        val getReemplazo: ReemplazoApi by lazy {
+        val reemplazoApi: ReemplazoApi by lazy {
             retrofit.create(ReemplazoApi::class.java)
         }
 
@@ -101,8 +98,17 @@
             retrofit.create(Mensajes::class.java)
         }
 
-        val apiRed: ApiRed by lazy {
-            retrofit.create(ApiRed::class.java)
+        val apiReporte: ApiReporte by lazy {
+            retrofit.create(ApiReporte::class.java)
+        }
+
+        val apiReporteInfo: ApiReporteInfo by lazy {
+            retrofit.create(ApiReporteInfo::class.java)
+        }
+
+
+        val ingresoSalonApi: IngresoSalonApi by lazy {
+            retrofit.create(IngresoSalonApi::class.java)
         }
     }
 

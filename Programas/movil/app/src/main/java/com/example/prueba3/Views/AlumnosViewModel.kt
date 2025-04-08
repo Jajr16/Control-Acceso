@@ -11,11 +11,21 @@ import com.example.prueba3.Clases.AlumnosInfo
 import com.example.prueba3.Clases.CredencialAlumnos
 import com.example.prueba3.Clases.DetalleAlumnos
 import com.example.prueba3.Clases.ListaInfor
+import com.example.prueba3.Clases.ReporteData
 import com.example.prueba3.Clases.UpdateAceptadoRequest
 import com.example.prueba3.Clases.regitrarAsistencia
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.IOException
+import okhttp3.ResponseBody
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class AlumnosViewModel : ViewModel() {
     private val _alumnosList = MutableStateFlow<List<AlumnosInfo>>(emptyList())
@@ -36,14 +46,15 @@ class AlumnosViewModel : ViewModel() {
     private val _loadingState = MutableStateFlow(true)
     val loadingState: StateFlow<Boolean> = _loadingState
 
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    private val _registroSuccess = MutableStateFlow(false)
+    val registroSuccess: StateFlow<Boolean> = _registroSuccess.asStateFlow()
+
     private val _alumnoRegistro = MutableStateFlow<List<regitrarAsistencia>>(emptyList())
-    val alumnoRegistro: StateFlow<List<regitrarAsistencia>> = _alumnoRegistro
+    val alumnoRegistro: StateFlow<List<regitrarAsistencia>> = _alumnoRegistro.asStateFlow()
 
-    private val _registroSuccess = mutableStateOf(false)
-    val registroSuccess = mutableStateOf(false)
-
-    private val _errorMessage = mutableStateOf<String?>(null)
-    val errorMessage = mutableStateOf<String?>(null)
 
 
     private val _fotoAlumno = MutableStateFlow<ByteArray?>(null)
@@ -107,9 +118,9 @@ class AlumnosViewModel : ViewModel() {
                 _loadingState.value = true
                 val alumnoState = RetrofitInstance.alumnosDetalle.getalumnosDetalle(boleta)
                 _alumnosDetalle.value = alumnoState
-            }catch (e: Exception) {
+            } catch (e: Exception) {
                 _alumnosDetalle.value = emptyList()
-            }finally {
+            } finally {
                 _loadingState.value = false
             }
         }
@@ -122,9 +133,9 @@ class AlumnosViewModel : ViewModel() {
                 _loadingState.value = true
                 val estado = RetrofitInstance.alumnosCredencial.getalumnosCredencial(boleta)
                 _alumnosCredencial.value = estado
-            }catch (e: Exception) {
+            } catch (e: Exception) {
                 _alumnosCredencial.value = emptyList()
-            }finally {
+            } finally {
                 _loadingState.value = false
             }
         }
@@ -136,7 +147,15 @@ class AlumnosViewModel : ViewModel() {
             try {
                 _loadingState.value = true
                 _errorMessage.value = null
-                val response = RetrofitInstance.alumnosDetalle.getregistrarEntrada(boleta)
+
+                val fechaActual = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                val horaActual = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
+
+                val response = RetrofitInstance.alumnosDetalle.registrarAsistencia(
+                    boleta = boleta,
+                    fecha = fechaActual,
+                    hora = horaActual
+                )
 
                 if (response.isNotEmpty()) {
                     _alumnoRegistro.value = response
@@ -154,8 +173,9 @@ class AlumnosViewModel : ViewModel() {
 
     fun clearRegistrationState() {
         _registroSuccess.value = false
-        _errorMessage.value = null
     }
+
+
 
     fun fetchAlumnoEspecifico(boleta: String) {
         viewModelScope.launch {
@@ -176,7 +196,13 @@ class AlumnosViewModel : ViewModel() {
     // Función para actualizar la asistencia de un alumno
     suspend fun updateAsistencia(boleta: String, idETS: Int, aceptado: Int) {
         try {
-            val response = RetrofitInstance.aceptadoApi.updateAceptado(UpdateAceptadoRequest(boleta, idETS, aceptado))
+            val response = RetrofitInstance.aceptadoApi.updateAceptado(
+                UpdateAceptadoRequest(
+                    boleta,
+                    idETS,
+                    aceptado
+                )
+            )
 
             // Actualizamos solo el alumno modificado en la lista local
             _alumnosList.value = _alumnosList.value.map { alumno ->
@@ -190,4 +216,131 @@ class AlumnosViewModel : ViewModel() {
             println("Error al actualizar: ${e.localizedMessage}")
         }
     }
+
+
+        private val _reporte = MutableStateFlow<List<ReporteData>>(emptyList())
+        val reporte: StateFlow<List<ReporteData>> = _reporte
+
+        private val _imagenBytes = MutableStateFlow<ByteArray?>(null)
+        val imagenBytes: StateFlow<ByteArray?> = _imagenBytes
+
+        fun fetchReporte(idets: Int, boleta: String) {
+            viewModelScope.launch {
+                try {
+                    _loadingState.value = true
+                    val responseBody = RetrofitInstance.apiReporteInfo.obtenerReporte(idets, boleta)
+                    val response = responseBody.string()
+                    val jsonObject = JSONObject(response)
+
+                    val reporteJson = jsonObject.getJSONObject("reporte")
+
+                    val reporte = Gson().fromJson(reporteJson.toString(), ReporteData::class.java)
+                    _reporte.value = listOf(reporte)
+
+                    // Obtener la imagen por separado
+                    fetchImagenReporte(idets, boleta)
+
+                } catch (e: IOException) {
+                    Log.e("ReporteViewModel", "Error de red: ${e.message}")
+                    _errorMessage.value = "Error de red: ${e.message}"
+                    _reporte.value = emptyList()
+                } catch (e: Exception) {
+                    Log.e("ReporteViewModel", "Error al obtener el reporte: ${e.message}")
+                    _errorMessage.value = "Error al obtener el reporte: ${e.message}"
+                    _reporte.value = emptyList()
+                } finally {
+                    _loadingState.value = false
+                }
+            }
+        }
+
+        fun fetchImagenReporte(idets: Int, boleta: String) {
+            viewModelScope.launch {
+                try {
+                    val imageResponseBody = RetrofitInstance.apiReporteInfo.obtenerImagenReporte(idets, boleta)
+                    _imagenBytes.value = imageResponseBody.bytes()
+                } catch (e: Exception) {
+                    Log.e("ReporteViewModel", "Error al obtener la imagen: ${e.message}")
+                    _imagenBytes.value = null
+                }
+            }
+        }
+
+    private val _ingresoResultado = MutableStateFlow<String?>(null)
+    val ingresoResultado: StateFlow<String?> = _ingresoResultado
+
+
+
+    fun verificarIngresoSalon(idets: Int, boleta: String) {
+        viewModelScope.launch {
+            try {
+                _loadingState.value = true
+                val response = RetrofitInstance.ingresoSalonApi.verificarIngreso(idets, boleta)
+                if (response.isSuccessful) {
+                    val jsonResponse = response.body()
+                    _ingresoResultado.value = jsonResponse?.get("resultado")?.asString
+                } else {
+                    _ingresoResultado.value = "Error en la respuesta del servidor: ${response.code()}"
+                }
+            } catch (e: Exception) {
+                _ingresoResultado.value = "Error de red: ${e.localizedMessage}"
+            } finally {
+                _loadingState.value = false
+            }
+        }
+    }
+
+    private val _eliminacionExitosa = MutableStateFlow<Boolean?>(null)
+    val eliminacionExitosa: StateFlow<Boolean?> = _eliminacionExitosa
+
+    private val _mensajeEliminacion = MutableStateFlow<String?>(null)
+    val mensajeEliminacion: StateFlow<String?> = _mensajeEliminacion
+
+    private val _eliminacionCompletada = MutableStateFlow<Boolean?>(null)
+    val eliminacionCompletada: StateFlow<Boolean?> = _eliminacionCompletada
+
+    fun eliminarReporte(boleta: String, idETS: Int) {
+        viewModelScope.launch {
+            try {
+                _loadingState.value = true
+                _eliminacionExitosa.value = null
+                _mensajeEliminacion.value = null
+                _eliminacionCompletada.value = null // Resetear el estado de completado
+
+                val response = RetrofitInstance.ingresoSalonApi.eliminarReporte(idETS, boleta)
+
+                if (response.isSuccessful) {
+                    val jsonResponse = response.body()
+                    _eliminacionExitosa.value = true
+                    _mensajeEliminacion.value = jsonResponse?.get("mensaje")?.asString ?: "Eliminación exitosa."
+                    // No verificar el ingreso inmediatamente aquí
+                } else {
+                    _eliminacionExitosa.value = false
+                    val errorBody = response.errorBody()?.string()
+                    val errorMessage = try {
+                        JSONObject(errorBody).getString("mensaje")
+                    } catch (e: Exception) {
+                        "Error al eliminar el reporte: Código ${response.code()}"
+                    }
+                    _mensajeEliminacion.value = errorMessage
+                }
+            } catch (e: Exception) {
+                _eliminacionExitosa.value = false
+                _mensajeEliminacion.value = "Error de red al eliminar el reporte: ${e.localizedMessage}"
+            } finally {
+                _loadingState.value = false
+            }
+        }
+    }
+
+    fun clearEliminacionEstado() {
+        _eliminacionExitosa.value = null
+        _mensajeEliminacion.value = null
+        _eliminacionCompletada.value = true // Indica que el proceso de eliminación (y el diálogo) ha finalizado
+    }
+
+    fun clearEliminacionCompletada() {
+        _eliminacionCompletada.value = null
+    }
+
 }

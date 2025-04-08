@@ -40,6 +40,6 @@ data class regitrarAsistencia (
     val apellidoP: String,
     val apellidoM: String,
     val idETS: String,
-    val fecha: Date,
-    val horaIngreso: Time
+    val fecha: String,
+    val horaIngreso: String
 )

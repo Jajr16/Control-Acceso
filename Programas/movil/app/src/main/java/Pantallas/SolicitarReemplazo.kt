@@ -20,6 +20,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.prueba3.Clases.Reemplazo
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.Views.ReemplazoViewModel
@@ -28,26 +29,25 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SolicitarRemplazo(
+fun SolicitarReemplazo(
     navController: NavController,
     loginViewModel: LoginViewModel,
-    reemplazoViewModel: ReemplazoViewModel
+    reemplazoViewModel: ReemplazoViewModel = viewModel(),  // Corrección clave aquí
+    nombreETS: String? = null
 ) {
     val userRole = loginViewModel.getUserRole()
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Estados del formulario
-    var selectedEts by remember { mutableStateOf("") }
     var reason by remember { mutableStateOf("") }
-    var expanded by remember { mutableStateOf(false) }
     val loadingState by reemplazoViewModel.loadingState.collectAsState()
 
     ValidateSession(navController = navController) {
         Scaffold(
             topBar = {
                 MenuTopBar(
-                    false, true, loginViewModel,
+                    true, true, loginViewModel,
                     navController
                 )
             },
@@ -86,44 +86,21 @@ fun SolicitarRemplazo(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Dropdown ETS
-                    ExposedDropdownMenuBox(
-                        expanded = expanded,
-                        onExpandedChange = { expanded = it },
-                        modifier = Modifier.fillMaxWidth(0.8f)
-                    ) {
-                        TextField(
-                            value = selectedEts,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Selecciona ETS") },
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                            },
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = Color.LightGray,
-                                unfocusedContainerColor = Color.LightGray,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent
-                            ),
-                            modifier = Modifier.menuAnchor(),
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        ExposedDropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
-                        ) {
-                            listOf("ETS 1", "ETS 2", "ETS 3").forEach { item ->
-                                DropdownMenuItem(
-                                    text = { Text(item) },
-                                    onClick = {
-                                        selectedEts = item
-                                        expanded = false
-                                    }
-                                )
-                            }
-                        }
-                    }
+                    // Mostrar solo el ETS recibido (sin dropdown)
+                    TextField(
+                        value = nombreETS ?: "No se especificó ETS",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("ETS seleccionado") },
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.LightGray,
+                            unfocusedContainerColor = Color.LightGray,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        modifier = Modifier.fillMaxWidth(0.8f),
+                        shape = RoundedCornerShape(8.dp)
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -150,22 +127,20 @@ fun SolicitarRemplazo(
                     // Botón de envío
                     Button(
                         onClick = {
-                            if (selectedEts.isEmpty() || reason.isEmpty()) {
+                            if (nombreETS.isNullOrEmpty() || reason.isEmpty()) {
                                 coroutineScope.launch {
                                     snackbarHostState.showSnackbar("Complete todos los campos")
                                 }
                             } else {
                                 val nuevoReemplazo = Reemplazo(
-                                    idETS = selectedEts.hashCode(), // Adaptar según tu lógica
-                                    docenteRFC = "RFC_DEFAULT",     // Reemplazar con valor real
+                                    idETS = nombreETS.hashCode(),
+                                    docenteRFC = loginViewModel.getUserName() ?: "RFC_DEFAULT", // Corrección aquí
                                     motivo = reason,
                                     estatus = "Pendiente"
                                 )
-                                reemplazoViewModel.fetchReemplazoDocente(nuevoReemplazo)
+                                reemplazoViewModel.reemplazoState
                                 coroutineScope.launch {
                                     snackbarHostState.showSnackbar("Solicitud enviada con éxito")
-                                    // Opcional: Limpiar formulario después de enviar
-                                    selectedEts = ""
                                     reason = ""
                                 }
                             }

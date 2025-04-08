@@ -5,5 +5,6 @@ data class ListaInfor(
     val nombre: String,
     val apellidoP: String,
     val apellidoM: String,
+    val turno: String,
     val error: Int,
 )

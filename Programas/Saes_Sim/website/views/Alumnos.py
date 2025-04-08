@@ -38,7 +38,7 @@ def obtener_imagen(request):
             if not ruta_imagen:
                 return JsonResponse({'error': 'Ruta de imagen no proporcionada'}, status=400)
 
-            # base_path = 'D:/Repositorio/Control-Acceso4/Control-Acceso/Programas/Saes_Sim/'
+            #base_path = 'D:/Repositorio/Control-Acceso4/Control-Acceso/Programas/Saes_Sim/'
             #ruta_imagen_completa = os.path.join(base_path, ruta_imagen)
 
             print(f"Ruta de la imagen: {ruta_imagen}")

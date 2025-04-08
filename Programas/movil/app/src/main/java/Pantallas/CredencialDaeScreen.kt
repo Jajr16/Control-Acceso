@@ -7,6 +7,7 @@ import Pantallas.components.ValidateSession
 import RetroFit.RetrofitInstance
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,7 +28,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,8 +53,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.ui.res.painterResource
+import kotlinx.coroutines.delay
+import java.text.SimpleDateFormat
+import java.util.*
 import androidx.compose.ui.layout.ContentScale
 
 @OptIn(ExperimentalEncodingApi::class)
@@ -63,9 +65,11 @@ fun CredencialDaeScreen(
     navController: NavController,
     loginViewModel: LoginViewModel,
     url: String?,
-    viewModel: AlumnosViewModel = viewModel(),
+    viewModel: AlumnosViewModel,
     boleta: String
 ) {
+
+
     var imageBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -74,15 +78,28 @@ fun CredencialDaeScreen(
     val alumnosDetalle by viewModel.alumnosDetalle.collectAsState(initial = emptyList())
     val alumno = alumnosDetalle.firstOrNull()
     var showAsistenciaDialog by remember { mutableStateOf(false) }
-    var showEscanearDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
     val fotoAlumno by viewModel.fotoAlumno.collectAsState()
     var showMensajeAsistencia by remember { mutableStateOf(false) }
+    var fechaHoraRegistro by remember { mutableStateOf("") }
+    val registroSuccess by viewModel.registroSuccess.collectAsState()
 
-    LaunchedEffect(boleta) {
-        viewModel.fetchFotoAlumno(boleta)
+
+//    LaunchedEffect(boleta) {
+//        viewModel.fetchFotoAlumno(boleta)
+//    }
+
+
+
+    LaunchedEffect(registroSuccess) {
+        if (registroSuccess) {
+            showMensajeAsistencia = true
+            delay(3000)
+            showMensajeAsistencia = false
+//            viewModel.resetRegistroSuccess()
+        }
     }
 
     ValidateSession(navController = navController) {
@@ -182,6 +199,7 @@ fun CredencialDaeScreen(
                 }
 
                 if (alumnoInfo != null) {
+
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -194,7 +212,7 @@ fun CredencialDaeScreen(
                                 .fillMaxWidth()
                                 .padding(16.dp)
                         ) {
-                            // Información del alumno - MODIFICADO para usar fotoAlumno
+                            // Información del alumno
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
@@ -210,7 +228,6 @@ fun CredencialDaeScreen(
                                         contentScale = ContentScale.Crop
                                     )
                                 } else {
-                                    // Mostrar placeholder si no hay foto
                                     Image(
                                         painter = painterResource(id = R.drawable.placeholder_image),
                                         contentDescription = "Foto de perfil",
@@ -327,7 +344,10 @@ fun CredencialDaeScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         Button(
-                            onClick = { showAsistenciaDialog = true },
+                            onClick = {
+                                showAsistenciaDialog = true
+                                fechaHoraRegistro = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(Date())
+                            },
                             modifier = Modifier.weight(1f)
                                 .padding(horizontal = 8.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = Color.White)
@@ -337,27 +357,16 @@ fun CredencialDaeScreen(
                                 color = Color.Black
                             )
                         }
-
-                        Button(
-                            onClick = { showEscanearDialog = true },
-                            modifier = Modifier.weight(1f)
-                                .padding(horizontal = 8.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.White)
-                        ) {
-                            Text(
-                                text = "Lista de alumnos",
-                                color = Color.Black
-                            )
-                        }
                     }
 
+                    // Diálogo de confirmación de asistencia
                     if (showAsistenciaDialog) {
                         if (alumno?.nombreETS.isNullOrEmpty()) {
                             AlertDialog(
                                 onDismissRequest = { showAsistenciaDialog = false },
                                 title = { Text("Error", fontWeight = FontWeight.Bold) },
                                 text = {
-                                    Text("El alumno no cuenta con ETS inscritos o su ETS está programada en otra fecha.")
+                                    Text("El alumno no cuenta con ETS inscritos ó su ETS está programada en otra fecha.")
                                 },
                                 confirmButton = {
                                     Button(onClick = { showAsistenciaDialog = false }) {
@@ -377,13 +386,23 @@ fun CredencialDaeScreen(
                                 text = {
                                     Column {
                                         Text(
-                                            text = "El alumno ${alumnoInfo?.nombre ?: ""} ${alumnoInfo?.apellidoP ?: ""} con número de boleta ${alumnoInfo?.boleta ?: ""} está inscrito en los siguientes ETS:",
+                                            text = "El alumno ${alumno?.nombreAlumno ?: ""} ${alumno?.apellidoPAlumno ?: ""} con número de boleta ${alumno?.boleta ?: ""} está inscrito en:",
                                             style = MaterialTheme.typography.bodyMedium
                                         )
                                         Text(
                                             text = "${alumno?.nombreETS ?: ""}",
                                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                                             modifier = Modifier.padding(vertical = 4.dp)
+                                        )
+                                        Text(
+                                            text = "Fecha y hora de registro:",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            modifier = Modifier.padding(top = 8.dp)
+                                        )
+                                        Text(
+                                            text = fechaHoraRegistro,
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                            modifier = Modifier.padding(top = 4.dp)
                                         )
                                         Text(
                                             text = "¿Deseas registrar su asistencia?",
@@ -396,10 +415,7 @@ fun CredencialDaeScreen(
                                     Button(
                                         onClick = {
                                             showAsistenciaDialog = false
-                                            showMensajeAsistencia = true
-                                            alumnoInfo?.boleta?.let { boleta ->
-                                                viewModel.registrarAsistencia(boleta)
-                                            }
+                                            viewModel.registrarAsistencia(boleta)
                                         }
                                     ) {
                                         Text("Aceptar")
@@ -415,63 +431,35 @@ fun CredencialDaeScreen(
                     }
 
                     if (showMensajeAsistencia) {
-                        LaunchedEffect(Unit) {
-                            kotlinx.coroutines.delay(3000)
-                            showMensajeAsistencia = false
-                        }
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "ASISTENCIA REGISTRADA",
-                                color = Color.Green,
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                        }
-                    }
-
-                    if (showEscanearDialog) {
                         AlertDialog(
-                            onDismissRequest = { showEscanearDialog = false },
+                            onDismissRequest = { showMensajeAsistencia = false },
                             title = {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(Icons.Filled.Warning, contentDescription = "Alerta", tint = Color(0xFFFFC107))
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Confirmar identidad")
+                                Text(
+                                    "Asistencia registrada",
+                                    color = Color.Green,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            },
+                            text = {
+                                Column {
+                                    Text(
+                                        text = "La asistencia ha sido registrada correctamente",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    Text(
+                                        text = fechaHoraRegistro,
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                        modifier = Modifier.padding(top = 8.dp)
+                                    )
                                 }
                             },
-                            text = { Text("Si el alumno no cuenta con su credencial, puedes verificar la lista con los alumnos inscritos.") },
                             confirmButton = {
-                                Button(
-                                    onClick = {
-                                        showEscanearDialog = false
-                                        navController.navigate("ConsultarAlumnos")
-                                    }
-                                ) {
+                                Button(onClick = { showMensajeAsistencia = false }) {
                                     Text("Aceptar")
-                                }
-                            },
-                            dismissButton = {
-                                Button(
-                                    onClick = { showEscanearDialog = false }
-                                ) {
-                                    Text("Cancelar")
                                 }
                             }
                         )
                     }
-                } else {
-                    Text(
-                        text = "No se encontró información del alumno",
-                        color = Color.White,
-                        modifier = Modifier.padding(16.dp)
-                    )
                 }
             }
         }
@@ -493,6 +481,13 @@ fun CredencialDaeScreen(
 
                         // Guardar la información del alumno
                         alumnoInfo = credencialResponse.credenciales.firstOrNull()
+
+                        val boletausable  = alumnoInfo?.boleta
+
+                        boletausable?.let { boletaNonNull ->
+                            viewModel.fetchFotoAlumno(boletaNonNull)
+                        }
+
                         isLoading = false
                     } else {
                         errorMessage = "Error al obtener la credencial"
@@ -511,4 +506,7 @@ fun CredencialDaeScreen(
             isLoading = false
         }
     }
+
+
+
 }

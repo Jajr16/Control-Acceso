@@ -6,13 +6,12 @@ import com.example.prueba3.Clases.credencialResponse
 import com.example.prueba3.Clases.regitrarAsistencia
 import okhttp3.ResponseBody
 import retrofit2.Response
-import retrofit2.http.GET
-import retrofit2.http.Path
-import retrofit2.http.Query
+import retrofit2.http.*
 
 interface DetallesApi {
 
-    @GET("alumno/detalle/{boleta}") suspend fun getalumnosDetalle(@Path("boleta") boleta: String): List<DetalleAlumnos>
+    @GET("alumno/detalle/{boleta}")
+    suspend fun getalumnosDetalle(@Path("boleta") boleta: String): List<DetalleAlumnos>
 
     @GET("alumno/credencial/{boleta}")
     suspend fun getalumnosCredencial(@Path("boleta") boleta: String): List<CredencialAlumnos>
@@ -20,6 +19,10 @@ interface DetallesApi {
     @GET("/ImageDAE/capturar")
     suspend fun getCredencial(@Query("url") url: String): Response<credencialResponse>
 
-    @GET("alumno/ingreso/{boleta}")
-    suspend fun getregistrarEntrada(@Path("boleta") boleta: String): List<regitrarAsistencia>
+    @POST("alumno/registrar-asistencia")
+    suspend fun registrarAsistencia(
+        @Query("boleta") boleta: String,
+        @Query("fecha") fecha: String,
+        @Query("hora") hora: String
+    ): List<regitrarAsistencia>
 }
