@@ -69,6 +69,9 @@ fun CredencialDaeScreen(
     boleta: String
 ) {
 
+    val userRole = loginViewModel.getUserRole()
+
+    Log.d("CredencialDaeScreen", "Dato: $userRole")
 
     var imageBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var isLoading by remember { mutableStateOf(true) }
@@ -78,6 +81,7 @@ fun CredencialDaeScreen(
     val alumnosDetalle by viewModel.alumnosDetalle.collectAsState(initial = emptyList())
     val alumno = alumnosDetalle.firstOrNull()
     var showAsistenciaDialog by remember { mutableStateOf(false) }
+    var showEscanearDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -90,7 +94,8 @@ fun CredencialDaeScreen(
 //    LaunchedEffect(boleta) {
 //        viewModel.fetchFotoAlumno(boleta)
 //    }
-
+    val idETSFinal by viewModel.idETSFlujo.collectAsState()
+    val boletaFinal by viewModel.boletaFlujo.collectAsState()
 
 
     LaunchedEffect(registroSuccess) {
@@ -343,19 +348,46 @@ fun CredencialDaeScreen(
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        Button(
-                            onClick = {
-                                showAsistenciaDialog = true
-                                fechaHoraRegistro = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(Date())
-                            },
-                            modifier = Modifier.weight(1f)
-                                .padding(horizontal = 8.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.White)
-                        ) {
-                            Text(
-                                text = "Registrar asistencia",
-                                color = Color.Black
-                            )
+                        if (userRole == "Personal Academico") {
+                            Button(
+                                onClick = { navController.navigate("infoA/${idETSFinal}/${boletaFinal}") }, // Asegúrate de tener la ruta correcta
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                            ) {
+                                Text(
+                                    text = "Regresar a la creación del reporte",
+                                    color = Color.Black,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        } else {
+                            Button(
+                                onClick = { showAsistenciaDialog = true },
+                                modifier = Modifier.weight(1f)
+                                    .padding(horizontal = 8.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                            ) {
+                                Text(
+                                    text = "Registrar asistencia",
+                                    color = Color.Black,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+
+                            Button(
+                                onClick = { showEscanearDialog = true },
+                                modifier = Modifier.weight(1f)
+                                    .padding(horizontal = 8.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                            ) {
+                                Text(
+                                    text = "Lista de alumnos",
+                                    color = Color.Black,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
                     }
 

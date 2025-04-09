@@ -157,6 +157,7 @@ fun EtsDetailScreen(
                             duracion = etsDetail!!.ets.duracion,
                             salon = etsDetail!!.salon,
                             salonState = salonState!!,
+                            hora = etsDetail!!.ets.hora,
                             onRequestReplacement = {
                                 navController.navigate("solicitarReemplazo/${etsDetail!!.ets.unidadAprendizaje}")                            }
                         )
@@ -218,6 +219,7 @@ fun SingleStyledCard(
     duracion: Int,
     salon: List<Salon>,
     salonState: Boolean,
+    hora: String,
     onRequestReplacement: () -> Unit
 ) {
     Card(
@@ -252,12 +254,13 @@ fun SingleStyledCard(
                     if (!salonState) {
                         append("Salones asignados:  \n")
                         salon.take(3).forEach { salon ->
-                            append("• Salón ${salon.numSalon} (${salon.tipoSalon})\n")
+                            append("• Salón ${salon.numSalon} (${salon.tipoSalon})\n\n")
                         }
                     } else {
                         append("Asignación de salones:\n")
                         append("• Pendiente\n")
                     }
+                    append("El examen comienza a las $hora horas")
                 },
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.Black,

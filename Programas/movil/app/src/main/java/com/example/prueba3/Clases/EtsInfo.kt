@@ -15,7 +15,8 @@ data class Ets(
     val turno: String,
     val fecha: String,
     val cupo: Int,
-    val duracion: Int
+    val duracion: Int,
+    val hora: String // Nuevo campo para la hora
 )
 
 data class SalonETSResponse(
