@@ -159,7 +159,7 @@ class NPSForm(forms.Form):
 
 class NDocenteForm(forms.Form):
     """ 
-        Clase que define el formulario de la página de la alta de personal de seguridad
+        Clase que define el formulario de la página de la alta de docentes
     """
     
     def __init__(self, *args, **kwargs):
@@ -185,7 +185,7 @@ class NDocenteForm(forms.Form):
 
 class NAlumnoForm(forms.Form):
     """ 
-        Clase que define el formulario de la página de la alta de personal de seguridad
+        Clase que define el formulario de la página de la alta del alumno
     """
     
     def __init__(self, *args, **kwargs):
@@ -206,6 +206,16 @@ class NAlumnoForm(forms.Form):
     correo = forms.CharField(required=True, label='correo')
     escuela = forms.ChoiceField(label='Cargo', required=True)
     carrera = forms.ChoiceField(label='carrera', required=True)
+
+class NAlumnoVideoForm(forms.Form):
+    """ 
+        Clase que define el formulario de la página de la alta del alumno
+    """
+    
+    def __init__(self, *args, **kwargs):
+        super(NAlumnoVideoForm, self).__init__(*args, **kwargs)
+    
+    boleta = forms.CharField(max_length=13, required=True, label='Boleta')
 
 class InscripcionForm(forms.Form):
     """ 
