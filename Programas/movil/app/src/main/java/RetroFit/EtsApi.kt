@@ -1,6 +1,7 @@
 package com.example.prueba3
 
 import com.example.prueba3.Clases.ListadoETS
+import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Path
 
@@ -13,6 +14,8 @@ interface EtsApi {
 
     @GET("ETS/InscripcionDocente/{docente_rfc}")
     suspend fun getEtsInscritosDocente(@Path("docente_rfc") usuario: String): List<ListadoETS>
+
+
 
 
 }

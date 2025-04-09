@@ -11,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +19,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -41,9 +46,10 @@ import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 
 @Composable
-fun EtsListScreen(navController: NavController,
-                  viewModel: EtsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
-                  loginViewModel: LoginViewModel
+fun EtsListScreen(
+    navController: NavController,
+    viewModel: EtsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    loginViewModel: LoginViewModel
 ) {
     val userRole = loginViewModel.getUserRole()
 
@@ -56,7 +62,7 @@ fun EtsListScreen(navController: NavController,
             .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
         val username = sharedPreferences.getString("username", "") ?: ""
 
-//      ============= FILTRO DE ETS =============
+        //      ============= FILTRO DE ETS =============
         var selectedFilter by remember { mutableStateOf("Todos") }
         val filteredList = when (selectedFilter) {
             "Todos" -> etsInscritos
@@ -82,27 +88,23 @@ fun EtsListScreen(navController: NavController,
                 modifier = Modifier
                     .fillMaxSize()
                     .background(BlueBackground)
-                    .padding(start = 16.dp, top = 0.dp, end = 16.dp, bottom = 0.dp)
+                    .padding(padding) // Aplicar el padding del Scaffold al Column principal
             ) {
 
-                // Barra de búsqueda
-                Column (
+                // Barra de búsqueda (FIJO)
+                Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 0.dp, bottom = 0.dp)
+                        .padding(top = 30.dp, bottom = 0.dp, start = 16.dp, end = 16.dp)
                 ) {
                     Text(
                         text = "Lista de ETS",
                         style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier
-                            .padding(bottom = 0.dp, top = 80.dp)
-                            .align(Alignment.CenterHorizontally),
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                         textAlign = TextAlign.Center
                     )
-
                     Divider(
                         modifier = Modifier
                             .padding(vertical = 0.dp)
@@ -112,8 +114,51 @@ fun EtsListScreen(navController: NavController,
                     )
                 }
 
+                // Filtros (FIJO)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 40.dp, bottom = 10.dp, start = 16.dp, end = 16.dp)
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .background(
+                                if (selectedFilter == "Todos") Color.Gray else Color(0xFFF5F5F5)
+                            )
+                            .clickable(onClick = { selectedFilter = "Todos" })
+                            .weight(1f)
+                            .height(35.dp)
+                            .padding(2.dp)
+                    ) {
+                        Text(
+                            text = "Todos",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            color = if (selectedFilter == "Todos") Color.White else Color.Black
+                        )
+                    }
 
-                Spacer(modifier = Modifier.height(4.dp))
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .background(
+                                if (selectedFilter == "Mis ETS") Color.Gray else Color(0xFFF5F5F5)
+                            )
+                            .clickable(onClick = { selectedFilter = "Mis ETS" })
+                            .weight(1f)
+                            .height(35.dp)
+                            .padding(2.dp)
+                    ) {
+                        Text(
+                            text = "Mis ETS",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            color = if (selectedFilter == "Mis ETS") Color.White else Color.Black
+                        )
+                    }
+                }
 
                 if (isLoading) {
                     Box(
@@ -129,87 +174,27 @@ fun EtsListScreen(navController: NavController,
                         )
                     }
                 } else {
-                    Box(
+                    // Lista scrollable de ETS
+                    LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(bottom = 0.dp, top = 20.dp)
+                            .padding(start = 16.dp, end = 16.dp, bottom = 60.dp), // Padding para la lista
+                        contentPadding = PaddingValues(top = 10.dp) // Padding superior para la lista
                     ) {
-//                      ============= BUSCADOR =============
-                        BuscadorConLista(
-                            lista = filteredList,
-                            filtro = { ets, query ->
-                                ets.idPeriodo.contains(query, ignoreCase = true) ||
-                                        ets.turno.contains(query, ignoreCase = true) ||
-                                        ets.fecha.contains(query, ignoreCase = true) ||
-                                        ets.unidadAprendizaje.contains(query, ignoreCase = true)
-                            },
-                            onItemClick = {},
-                            placeholder = "Buscar por Unidad de aprendizaje",
-                            itemContent = { ets ->
-
-                                EtsACardButton(
-                                    navController = navController,
-                                    idETS = ets.idETS,
-                                    idPeriodo = ets.idPeriodo,
-                                    Turno = ets.turno,
-                                    Fecha = ets.fecha,
-                                    UnidadAprendizaje = ets.unidadAprendizaje
-                                )
-                            },
-                            additionalContent = {
-
-                                Spacer(modifier = Modifier.height(10.dp))
-
-                                Row (
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                    modifier = Modifier.fillMaxWidth()
-                                ){
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier
-                                            .background(
-                                                if (selectedFilter == "Todos") Color.Gray else Color(
-                                                    0xFFF5F5F5
-                                                )
-                                            )
-                                            .clickable(onClick = { selectedFilter = "Todos" })
-                                            .weight(1f)
-                                            .height(35.dp)
-                                            .padding(2.dp)
-                                    ) {
-                                        Text(
-                                            text = "Todos",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            textAlign = TextAlign.Center,
-                                            color = if (selectedFilter == "Todos") Color.White else Color.Black
-                                        )
-                                    }
-
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier
-                                            .background(
-                                                if (selectedFilter == "Mis ETS") Color.Gray else Color(
-                                                    0xFFF5F5F5
-                                                )
-                                            )
-                                            .clickable(onClick = { selectedFilter = "Mis ETS" })
-                                            .weight(1f)
-                                            .height(35.dp)
-                                            .padding(2.dp)
-                                    ) {
-                                        Text(
-                                            text = "Mis ETS",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            textAlign = TextAlign.Center,
-                                            color = if (selectedFilter == "Mis ETS") Color.White else Color.Black
-                                        )
-                                    }
-                                }
-
-                                //Spacer(modifier = Modifier.height(15.dp))
-                            }
-                        )
+                        items(filteredList) { ets ->
+                            EtsACardButton(
+                                navController = navController,
+                                idETS = ets.idETS,
+                                idPeriodo = ets.idPeriodo,
+                                Turno = ets.turno,
+                                Fecha = ets.fecha,
+                                UnidadAprendizaje = ets.unidadAprendizaje
+                            )
+                            Spacer(modifier = Modifier.height(8.dp)) // Espacio entre cada elemento
+                        }
+                        item {
+                            Spacer(modifier = Modifier.height(8.dp)) // Espacio adicional al final
+                        }
                     }
                 }
             }

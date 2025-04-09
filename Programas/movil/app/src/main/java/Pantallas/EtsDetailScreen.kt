@@ -152,7 +152,8 @@ fun EtsDetailScreen(
                             cupo = etsDetail!!.ets.cupo,
                             duracion = etsDetail!!.ets.duracion,
                             salon = etsDetail!!.salon,
-                            salonState = salonState!!
+                            salonState = salonState!!,
+                            hora = etsDetail!!.ets.hora
                         )
                     } else {
                         Box(
@@ -212,7 +213,8 @@ fun SingleStyledCard(
     cupo: Int,
     duracion: Int,
     salon: List<Salon>,
-    salonState: Boolean
+    salonState: Boolean,
+    hora: String
 ) {
     Card(
         modifier = Modifier
@@ -248,12 +250,13 @@ fun SingleStyledCard(
                     if (!salonState) {
                         append("Salones asignados:  \n")
                         salon.take(3).forEach { salon ->
-                            append("• Salón ${salon.numSalon} (${salon.tipoSalon})\n")
+                            append("• Salón ${salon.numSalon} (${salon.tipoSalon})\n\n")
                         }
                     } else {
                         append("Asignación de salones:\n")
                         append("• Pendiente\n")
                     }
+                    append("El examen comienza a las $hora horas")
                 },
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.Black,

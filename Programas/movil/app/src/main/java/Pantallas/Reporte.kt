@@ -53,9 +53,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import com.example.prueba3.Views.AlumnosViewModel
+import com.example.prueba3.Views.EtsInfoViewModel
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
+import java.util.TimeZone
+import java.util.concurrent.TimeUnit
 
 //painter = painterResource(id = R.drawable.info),
 
@@ -66,32 +73,68 @@ fun Reporte(
     boleta: String,
     loginViewModel: LoginViewModel,
     viewModel: AlumnosViewModel,
-    aceptado: Int
+    aceptadoInicial: Int,
+    viewModel2: EtsInfoViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     ValidateSession(navController = navController) {
         val userRole = loginViewModel.getUserRole()
         val reporteList by viewModel.reporte.collectAsState()
         val loading by viewModel.loadingState.collectAsState()
-        val imagenBytes by viewModel.imagenBytes.collectAsState()
         val ingresoResultado by viewModel.ingresoResultado.collectAsState()
+        val etsDetail by viewModel2.etsDetailState.collectAsState() // Necesitamos los detalles del ETS
 
-        LaunchedEffect(idETS, boleta) { // Usa idETS y boleta como claves para volver a ejecutar al cambiar
-            Log.d("ReporteScreen", "Fetching reporte for IDETS: $idETS, Boleta: $boleta")
+        LaunchedEffect(idETS, boleta) {
             viewModel.fetchReporte(idETS.toInt(), boleta)
-            Log.d("ReporteScreen", "Verifying ingreso for IDETS: $idETS, Boleta: $boleta")
-            viewModel.verificarIngresoSalon(idETS.toInt(), boleta) // Llama a la función de verificación
+            viewModel.verificarIngresoSalon(idETS.toInt(), boleta)
+            viewModel.fetchFotoAlumno(boleta)
+            viewModel.fetchImagenReporte(idETS.toInt(), boleta)
+            viewModel2.fetchEtsDetail(idETS.toInt()) // Asegúrate de cargar los detalles del ETS
         }
 
-        // Observa el StateFlow fuera del LaunchedEffect
-        LaunchedEffect(ingresoResultado) {
-            if (!ingresoResultado.isNullOrEmpty()) {
-                Log.d("ReporteScreen", "Resultado de verificarIngresoSalon (StateFlow): $ingresoResultado")
-            } else if (ingresoResultado == null) {
-                Log.d("ReporteScreen", "Resultado de verificarIngresoSalon (StateFlow): Aún no hay resultado o es nulo")
-            }
-        }
+        val imagenBytes by viewModel.imagenBytes.collectAsState()
+        val fotoAlumno by viewModel.fotoAlumno.collectAsState()
 
         val scrollState = rememberScrollState()
+
+        // Calcular si el tiempo del ETS ya pasó (2 horas y 1 minuto después)
+        val horaETS = etsDetail?.ets?.hora ?: ""
+        val fechaETS = etsDetail?.ets?.fecha ?: ""
+        val isEtsOver = remember(horaETS, fechaETS) {
+            derivedStateOf {
+                if (horaETS.isEmpty() || fechaETS.isEmpty()) {
+                    false
+                } else {
+                    val currentTime = Calendar.getInstance(TimeZone.getTimeZone("America/Mexico_City"))
+                    val etsCalendar = Calendar.getInstance(TimeZone.getTimeZone("America/Mexico_City")).apply {
+                        time = currentTime.time // Inicializar con la hora actual para evitar problemas si la fecha ETS es hoy
+                        val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
+                        val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                        try {
+                            timeFormatter.parse(horaETS)?.let { parsedTime ->
+                                set(Calendar.HOUR_OF_DAY, parsedTime.hours)
+                                set(Calendar.MINUTE, parsedTime.minutes)
+                                set(Calendar.SECOND, 0)
+                                set(Calendar.MILLISECOND, 0)
+                            }
+                        } catch (e: Exception) {
+                            Log.e("ReporteScreen", "Error parsing horaETS: $horaETS", e)
+                        }
+                        try {
+                            dateFormatter.parse(fechaETS)?.let { parsedDate ->
+                                set(Calendar.YEAR, parsedDate.year + 1900)
+                                set(Calendar.MONTH, parsedDate.month)
+                                set(Calendar.DAY_OF_MONTH, parsedDate.date)
+                            }
+                        } catch (e: Exception) {
+                            Log.e("ReporteScreen", "Error parsing fechaETS: $fechaETS", e)
+                        }
+                    }
+
+                    val etsEndTimeMillis = etsCalendar.timeInMillis + TimeUnit.HOURS.toMillis(2) + TimeUnit.MINUTES.toMillis(1)
+                    currentTime.timeInMillis > etsEndTimeMillis
+                }
+            }
+        }.value
 
         Scaffold(
             topBar = { MenuTopBar(true, true, loginViewModel, navController) },
@@ -102,145 +145,208 @@ fun Reporte(
                     .fillMaxSize()
                     .background(BlueBackground)
                     .padding(padding)
-                    .verticalScroll(scrollState)
+                    .verticalScroll(scrollState),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-
-                if (ingresoResultado == "existe" && reporteList.isNotEmpty()) {
-                // Título
-                Text(
-                    text = "Reporte",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 20.dp, bottom = 8.dp),
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    textAlign = TextAlign.Center
-                )
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center // Asegura que la imagen y el icono se centren dentro del contenedor circular
-                    ) {
-                        // Mostrar la imagen si está disponible
-                        if (imagenBytes != null) {
-                            val bitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes!!.size)
-                            Image(
-                                bitmap = bitmap.asImageBitmap(),
-                                contentDescription = "Foto de perfil",
-                                modifier = Modifier
-                                    .size(150.dp)
-                                    .clip(CircleShape)
-                                    .border(2.dp, Color.Gray, CircleShape),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else {
-                            // Mostrar un icono de cámara por defecto si no hay imagen
-                            Image(
-                                painter = painterResource(id = R.drawable.icon_camara), // Reemplaza con tu icono de cámara
-                                contentDescription = "Foto de perfil",
-                                modifier = Modifier
-                                    .size(150.dp)
-                                    .clip(CircleShape)
-                                    .border(2.dp, Color.Gray, CircleShape),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-
-                        // Determinar el icono a mostrar basado en el valor de 'aceptado'
-                        val iconResId = when (aceptado) {
-                            -1 -> R.drawable.icono4
-                            0 -> R.drawable.icono8
-                            1 -> R.drawable.icono1
-                            2 -> R.drawable.icono2
-                            3 -> R.drawable.icono3
-                            4 -> R.drawable.icono5
-                            5 -> R.drawable.icono6
-                            6 -> R.drawable.icono7
-                            else -> R.drawable.icono1
-                        }
-
-                        // Icono pequeño superpuesto en la esquina inferior derecha de la foto
-                        Icon(
-                            painter = painterResource(id = iconResId),
-                            contentDescription = "Icono de estado",
-                            modifier = Modifier
-                                .size(60.dp) // Tamaño más pequeño para el icono superpuesto
-                                .align(Alignment.BottomEnd) // Alinea el icono a la esquina inferior derecha
-                                .padding(bottom = 4.dp, end = 4.dp), // Pequeño espacio desde los bordes
-                            tint = Color.Unspecified
-                        )
-                    }
-                }
-
-
-
-
-
-                // Contenido del reporte con LazyColumn (scroll integrado)
                 if (loading) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                    // Mostrar el indicador de carga mientras los datos se están obteniendo
+                    CircularProgressIndicator(color = Color.White)
                 } else {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
-                        items(reporteList) { reporte ->
-                            Column {
-                                InfoRow("Boleta", boleta)
-                                InfoRow("Nombre completo", "${reporte.nombre} ${reporte.apellidoP} ${reporte.apellidoM}")
-                                InfoRow("CURP", reporte.curp ?: "N/A")
-                                InfoRow("Carrera", reporte.carrera ?: "N/A")
-                                InfoRow("Unidad académica", reporte.escuela ?: "N/A")
-                                InfoRow("Método", reporte.tipo ?: "N/A")
-                                InfoRow("Razón", reporte.motivo ?: "N/A")
-                                InfoRow("Periodo", reporte.periodo ?: "N/A")
-                                InfoRow("Turno", reporte.turno ?: "N/A")
-                                InfoRow("Materia", reporte.materia ?: "N/A")
-                                InfoRow("Tipo", reporte.tipo ?: "N/A")
-                                InfoRow("Fecha Ingreso", reporte.fechaIngreso?.toString() ?: "N/A")
-                                InfoRow("Hora Ingreso", reporte.horaIngreso?.toString() ?: "N/A")
-                                InfoRow("Nombre Docente", reporte.nombreDocente ?: "N/A")
-                                InfoRow("Tipo Estado", reporte.tipoEstado ?: "N/A")
-                                InfoRow("Presicion", reporte.presicion?.toString() ?: "N/A")
-                            }
-                        }
-                    }
-                }
-            }else if (ingresoResultado == "no existe") {
-                    // Mostrar mensaje de reporte no creado
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    // Mostrar el contenido del reporte solo cuando loading es false
+                    if (ingresoResultado == "existe" && reporteList.isNotEmpty()) {
+                        val reporte = reporteList.firstOrNull() // Get the first reporte data
+
+                        // Título
                         Text(
-                            text = "No se ha creado reporte para este alumno.",
+                            text = "Reporte",
                             style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 20.dp, bottom = 8.dp),
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 32.dp)
+                            textAlign = TextAlign.Center
                         )
-                    }
 
-                } else {
-                    // Mostrar un mensaje de carga mientras se verifica el ingreso
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = Color.White)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+
+                        }
+
+                        // Sección de imágenes
+                        if (reporte?.presicion != "0") {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceAround,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Imagen de la red neuronal (usando la misma imagen por ahora, adjust if needed)
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+                                    if (imagenBytes != null) {
+                                        val bitmapRedNeuronal = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes!!.size)
+                                        Image(
+                                            bitmap = bitmapRedNeuronal.asImageBitmap(),
+
+                                            contentDescription = "Imagen de la red neuronal",
+                                            modifier = Modifier
+                                                .size(120.dp)
+                                                .clip(RoundedCornerShape(8.dp)),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    } else {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(120.dp)
+                                                .background(Color.LightGray)
+                                                .clip(RoundedCornerShape(8.dp)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text("Sin Imagen", color = Color.Gray)
+                                        }
+                                    }
+                                    Text("Imagen de la red neuronal", style = MaterialTheme.typography.bodySmall, color = Color.White)
+                                }
+
+                                // Imagen de la credencial (usando la misma imagen por ahora, adjust if needed)
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    if (fotoAlumno != null) {
+                                        val bitmap = BitmapFactory.decodeByteArray(
+                                            fotoAlumno,
+                                            0,
+                                            fotoAlumno!!.size
+                                        )
+
+                                        Image(
+                                            bitmap = bitmap.asImageBitmap(),
+                                            contentDescription = "Imagen de la credencial",
+                                            modifier = Modifier
+                                                .size(120.dp)
+                                                .clip(RoundedCornerShape(8.dp)),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    } else {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(120.dp)
+                                                .background(Color.LightGray)
+                                                .clip(RoundedCornerShape(8.dp)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text("Sin Imagen", color = Color.Gray)
+                                        }
+                                    }
+                                    Text("Imagen de la credencial", style = MaterialTheme.typography.bodySmall, color = Color.White)
+                                }
+                            }
+                        } else {
+                            // Mostrar solo la imagen de la credencial centrada si presicion es 0
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    if (fotoAlumno != null) {
+                                        val bitmap = BitmapFactory.decodeByteArray(
+                                            fotoAlumno,
+                                            0,
+                                            fotoAlumno!!.size
+                                        )
+
+                                        Image(
+                                            bitmap = bitmap.asImageBitmap(),
+                                            contentDescription = "Imagen de la credencial",
+                                            modifier = Modifier
+                                                .size(150.dp)
+                                                .clip(RoundedCornerShape(8.dp)),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    } else {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(150.dp)
+                                                .background(Color.LightGray)
+                                                .clip(RoundedCornerShape(8.dp)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text("Sin Imagen", color = Color.Gray)
+                                        }
+                                    }
+                                    Text("Imagen de la credencial", style = MaterialTheme.typography.bodySmall, color = Color.White)
+                                }
+                            }
+                        }
+
+
+                        // Contenido del reporte con LazyColumn
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            items(reporteList) { reporteItem ->
+                                Column {
+                                    InfoRow("Boleta", boleta)
+                                    InfoRow("Nombre completo", "${reporteItem.nombre} ${reporteItem.apellidoP} ${reporteItem.apellidoM}")
+                                    InfoRow("CURP", reporteItem.curp ?: "N/A")
+                                    InfoRow("Carrera", reporteItem.carrera ?: "N/A")
+                                    InfoRow("Unidad académica", reporteItem.escuela ?: "N/A")
+                                    InfoRow("Periodo", reporteItem.periodo ?: "N/A")
+                                    InfoRow("Turno", reporteItem.turno ?: "N/A")
+                                    InfoRow("Materia", reporteItem.materia ?: "N/A")
+
+                                    val tipoText = if (reporteItem.tipo == "O") {
+                                        "Ordinario"
+                                    } else if (reporteItem.tipo == "E") {
+                                        "Extraordinario"
+                                    } else {
+                                        reporteItem.tipo ?: "N/A"
+                                    }
+                                    InfoRow("Tipo de examen", tipoText)
+
+                                    InfoRow("Fecha del ingreso", reporteItem.fechaIngreso ?: "N/A")
+                                    InfoRow("Hora del ingreso", reporteItem.horaIngreso ?: "N/A")
+                                    InfoRow("Nombre del ocente", reporteItem.nombreDocente ?: "N/A")
+                                    InfoRow("Razón del reporte", reporteItem.tipoEstado ?: "N/A")
+                                    InfoRow("motivo del rechazo", reporteItem.motivo ?: "N/A")
+                                    if (reporteItem.presicion != null && reporteItem.presicion != "0") {
+                                        InfoRow("Presicion", reporteItem.presicion.toString())
+                                    }
+                                }
+                            }
+                        }
+                    } else if (ingresoResultado == "no existe") {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = if (isEtsOver) {
+                                    "El alumno no se presentó al ETS."
+                                } else {
+                                    "No se ha creado reporte para este alumno."
+                                },
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 32.dp)
+                            )
+                        }
                     }
                 }
             }
-
         }
     }
 }
