@@ -216,6 +216,7 @@ class NAlumnoVideoForm(forms.Form):
         super(NAlumnoVideoForm, self).__init__(*args, **kwargs)
     
     boleta = forms.CharField(max_length=13, required=True, label='Boleta')
+    curp = forms.CharField(max_length=18, required=True, label='CURP')
 
 class InscripcionForm(forms.Form):
     """ 

@@ -226,6 +226,7 @@ class CargarAlumnoView(View):
         
         if form.is_valid(): 
             boleta = form.cleaned_data['boleta']
+            curp = form.cleaned_data['curp']
             
             # Define las rutas para las fotos y los videos
             foto_path = f"website/views/fotos/{boleta}.jpg"
@@ -262,6 +263,7 @@ class CargarAlumnoView(View):
             # Realizar la llamada a la API
             data = {
                 "boleta": boleta,
+                "curp": curp,
                 "credencial": foto_path
             }
             
