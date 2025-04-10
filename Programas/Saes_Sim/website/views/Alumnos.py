@@ -25,7 +25,34 @@ import os
 
 from django.http import JsonResponse, HttpResponse
 import json
-import os
+
+
+from django.http import FileResponse
+import subprocess
+
+def download_frame(request, boleta, frame_name):
+    frame_path = f"/EntrenamientoIMG/{boleta}/{frame_name}"
+    if os.path.exists(frame_path):
+        return FileResponse(open(frame_path, 'rb'))
+    else:
+        return HttpResponse("Frame no encontrado", status=404)
+    
+def extract_frames(video_path, output_dir):
+    try:
+        os.makedirs(output_dir, exist_ok=True)
+        ffmpeg_path = os.path.join(os.path.dirname(__file__), '..', 'ffmpeg', 'bin', 'ffmpeg')
+        
+        # Ejecutar FFmpeg (equivalente al ProcessBuilder de Java)
+        subprocess.run([
+            ffmpeg_path,
+            "-i", video_path,
+            "-vf", "fps=3",
+            "-vsync", "vfr",
+            f"{output_dir}/frame_%02d.png"
+        ], check=True)
+        
+    except subprocess.CalledProcessError as e:
+        raise Exception(f"Error al extraer frames: {e}")
 
 @csrf_exempt
 def obtener_imagen(request):
@@ -54,9 +81,6 @@ def obtener_imagen(request):
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Método no permitido'}, status=405)
-
-
-
 
 def carreras(request):
     escuela = request.GET.get("escuela")
@@ -175,7 +199,10 @@ class NAlumnoView(View):
         
         else:
             return JsonResponse({"message": "Error en el formulario", "Error": True}, status=400)
-        
+
+def asegurarse_de_crear_carpeta(carpeta):
+    if not os.path.exists(carpeta):
+        os.makedirs(carpeta)
 class CargarAlumnoView(View):
     """
         Clase que define la vista del formulario del registro de fotos y registro del Alumno
@@ -197,9 +224,19 @@ class CargarAlumnoView(View):
         api = "nvAlumno"
         form = NAlumnoVideoForm(request.POST)
         
-        if(form.is_valid()): 
+        if form.is_valid(): 
             boleta = form.cleaned_data['boleta']
             
+            # Define las rutas para las fotos y los videos
+            foto_path = f"website/views/fotos/{boleta}.jpg"
+            video_path = f"website/views/EntrenamientoIMG/{boleta}/{boleta}.mp4"
+            frames_dir = f"website/views/EntrenamientoIMG/{boleta}"
+
+            # Asegúrate de que las carpetas existen
+            asegurarse_de_crear_carpeta(f"website/views/fotos")  # Carpeta para fotos
+            asegurarse_de_crear_carpeta(frames_dir)  # Carpeta para frames
+
+            # Procesar la foto
             credencial = request.FILES.get("foto-file")
             video = request.FILES.get("video-file")
             
@@ -207,27 +244,36 @@ class CargarAlumnoView(View):
                 return render(request, 'New_Alumno_Video.html', {'form': form, 'message': "El video es obligatorio", 'Error': True})
             
             if credencial:
-                with open(f"website/views/fotos/{boleta}.jpg", "wb") as f:
+                with open(foto_path, "wb") as f:
                     for chunk in credencial.chunks():
                         f.write(chunk)
-                        
-            foto_path = f"website/views/fotos/{boleta}.jpg" if credencial else None
             
-            files = {'video': video}
+            # Guardar el video en la carpeta correspondiente
+            with open(video_path, "wb") as f:
+                for chunk in video.chunks():
+                    f.write(chunk)
+
+            # Extraer los frames del video
+            extract_frames(video_path, frames_dir)
+
+            # Lista de los nombres de los frames extraídos
+            frames = [f"frame_{i:02d}.png" for i in range(1, len(os.listdir(frames_dir)) + 1)]
+
+            # Realizar la llamada a la API
             data = {
                 "boleta": boleta,
                 "credencial": foto_path
             }
             
-            response = requests.post(url+api, data=data, files=files)
+            response = requests.post(url + api, data=data)
             response_data = response.json()
             
             print(response_data)
-            
+
             if response_data.get("Error"):
                 return JsonResponse(response_data, status=400)
             else:
                 return JsonResponse(response_data, status=200)
-        
+
         else:
             return JsonResponse({"message": "Error en el formulario", "Error": True}, status=400)
