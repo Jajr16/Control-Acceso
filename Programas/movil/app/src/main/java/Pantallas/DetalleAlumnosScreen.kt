@@ -65,6 +65,7 @@ fun DetalleAlumnosScreen(
                 showMensajeAsistencia = true
                 delay(3000)
                 showMensajeAsistencia = false
+//                viewModel.resetRegistroSuccess()
             }
         }
 

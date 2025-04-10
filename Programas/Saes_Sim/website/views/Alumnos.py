@@ -4,6 +4,7 @@ from django.views import View
 from django.shortcuts import render, redirect
 from .url import url
 from ..forms import NAlumnoForm
+from ..forms import NAlumnoVideoForm
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 import json
@@ -159,6 +160,62 @@ class NAlumnoView(View):
                 "correo": correo,
                 "escuela": int(escuela),
                 "carrera": carrera,
+                "credencial": foto_path
+            }
+            
+            response = requests.post(url+api, data=data, files=files)
+            response_data = response.json()
+            
+            print(response_data)
+            
+            if response_data.get("Error"):
+                return JsonResponse(response_data, status=400)
+            else:
+                return JsonResponse(response_data, status=200)
+        
+        else:
+            return JsonResponse({"message": "Error en el formulario", "Error": True}, status=400)
+        
+class CargarAlumnoView(View):
+    """
+        Clase que define la vista del formulario del registro de fotos y registro del Alumno
+    """
+    def get(self, request, *args, **kwargs):
+        """
+            Función para cargar la vista con el formulario
+        """
+        form = NAlumnoVideoForm()
+        return render(request, "New_Alumno_Video.html", { 'form': form })
+        
+        
+    def post(self, request, *args, **kwargs):
+        """
+            Función post para procesar los datos enviados por el formulario
+        """
+        print(request)
+        
+        api = "nvAlumno"
+        form = NAlumnoVideoForm(request.POST)
+        
+        if(form.is_valid()): 
+            boleta = form.cleaned_data['boleta']
+            
+            credencial = request.FILES.get("foto-file")
+            video = request.FILES.get("video-file")
+            
+            if not video:
+                return render(request, 'New_Alumno_Video.html', {'form': form, 'message': "El video es obligatorio", 'Error': True})
+            
+            if credencial:
+                with open(f"website/views/fotos/{boleta}.jpg", "wb") as f:
+                    for chunk in credencial.chunks():
+                        f.write(chunk)
+                        
+            foto_path = f"website/views/fotos/{boleta}.jpg" if credencial else None
+            
+            files = {'video': video}
+            data = {
+                "boleta": boleta,
                 "credencial": foto_path
             }
             

@@ -58,7 +58,6 @@
             retrofit.create(AlumnoEspecificoApi::class.java)
         }
 
-
         // Instancia de AceptadoApi
         val aceptadoApi: AceptadoApi by lazy {
             retrofit.create(AceptadoApi::class.java)
