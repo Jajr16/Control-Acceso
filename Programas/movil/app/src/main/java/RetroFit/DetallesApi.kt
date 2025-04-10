@@ -1,6 +1,8 @@
 package RetroFit
 
+import com.example.prueba3.Clases.ComparacionResponse
 import com.example.prueba3.Clases.CredencialAlumnos
+import com.example.prueba3.Clases.DatosWeb
 import com.example.prueba3.Clases.DetalleAlumnos
 import com.example.prueba3.Clases.credencialResponse
 import com.example.prueba3.Clases.regitrarAsistencia
@@ -18,6 +20,9 @@ interface DetallesApi {
 
     @GET("/ImageDAE/capturar")
     suspend fun getCredencial(@Query("url") url: String): Response<credencialResponse>
+
+    @POST("alumno/comparar/{boleta}")
+    suspend fun compararDatos(@Path("boleta") boleta: String, @Body datosWeb: DatosWeb): ComparacionResponse
 
     @POST("alumno/registrar-asistencia")
     suspend fun registrarAsistencia(

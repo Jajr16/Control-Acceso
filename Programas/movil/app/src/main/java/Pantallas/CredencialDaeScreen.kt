@@ -7,10 +7,11 @@ import Pantallas.components.ValidateSession
 import RetroFit.RetrofitInstance
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,8 +33,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -58,6 +61,7 @@ import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.ui.layout.ContentScale
+import com.example.prueba3.Clases.DatosWeb
 
 @OptIn(ExperimentalEncodingApi::class)
 @Composable
@@ -68,8 +72,6 @@ fun CredencialDaeScreen(
     viewModel: AlumnosViewModel,
     boleta: String
 ) {
-
-
     var imageBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -86,19 +88,35 @@ fun CredencialDaeScreen(
     var fechaHoraRegistro by remember { mutableStateOf("") }
     val registroSuccess by viewModel.registroSuccess.collectAsState()
 
+    val comparacionResultado by viewModel.comparacionResultado.collectAsState()
+    val mostrarDialogoComparacion by viewModel.mostrarDialogoComparacion.collectAsState()
+    var mostrarComparacionAlRegistrar by remember { mutableStateOf(false) }
 
-//    LaunchedEffect(boleta) {
-//        viewModel.fetchFotoAlumno(boleta)
-//    }
-
-
+    var scale by remember { mutableStateOf(1f) }
+    var offset by remember { mutableStateOf(Offset.Zero) }
+    val transformableState = rememberTransformableState { zoomChange, panChange, _ ->
+        scale = (scale * zoomChange).coerceIn(1f, 5f)
+        offset += panChange
+    }
 
     LaunchedEffect(registroSuccess) {
         if (registroSuccess) {
             showMensajeAsistencia = true
             delay(3000)
             showMensajeAsistencia = false
-//            viewModel.resetRegistroSuccess()
+        }
+    }
+
+    LaunchedEffect(alumnoInfo) {
+        alumnoInfo?.let { info ->
+            val datosWeb = DatosWeb(
+                boleta = info.boleta,
+                curp = info.curp,
+                nombre = "${info.nombre} ${info.apellidoP} ${info.apellidoM}",
+                carrera = info.carrera,
+                escuela = info.unidadAcademica
+            )
+            viewModel.compararDatos(info.boleta, datosWeb)
         }
     }
 
@@ -128,14 +146,71 @@ fun CredencialDaeScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(Color.Black.copy(alpha = 0.8f))
-                            .clickable { isZoomed = false },
-                        contentAlignment = Alignment.Center
                     ) {
-                        ZoomableImage(bitmap = imageBitmap!!)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clickable {
+                                    isZoomed = false
+                                    scale = 1f
+                                    offset = Offset.Zero
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            imageBitmap?.let { bitmap ->
+                                Image(
+                                    bitmap = bitmap.asImageBitmap(),
+                                    contentDescription = "Credencial ampliada",
+                                    modifier = Modifier
+                                        .graphicsLayer(
+                                            scaleX = scale,
+                                            scaleY = scale,
+                                            translationX = offset.x,
+                                            translationY = offset.y
+                                        )
+                                        .transformable(state = transformableState)
+                                        .fillMaxWidth()
+                                )
+                            }
+                        }
                     }
                 }
 
-                // Encabezado
+                if (mostrarComparacionAlRegistrar && comparacionResultado?.coinciden == false) {
+                    AlertDialog(
+                        onDismissRequest = {
+                            mostrarComparacionAlRegistrar = false
+                            viewModel.cerrarDialogoComparacion()
+                        },
+                        title = {
+                            Text(
+                                "Los datos no coinciden",
+                                color = Color.Red
+                            )
+                        },
+                        text = {
+                            Column {
+                                comparacionResultado?.errores?.forEach { error ->
+                                    Text(text = "• $error", modifier = Modifier.padding(4.dp))
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text("No se puede registrar la asistencia con datos inconsistentes")
+                            }
+                        },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    mostrarComparacionAlRegistrar = false
+                                    viewModel.cerrarDialogoComparacion()
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                            ) {
+                                Text("Aceptar")
+                            }
+                        }
+                    )
+                }
+
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxWidth()
@@ -199,7 +274,6 @@ fun CredencialDaeScreen(
                 }
 
                 if (alumnoInfo != null) {
-
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -212,7 +286,6 @@ fun CredencialDaeScreen(
                                 .fillMaxWidth()
                                 .padding(16.dp)
                         ) {
-                            // Información del alumno
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
@@ -336,7 +409,6 @@ fun CredencialDaeScreen(
                         }
                     }
 
-                    // Botones de verificación
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -345,8 +417,23 @@ fun CredencialDaeScreen(
                     ) {
                         Button(
                             onClick = {
-                                showAsistenciaDialog = true
-                                fechaHoraRegistro = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(Date())
+                                alumnoInfo?.let { info ->
+                                    val datosWeb = DatosWeb(
+                                        boleta = info.boleta,
+                                        curp = info.curp,
+                                        nombre = "${info.nombre} ${info.apellidoP} ${info.apellidoM}",
+                                        carrera = info.carrera,
+                                        escuela = info.unidadAcademica
+                                    )
+                                    viewModel.compararDatos(info.boleta, datosWeb)
+
+                                    if (comparacionResultado?.coinciden == true) {
+                                        showAsistenciaDialog = true
+                                        fechaHoraRegistro = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(Date())
+                                    } else {
+                                        mostrarComparacionAlRegistrar = true
+                                    }
+                                }
                             },
                             modifier = Modifier.weight(1f)
                                 .padding(horizontal = 8.dp),
@@ -359,7 +446,6 @@ fun CredencialDaeScreen(
                         }
                     }
 
-                    // Diálogo de confirmación de asistencia
                     if (showAsistenciaDialog) {
                         if (alumno?.nombreETS.isNullOrEmpty()) {
                             AlertDialog(
@@ -482,7 +568,7 @@ fun CredencialDaeScreen(
                         // Guardar la información del alumno
                         alumnoInfo = credencialResponse.credenciales.firstOrNull()
 
-                        val boletausable  = alumnoInfo?.boleta
+                        val boletausable = alumnoInfo?.boleta
 
                         boletausable?.let { boletaNonNull ->
                             viewModel.fetchFotoAlumno(boletaNonNull)
@@ -506,7 +592,4 @@ fun CredencialDaeScreen(
             isLoading = false
         }
     }
-
-
-
 }

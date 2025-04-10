@@ -4,6 +4,7 @@ import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,23 +22,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
 import com.example.prueba3.R
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.ui.theme.BlueBackground
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
@@ -54,20 +47,16 @@ fun DetalleAlumnosScreen(
         val alumno = alumnosDetalle.firstOrNull()
         val isLoading by viewModel.loadingState.collectAsState(initial = false)
         val registroSuccess by viewModel.registroSuccess.collectAsState()
-//        val errorMessage by viewModel.errorMessage.collectAsState()
+        val fotoAlumno by viewModel.fotoAlumno.collectAsState()
 
-        // States para la UI
-        var photoLoading by remember { mutableStateOf(true) }
-        var photoError by remember { mutableStateOf(false) }
-        var photoBitmap by remember { mutableStateOf<Bitmap?>(null) }
         var showAsistenciaDialog by remember { mutableStateOf(false) }
         var showEscanearDialog by remember { mutableStateOf(false) }
         var showMensajeAsistencia by remember { mutableStateOf(false) }
         var fechaHoraRegistro by remember { mutableStateOf("") }
 
-        // Cargar detalles del alumno
         LaunchedEffect(boleta) {
             viewModel.fetchDetalleAlumnos(boleta)
+            viewModel.fetchFotoAlumno(boleta)
         }
 
         // Manejar éxito/error del registro
@@ -76,7 +65,6 @@ fun DetalleAlumnosScreen(
                 showMensajeAsistencia = true
                 delay(3000)
                 showMensajeAsistencia = false
-                viewModel.resetRegistroSuccess()
             }
         }
 
@@ -122,18 +110,19 @@ fun DetalleAlumnosScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     when {
-                        photoLoading -> {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(50.dp),
-                                color = Color.White
-                            )
-                        }
-                        photoBitmap != null -> {
+                        fotoAlumno != null -> {
+                            val bitmap = BitmapFactory.decodeByteArray(fotoAlumno, 0, fotoAlumno!!.size)
                             Image(
-                                bitmap = photoBitmap!!.asImageBitmap(),
+                                bitmap = bitmap.asImageBitmap(),
                                 contentDescription = "Foto del alumno",
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop
+                            )
+                        }
+                        isLoading -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(50.dp),
+                                color = Color.White
                             )
                         }
                         else -> {
@@ -145,14 +134,6 @@ fun DetalleAlumnosScreen(
                             )
                         }
                     }
-                }
-
-                if (photoError && !photoLoading) {
-                    Text(
-                        text = "No se pudo cargar la foto",
-                        color = Color.Red,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -322,7 +303,6 @@ fun InfoCard(title: String, content: String) {
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.End
-
             )
         }
     }

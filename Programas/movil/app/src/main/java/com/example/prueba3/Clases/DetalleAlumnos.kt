@@ -34,6 +34,19 @@ data class credencialResponse(
     val credenciales: List<CredencialAlumnos>
 )
 
+data class DatosWeb(
+    val boleta: String,
+    val curp: String,
+    val nombre: String,
+    val carrera: String,
+    val escuela: String
+)
+
+data class ComparacionResponse(
+    val coinciden: Boolean,
+    val errores: List<String>
+)
+
 data class regitrarAsistencia (
     val boleta: String,
     val nombre: String,

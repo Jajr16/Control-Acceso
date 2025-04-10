@@ -8,7 +8,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.prueba3.Clases.AlumnoEspecifico
 import com.example.prueba3.Clases.AlumnosInfo
+import com.example.prueba3.Clases.ComparacionResponse
 import com.example.prueba3.Clases.CredencialAlumnos
+import com.example.prueba3.Clases.DatosWeb
 import com.example.prueba3.Clases.DetalleAlumnos
 import com.example.prueba3.Clases.ListaInfor
 import com.example.prueba3.Clases.ReporteData
@@ -25,6 +27,7 @@ import java.io.IOException
 import okhttp3.ResponseBody
 import java.text.SimpleDateFormat
 import java.util.Date
+import androidx.compose.runtime.State
 import java.util.Locale
 
 class AlumnosViewModel : ViewModel() {
@@ -55,11 +58,15 @@ class AlumnosViewModel : ViewModel() {
     private val _alumnoRegistro = MutableStateFlow<List<regitrarAsistencia>>(emptyList())
     val alumnoRegistro: StateFlow<List<regitrarAsistencia>> = _alumnoRegistro.asStateFlow()
 
-
-
     private val _fotoAlumno = MutableStateFlow<ByteArray?>(null)
     val fotoAlumno: StateFlow<ByteArray?> = _fotoAlumno
 
+    // ============ Comparacion de datos de la credencial + DAE =================
+    private val _comparacionResultado = MutableStateFlow<ComparacionResponse?>(null)
+    val comparacionResultado: StateFlow<ComparacionResponse?> = _comparacionResultado
+
+    private val _mostrarDialogoComparacion = MutableStateFlow(false)
+    val mostrarDialogoComparacion: StateFlow<Boolean> = _mostrarDialogoComparacion
 
     // ======== Obtener la foto del alumno ============
     fun fetchFotoAlumno(boleta: String) {
@@ -79,7 +86,6 @@ class AlumnosViewModel : ViewModel() {
             }
         }
     }
-
 
     // Función para obtener los datos de alumnos
     fun fetchAlumno(ETSid: String) {
@@ -175,6 +181,30 @@ class AlumnosViewModel : ViewModel() {
         _registroSuccess.value = false
     }
 
+    // ======================== Funcion para comparar datos credencial + DAE ========================
+    fun compararDatos(boleta: String, datosWeb: DatosWeb) {
+        viewModelScope.launch {
+            try {
+                _loadingState.value = true
+                val response = RetrofitInstance.alumnosDetalle.compararDatos(boleta, datosWeb)
+                _comparacionResultado.value = response
+                _mostrarDialogoComparacion.value = true
+            } catch (e: Exception) {
+                _comparacionResultado.value = ComparacionResponse(
+                    false,
+                    listOf("Error al comparar datos: ${e.localizedMessage}")
+                )
+                _mostrarDialogoComparacion.value = true
+                Log.e("ComparacionDatos", "Error al comparar datos", e)
+            } finally {
+                _loadingState.value = false
+            }
+        }
+    }
+
+    fun cerrarDialogoComparacion() {
+        _mostrarDialogoComparacion.value = false
+    }
 
 
     fun fetchAlumnoEspecifico(boleta: String) {

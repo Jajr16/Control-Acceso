@@ -55,7 +55,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://192.168.100.7:8080",  # Agrega aquí tu IP y puerto
+    "http://192.168.1.69:8080",  # Agrega aquí tu IP y puerto
 ]
 
 ROOT_URLCONF = 'Saes_Sim.urls'
@@ -146,4 +146,4 @@ CAPTCHA_NOISE_FUNCTIONS = ('captcha.helpers.noise_arcs', 'captcha.helpers.noise_
 CSRF_COOKIE_DOMAIN = None  # Acepta cualquier dominio (en entornos de desarrollo)
 CSRF_COOKIE_HTTPONLY = False  # Permite acceso a la cookie desde JavaScript
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.100.7']  # Incluye tu IP
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.1.69']  # Incluye tu IP
