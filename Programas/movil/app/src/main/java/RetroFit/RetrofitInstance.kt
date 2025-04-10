@@ -110,6 +110,11 @@
         val ingresoSalonApi: IngresoSalonApi by lazy {
             retrofit.create(IngresoSalonApi::class.java)
         }
+
+        val aplicaApi: AplicaApi by lazy {
+            retrofit.create(AplicaApi::class.java)
+        }
+
     }
 
 

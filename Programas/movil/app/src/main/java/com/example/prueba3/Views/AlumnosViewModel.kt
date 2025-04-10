@@ -373,4 +373,23 @@ class AlumnosViewModel : ViewModel() {
         _eliminacionCompletada.value = null
     }
 
+    private val _idETSFlujo = MutableStateFlow<String?>(null)
+    val idETSFlujo: StateFlow<String?> = _idETSFlujo
+
+    private val _boletaFlujo = MutableStateFlow<String?>(null)
+    val boletaFlujo: StateFlow<String?> = _boletaFlujo
+
+    fun guardarIdETSFlujo(id: String) {
+        _idETSFlujo.value = id
+    }
+
+    fun guardarBoletaFlujo(boleta: String) {
+        _boletaFlujo.value = boleta
+    }
+
+    fun limpiarInfoFlujo() {
+        _idETSFlujo.value = null
+        _boletaFlujo.value = null
+    }
+
 }

@@ -7,6 +7,7 @@ import Pantallas.components.ValidateSession
 import RetroFit.RetrofitInstance
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -72,6 +73,11 @@ fun CredencialDaeScreen(
     viewModel: AlumnosViewModel,
     boleta: String
 ) {
+
+    val userRole = loginViewModel.getUserRole()
+
+    Log.d("CredencialDaeScreen", "Dato: $userRole")
+
     var imageBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -80,6 +86,7 @@ fun CredencialDaeScreen(
     val alumnosDetalle by viewModel.alumnosDetalle.collectAsState(initial = emptyList())
     val alumno = alumnosDetalle.firstOrNull()
     var showAsistenciaDialog by remember { mutableStateOf(false) }
+    var showEscanearDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -98,6 +105,13 @@ fun CredencialDaeScreen(
         scale = (scale * zoomChange).coerceIn(1f, 5f)
         offset += panChange
     }
+
+//    LaunchedEffect(boleta) {
+//        viewModel.fetchFotoAlumno(boleta)
+//    }
+    val idETSFinal by viewModel.idETSFlujo.collectAsState()
+    val boletaFinal by viewModel.boletaFlujo.collectAsState()
+
 
     LaunchedEffect(registroSuccess) {
         if (registroSuccess) {
@@ -415,6 +429,46 @@ fun CredencialDaeScreen(
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
+                        if (userRole == "Personal Academico") {
+                            Button(
+                                onClick = { navController.navigate("infoA/${idETSFinal}/${boletaFinal}") }, // Asegúrate de tener la ruta correcta
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                            ) {
+                                Text(
+                                    text = "Regresar a la creación del reporte",
+                                    color = Color.Black,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        } else {
+                            Button(
+                                onClick = { showAsistenciaDialog = true },
+                                modifier = Modifier.weight(1f)
+                                    .padding(horizontal = 8.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                            ) {
+                                Text(
+                                    text = "Registrar asistencia",
+                                    color = Color.Black,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+
+                            Button(
+                                onClick = { showEscanearDialog = true },
+                                modifier = Modifier.weight(1f)
+                                    .padding(horizontal = 8.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                            ) {
+                                Text(
+                                    text = "Lista de alumnos",
+                                    color = Color.Black,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         Button(
                             onClick = {
                                 alumnoInfo?.let { info ->
@@ -591,5 +645,6 @@ fun CredencialDaeScreen(
             errorMessage = "URL no válida"
             isLoading = false
         }
+    }
     }
 }

@@ -2,11 +2,16 @@ package com.example.prueba3.Views
 
 import com.example.prueba3.Clases.SalonETSResponse
 import RetroFit.RetrofitInstance
+import RetroFit.RfcResponse
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import retrofit2.Call
+
+import retrofit2.Callback
+import retrofit2.Response
 
 class EtsInfoViewModel : ViewModel() {
     private val _etsDetailState = MutableStateFlow<SalonETSResponse?>(null)
@@ -18,6 +23,14 @@ class EtsInfoViewModel : ViewModel() {
     // ESTADO DE CARGA
     private val _loadingState = MutableStateFlow(true)
     val loadingState: StateFlow<Boolean> = _loadingState
+
+    // Estado para el RFC del docente
+    private val _rfcDocenteState = MutableStateFlow<String?>(null)
+    val rfcDocenteState: StateFlow<String?> = _rfcDocenteState
+
+    // Estado de carga para el RFC del docente
+    private val _loadingRfcState = MutableStateFlow(false)
+    val loadingRfcState: StateFlow<Boolean> = _loadingRfcState
 
     fun fetchEtsDetail(idETS: Int) {
         viewModelScope.launch {
@@ -39,5 +52,41 @@ class EtsInfoViewModel : ViewModel() {
             }
         }
     }
+
+    fun fetchRfcDocente(idets: Int) {
+        viewModelScope.launch {
+            try {
+                _loadingRfcState.value = true
+                val call: Call<RfcResponse> = RetrofitInstance.aplicaApi.obtenerRfcDocente(idets)
+
+                call.enqueue(object : Callback<RfcResponse> {
+                    override fun onResponse(
+                        call: Call<RfcResponse>,
+                        response: Response<RfcResponse>
+                    ) {
+                        if (response.isSuccessful) {
+                            _rfcDocenteState.value = response.body()?.rfc
+                        } else {
+                            println("Error al obtener el RFC: ${response.code()}")
+                            _rfcDocenteState.value = null
+                        }
+                        _loadingRfcState.value = false
+                    }
+
+                    override fun onFailure(call: Call<RfcResponse>, t: Throwable) {
+                        println("Fallo en la petición del RFC: ${t.message}")
+                        _rfcDocenteState.value = null
+                        _loadingRfcState.value = false
+                    }
+                })
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _rfcDocenteState.value = null
+                _loadingRfcState.value = false
+            }
+        }
+    }
+
 }
 
