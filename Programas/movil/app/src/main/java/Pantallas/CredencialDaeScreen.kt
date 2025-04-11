@@ -123,6 +123,7 @@ fun CredencialDaeScreen(
         }
     }
 
+    //COMPARAR LOS DATOS DEL ALUMNO
     LaunchedEffect(alumnoInfo) {
         alumnoInfo?.let { info ->
             val datosWeb = DatosWeb(
