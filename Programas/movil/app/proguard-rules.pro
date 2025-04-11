@@ -1,21 +1,36 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# ===== CONSERVAR ATRIBUTOS PARA DEPURACIÓN =====
+-keepattributes SourceFile, LineNumberTable, Signature, Exceptions
+-renamesourcefileattribute SourceFile
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# ===== DAGGER HILT =====
+-keep class dagger.hilt.** { *; }
+-keep class * extends dagger.hilt.internal.GeneratedComponentManagerHolder { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# ===== ROOM DATABASE =====
+-keep class androidx.room.** { *; }
+-keep class * extends androidx.room.RoomDatabase { *; }
+-keep class * implements androidx.room.migration.AutoMigrationSpec { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# ===== JAVAX (PROCESAMIENTO DE ANOTACIONES) =====
+-keep class javax.annotation.processing.** { *; }
+-keep class javax.lang.model.** { *; }
+-keep class javax.tools.** { *; }
+
+# ===== JAVAPOET (USADO POR ROOM/DAGGER) =====
+-keep class com.squareup.javapoet.** { *; }
+
+# ===== GOOGLE AUTO-SERVICE =====
+-keep class com.google.auto.service.** { *; }
+-keep @com.google.auto.service.AutoService class * { *; }
+
+# ===== RETROFIT/GSON =====
+-keep class com.google.gson.** { *; }
+-keep class retrofit2.** { *; }
+-dontwarn retrofit2.**
+-keepclasseswithmembers class * {
+    @retrofit2.http.* <methods>;
+}
+
+# ===== FIREBASE =====
+-keep class com.google.firebase.** { *; }
+-dontwarn com.google.firebase.**

@@ -17,6 +17,17 @@ kapt {
 }
 
 android {
+    signingConfigs {
+        create("release") {
+            storeFile = file("C:\\Users\\aleja\\OneDrive\\Desktop\\certificate.jks")
+            storePassword = "n0m3l0"
+            keyAlias = "key0"
+            keyPassword = "n0m3l0"
+            enableV1Signing = true
+            enableV2Signing = true
+        }
+    }
+
     namespace = "com.example.prueba3"
     compileSdk = 35
 
@@ -35,7 +46,21 @@ android {
 
     buildTypes {
         release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            signingConfig = signingConfigs.getByName("release")
+        }
+        debug {
             isMinifyEnabled = false
+        }
+
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true  // Opcional: activa ProGuard
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -149,5 +174,8 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:20.7.0")
     implementation(libs.accompanist.insets)
     implementation(libs.hilt.android.compiler)
-    kapt("com.google.dagger:hilt-android-compiler:2.44")
+    kapt(libs.hiltCompiler)
+
+    compileOnly("com.google.auto.service:auto-service:1.0.1")
+    annotationProcessor("com.google.auto.service:auto-service:1.0.1")
 }
