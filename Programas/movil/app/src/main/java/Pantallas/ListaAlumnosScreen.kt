@@ -90,6 +90,12 @@ fun ListaAlumnosScreen(
             viewModel2.fetchEtsDetail(idETS2)
         }
 
+        LaunchedEffect(Unit){
+
+            viewModel.limpiarInfoFlujo()
+
+        }
+
         val currentTime = remember { Calendar.getInstance(TimeZone.getTimeZone("America/Mexico_City")) }
         val etsCalendar = remember(horaETS, fechaETS) {
             Calendar.getInstance(TimeZone.getTimeZone("America/Mexico_City")).apply {
