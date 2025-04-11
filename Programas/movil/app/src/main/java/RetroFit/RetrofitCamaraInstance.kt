@@ -18,7 +18,7 @@ object RetrofitCamaraInstance {
         .build()
 
     private val retrofit = Retrofit.Builder()
-        .baseUrl("http://10.100.87.69:8080/")
+        .baseUrl("https://springboot-java-production-0b2b.up.railway.app/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
