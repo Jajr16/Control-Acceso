@@ -106,6 +106,8 @@ fun CredencialDaeScreen(
         offset += panChange
     }
 
+    val loadingFotoAlumno = remember { mutableStateOf(false) }
+
 //    LaunchedEffect(boleta) {
 //        viewModel.fetchFotoAlumno(boleta)
 //    }
@@ -625,7 +627,8 @@ fun CredencialDaeScreen(
                         val boletausable = alumnoInfo?.boleta
 
                         boletausable?.let { boletaNonNull ->
-                            viewModel.fetchFotoAlumno(boletaNonNull)
+                            loadingFotoAlumno.value = true
+                            viewModel.fetchFotoAlumno(boletaNonNull) { loadingFotoAlumno.value = false }
                         }
 
                         isLoading = false

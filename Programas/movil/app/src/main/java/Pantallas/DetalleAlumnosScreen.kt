@@ -54,9 +54,12 @@ fun DetalleAlumnosScreen(
         var showMensajeAsistencia by remember { mutableStateOf(false) }
         var fechaHoraRegistro by remember { mutableStateOf("") }
 
+        val loadingFotoAlumno = remember { mutableStateOf(false) }
+
         LaunchedEffect(boleta) {
             viewModel.fetchDetalleAlumnos(boleta)
-            viewModel.fetchFotoAlumno(boleta)
+            loadingFotoAlumno.value = true
+            viewModel.fetchFotoAlumno(boleta) { loadingFotoAlumno.value = false }
         }
 
         // Manejar éxito/error del registro

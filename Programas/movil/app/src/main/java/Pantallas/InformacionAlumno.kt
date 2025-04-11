@@ -109,11 +109,13 @@ fun InformacionAlumno(
     val fotoAlumno by viewModel.fotoAlumno.collectAsState()
     val alumnoEspecifico by viewModel.alumnoEspecifico.collectAsState()
     val ingresoResultado by viewModel.ingresoResultado.collectAsState()
+    val loadingFotoAlumno = remember { mutableStateOf(false) }
 
 
     LaunchedEffect(Unit) {
         viewModel.fetchAlumnoEspecifico(boleta)
-        viewModel.fetchFotoAlumno(boleta)
+        loadingFotoAlumno.value = true
+        viewModel.fetchFotoAlumno(boleta) { loadingFotoAlumno.value = false }
     }
 
     LaunchedEffect(Unit) { // Ejecutar solo una vez

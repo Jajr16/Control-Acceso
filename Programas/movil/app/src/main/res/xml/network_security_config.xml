@@ -96,5 +96,10 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">10.100.73.120</domain>
     </domain-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.100.86.106</domain>
+    </domain-config>
+
+
 </network-security-config>
 

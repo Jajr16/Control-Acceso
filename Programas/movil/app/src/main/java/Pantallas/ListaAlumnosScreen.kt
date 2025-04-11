@@ -235,6 +235,7 @@ fun ListaAlumnosScreen(
                                         onClick = {
                                             if (username == docenteRfc) {
                                                 if (isButtonEnabled) {
+                                                    viewModel.resetFotoAlumno()
                                                     navController.navigate("InfoA/$idETS/${alumno.boleta}")
                                                 } else if (isReportExpired) {
                                                     showReportExpiredDialog.value = true
@@ -268,6 +269,7 @@ fun ListaAlumnosScreen(
                                     // Botón redondo con estado (Navega a Reporte - SIEMPRE visible)
                                     IconButton(
                                         onClick = {
+                                            viewModel.resetFotoAlumno()
                                             navController.navigate("Reporte/$idETS/${alumno.boleta}/${alumno.aceptado}")
                                         },
                                         modifier = Modifier

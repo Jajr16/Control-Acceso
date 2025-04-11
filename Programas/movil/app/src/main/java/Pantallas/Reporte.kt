@@ -54,6 +54,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import com.example.prueba3.Views.AlumnosViewModel
@@ -79,24 +80,40 @@ fun Reporte(
     ValidateSession(navController = navController) {
         val userRole = loginViewModel.getUserRole()
         val reporteList by viewModel.reporte.collectAsState()
-        val loading by viewModel.loadingState.collectAsState()
+        val loadingReporte by viewModel.loadingState.collectAsState() // Estado de carga general
         val ingresoResultado by viewModel.ingresoResultado.collectAsState()
-        val etsDetail by viewModel2.etsDetailState.collectAsState() // Necesitamos los detalles del ETS
+        val etsDetail by viewModel2.etsDetailState.collectAsState()
+
+        // Estados para controlar la carga de cada imagen
+        val loadingImagenRedNeuronal = remember { mutableStateOf(false) }
+        val loadingFotoAlumno = remember { mutableStateOf(false) }
 
         LaunchedEffect(idETS, boleta) {
             viewModel.fetchReporte(idETS.toInt(), boleta)
             viewModel.verificarIngresoSalon(idETS.toInt(), boleta)
-            viewModel.fetchFotoAlumno(boleta)
-            viewModel.fetchImagenReporte(idETS.toInt(), boleta)
-            viewModel2.fetchEtsDetail(idETS.toInt()) // Asegúrate de cargar los detalles del ETS
+
+// Iniciar la carga de la foto del alumno
+            loadingFotoAlumno.value = true
+            viewModel.fetchFotoAlumno(boleta) { loadingFotoAlumno.value = false }
+
+            // El estado loadingFotoAlumno se actualizará observando el StateFlow fotoAlumno
+
+            // Iniciar la carga de la imagen del reporte con el callback (CORRECTO)
+            loadingImagenRedNeuronal.value = true
+            viewModel.fetchImagenReporte(idETS.toInt(), boleta) { loadingImagenRedNeuronal.value = false }
+
+            viewModel2.fetchEtsDetail(idETS.toInt())
         }
 
-        val imagenBytes by viewModel.imagenBytes.collectAsState()
+// ... dentro de tu composable Reporte, observa el StateFlow _fotoAlumno
         val fotoAlumno by viewModel.fotoAlumno.collectAsState()
+
+        val imagenBytes by viewModel.imagenBytes.collectAsState()
+        //val fotoAlumno by viewModel.fotoAlumno.collectAsState()
 
         val scrollState = rememberScrollState()
 
-        // Calcular si el tiempo del ETS ya pasó (2 horas y 1 minuto después)
+        // Calcular si el tiempo del ETS ya pasó (sin cambios)
         val horaETS = etsDetail?.ets?.hora ?: ""
         val fechaETS = etsDetail?.ets?.fecha ?: ""
         val isEtsOver = remember(horaETS, fechaETS) {
@@ -104,9 +121,10 @@ fun Reporte(
                 if (horaETS.isEmpty() || fechaETS.isEmpty()) {
                     false
                 } else {
+                    // ... (cálculo del tiempo - sin cambios)
                     val currentTime = Calendar.getInstance(TimeZone.getTimeZone("America/Mexico_City"))
                     val etsCalendar = Calendar.getInstance(TimeZone.getTimeZone("America/Mexico_City")).apply {
-                        time = currentTime.time // Inicializar con la hora actual para evitar problemas si la fecha ETS es hoy
+                        time = currentTime.time
                         val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
                         val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                         try {
@@ -149,15 +167,14 @@ fun Reporte(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                if (loading) {
-                    // Mostrar el indicador de carga mientras los datos se están obteniendo
+                if (loadingReporte) {
+                    // Mostrar el indicador de carga general mientras se obtienen los datos del reporte
                     CircularProgressIndicator(color = Color.White)
                 } else {
-                    // Mostrar el contenido del reporte solo cuando loading es false
                     if (ingresoResultado == "existe" && reporteList.isNotEmpty()) {
-                        val reporte = reporteList.firstOrNull() // Get the first reporte data
+                        val reporte = reporteList.firstOrNull()
 
-                        // Título
+                        // Título (sin cambios)
                         Text(
                             text = "Reporte",
                             style = MaterialTheme.typography.titleLarge,
@@ -174,9 +191,7 @@ fun Reporte(
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp, vertical = 8.dp),
                             contentAlignment = Alignment.Center
-                        ) {
-
-                        }
+                        ) {}
 
                         // Sección de imágenes
                         if (reporte?.presicion != "0") {
@@ -187,63 +202,77 @@ fun Reporte(
                                 horizontalArrangement = Arrangement.SpaceAround,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // Imagen de la red neuronal (usando la misma imagen por ahora, adjust if needed)
+                                // Imagen de la red neuronal
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
-                                    if (imagenBytes != null) {
-                                        val bitmapRedNeuronal = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes!!.size)
-                                        Image(
-                                            bitmap = bitmapRedNeuronal.asImageBitmap(),
-
-                                            contentDescription = "Imagen de la red neuronal",
-                                            modifier = Modifier
-                                                .size(120.dp)
-                                                .clip(RoundedCornerShape(8.dp)),
-                                            contentScale = ContentScale.Crop
-                                        )
+                                    if (loadingImagenRedNeuronal.value) {
+                                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(120.dp))
                                     } else {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(120.dp)
-                                                .background(Color.LightGray)
-                                                .clip(RoundedCornerShape(8.dp)),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text("Sin Imagen", color = Color.Gray)
+                                        if (imagenBytes != null) {
+                                            val bitmapRedNeuronal =
+                                                BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes!!.size)
+                                            Image(
+                                                bitmap = bitmapRedNeuronal.asImageBitmap(),
+                                                contentDescription = "Imagen de la red neuronal",
+                                                modifier = Modifier
+                                                    .size(120.dp)
+                                                    .clip(RoundedCornerShape(8.dp)),
+                                                contentScale = ContentScale.Crop
+                                            )
+                                        } else {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(120.dp)
+                                                    .background(Color.LightGray)
+                                                    .clip(RoundedCornerShape(8.dp)),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text("Sin Imagen", color = Color.Gray)
+                                            }
                                         }
                                     }
-                                    Text("Imagen de la red neuronal", style = MaterialTheme.typography.bodySmall, color = Color.White)
+                                    Text(
+                                        "Imagen de la red neuronal",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color.White
+                                    )
                                 }
 
-                                // Imagen de la credencial (usando la misma imagen por ahora, adjust if needed)
+                                // Imagen de la credencial
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    if (fotoAlumno != null) {
-                                        val bitmap = BitmapFactory.decodeByteArray(
-                                            fotoAlumno,
-                                            0,
-                                            fotoAlumno!!.size
-                                        )
-
-                                        Image(
-                                            bitmap = bitmap.asImageBitmap(),
-                                            contentDescription = "Imagen de la credencial",
-                                            modifier = Modifier
-                                                .size(120.dp)
-                                                .clip(RoundedCornerShape(8.dp)),
-                                            contentScale = ContentScale.Crop
-                                        )
+                                    if (loadingFotoAlumno.value) {
+                                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(120.dp))
                                     } else {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(120.dp)
-                                                .background(Color.LightGray)
-                                                .clip(RoundedCornerShape(8.dp)),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text("Sin Imagen", color = Color.Gray)
+                                        if (fotoAlumno != null) {
+                                            val bitmap = BitmapFactory.decodeByteArray(
+                                                fotoAlumno,
+                                                0,
+                                                fotoAlumno!!.size
+                                            )
+                                            Image(
+                                                bitmap = bitmap.asImageBitmap(),
+                                                contentDescription = "Imagen de la credencial",
+                                                modifier = Modifier
+                                                    .size(120.dp)
+                                                    .clip(RoundedCornerShape(8.dp)),
+                                                contentScale = ContentScale.Crop
+                                            )
+                                        } else {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(120.dp)
+                                                    .background(Color.LightGray)
+                                                    .clip(RoundedCornerShape(8.dp)),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text("Sin Imagen", color = Color.Gray)
+                                            }
                                         }
                                     }
-                                    Text("Imagen de la credencial", style = MaterialTheme.typography.bodySmall, color = Color.White)
+                                    Text(
+                                        "Imagen de la credencial",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color.White
+                                    )
                                 }
                             }
                         } else {
@@ -255,39 +284,45 @@ fun Reporte(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    if (fotoAlumno != null) {
-                                        val bitmap = BitmapFactory.decodeByteArray(
-                                            fotoAlumno,
-                                            0,
-                                            fotoAlumno!!.size
-                                        )
-
-                                        Image(
-                                            bitmap = bitmap.asImageBitmap(),
-                                            contentDescription = "Imagen de la credencial",
-                                            modifier = Modifier
-                                                .size(150.dp)
-                                                .clip(RoundedCornerShape(8.dp)),
-                                            contentScale = ContentScale.Crop
-                                        )
+                                    if (loadingFotoAlumno.value) {
+                                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(150.dp))
                                     } else {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(150.dp)
-                                                .background(Color.LightGray)
-                                                .clip(RoundedCornerShape(8.dp)),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text("Sin Imagen", color = Color.Gray)
+                                        if (fotoAlumno != null) {
+                                            val bitmap = BitmapFactory.decodeByteArray(
+                                                fotoAlumno,
+                                                0,
+                                                fotoAlumno!!.size
+                                            )
+                                            Image(
+                                                bitmap = bitmap.asImageBitmap(),
+                                                contentDescription = "Imagen de la credencial",
+                                                modifier = Modifier
+                                                    .size(150.dp)
+                                                    .clip(RoundedCornerShape(8.dp)),
+                                                contentScale = ContentScale.Crop
+                                            )
+                                        } else {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(150.dp)
+                                                    .background(Color.LightGray)
+                                                    .clip(RoundedCornerShape(8.dp)),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text("Sin Imagen", color = Color.Gray)
+                                            }
                                         }
                                     }
-                                    Text("Imagen de la credencial", style = MaterialTheme.typography.bodySmall, color = Color.White)
+                                    Text(
+                                        "Imagen de la credencial",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color.White
+                                    )
                                 }
                             }
                         }
 
-
-                        // Contenido del reporte con LazyColumn
+                        // Contenido del reporte con LazyColumn (sin cambios)
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -295,16 +330,19 @@ fun Reporte(
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                         ) {
                             items(reporteList) { reporteItem ->
+                                // ... (resto del contenido del reporte - sin cambios)
                                 Column {
                                     InfoRow("Boleta", boleta)
-                                    InfoRow("Nombre completo", "${reporteItem.nombre} ${reporteItem.apellidoP} ${reporteItem.apellidoM}")
+                                    InfoRow(
+                                        "Nombre completo",
+                                        "${reporteItem.nombre} ${reporteItem.apellidoP} ${reporteItem.apellidoM}"
+                                    )
                                     InfoRow("CURP", reporteItem.curp ?: "N/A")
                                     InfoRow("Carrera", reporteItem.carrera ?: "N/A")
                                     InfoRow("Unidad académica", reporteItem.escuela ?: "N/A")
                                     InfoRow("Periodo", reporteItem.periodo ?: "N/A")
                                     InfoRow("Turno", reporteItem.turno ?: "N/A")
                                     InfoRow("Materia", reporteItem.materia ?: "N/A")
-
                                     val tipoText = if (reporteItem.tipo == "O") {
                                         "Ordinario"
                                     } else if (reporteItem.tipo == "E") {
@@ -313,7 +351,6 @@ fun Reporte(
                                         reporteItem.tipo ?: "N/A"
                                     }
                                     InfoRow("Tipo de examen", tipoText)
-
                                     InfoRow("Fecha del ingreso", reporteItem.fechaIngreso ?: "N/A")
                                     InfoRow("Hora del ingreso", reporteItem.horaIngreso ?: "N/A")
                                     InfoRow("Nombre del ocente", reporteItem.nombreDocente ?: "N/A")
@@ -326,6 +363,7 @@ fun Reporte(
                             }
                         }
                     } else if (ingresoResultado == "no existe") {
+                        // ... (mensaje de no existencia - sin cambios)
                         Column(
                             modifier = Modifier.fillMaxSize(),
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -353,6 +391,7 @@ fun Reporte(
 
 @Composable
 fun InfoRow(label: String, value: String) {
+    // ... (composable InfoRow - sin cambios)
     Card(
         modifier = Modifier
             .fillMaxWidth()

@@ -68,11 +68,16 @@ class AlumnosViewModel : ViewModel() {
     private val _mostrarDialogoComparacion = MutableStateFlow(false)
     val mostrarDialogoComparacion: StateFlow<Boolean> = _mostrarDialogoComparacion
 
+    private val _loadingFotoAlumno = MutableStateFlow(false) // Private mutable state
+    val loadingFotoAlumno: StateFlow<Boolean> = _loadingFotoAlumno // Public read-only state
+
+
+
     // ======== Obtener la foto del alumno ============
-    fun fetchFotoAlumno(boleta: String) {
+    fun fetchFotoAlumno(boleta: String, onComplete: () -> Unit) {
         viewModelScope.launch {
             try {
-                _loadingState.value = true
+                _loadingState.value = true // Puedes usar un estado de carga específico si lo prefieres
                 val responseBody = RetrofitInstance.alumnoEspecifico.getFotoAlumno(boleta)
 
                 // Convertimos el contenido de ResponseBody a ByteArray
@@ -82,7 +87,8 @@ class AlumnosViewModel : ViewModel() {
                 println("Error al obtener la foto: ${e.localizedMessage}")
                 _fotoAlumno.value = null
             } finally {
-                _loadingState.value = false
+                _loadingState.value = false // O actualiza el estado de carga específico
+                onComplete()
             }
         }
     }
@@ -268,7 +274,7 @@ class AlumnosViewModel : ViewModel() {
                     _reporte.value = listOf(reporte)
 
                     // Obtener la imagen por separado
-                    fetchImagenReporte(idets, boleta)
+                    //fetchImagenReporte(idets, boleta)
 
                 } catch (e: IOException) {
                     Log.e("ReporteViewModel", "Error de red: ${e.message}")
@@ -284,17 +290,21 @@ class AlumnosViewModel : ViewModel() {
             }
         }
 
-        fun fetchImagenReporte(idets: Int, boleta: String) {
-            viewModelScope.launch {
-                try {
-                    val imageResponseBody = RetrofitInstance.apiReporteInfo.obtenerImagenReporte(idets, boleta)
-                    _imagenBytes.value = imageResponseBody.bytes()
-                } catch (e: Exception) {
-                    Log.e("ReporteViewModel", "Error al obtener la imagen: ${e.message}")
-                    _imagenBytes.value = null
-                }
+    fun fetchImagenReporte(idets: Int, boleta: String, onComplete: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                _loadingState.value = true // Puedes usar un estado de carga específico si lo prefieres
+                val imageResponseBody = RetrofitInstance.apiReporteInfo.obtenerImagenReporte(idets, boleta)
+                _imagenBytes.value = imageResponseBody.bytes()
+            } catch (e: Exception) {
+                Log.e("ReporteViewModel", "Error al obtener la imagen: ${e.message}")
+                _imagenBytes.value = null
+            } finally {
+                _loadingState.value = false // O actualiza el estado de carga específico
+                onComplete()
             }
         }
+    }
 
     private val _ingresoResultado = MutableStateFlow<String?>(null)
     val ingresoResultado: StateFlow<String?> = _ingresoResultado
@@ -348,7 +358,7 @@ class AlumnosViewModel : ViewModel() {
                     _eliminacionExitosa.value = false
                     val errorBody = response.errorBody()?.string()
                     val errorMessage = try {
-                        JSONObject(errorBody).getString("mensaje")
+                        errorBody?.let { JSONObject(it).getString("mensaje") } ?: "Error al eliminar el reporte: Código ${response.code()}"
                     } catch (e: Exception) {
                         "Error al eliminar el reporte: Código ${response.code()}"
                     }
@@ -390,6 +400,11 @@ class AlumnosViewModel : ViewModel() {
     fun limpiarInfoFlujo() {
         _idETSFlujo.value = null
         _boletaFlujo.value = null
+    }
+
+
+    fun resetFotoAlumno() {
+        _fotoAlumno.value = null
     }
 
 }
