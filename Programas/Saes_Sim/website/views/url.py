@@ -1,4 +1,4 @@
 # URL de la API
 
-url = "http://192.168.100.7:8000/saes/"
+url = "https://springboot-java-production-0b2b.up.railway.app/saes/"
 
