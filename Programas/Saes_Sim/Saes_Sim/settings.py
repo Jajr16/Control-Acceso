@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-&!6#=i0a=vb##gvx5848w=0gcmrv2cnp*=j%yncwmx#wx8e071
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.100.7']
 
 
 # Application definition
@@ -55,7 +55,8 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://192.168.1.69:8080",  # Agrega aquí tu IP y puerto
+    "http://192.168.1.69:8080",
+    "http://192.168.100.7:8000",  # Agrega aquí tu IP y puerto
 ]
 
 ROOT_URLCONF = 'Saes_Sim.urls'
@@ -146,4 +147,4 @@ CAPTCHA_NOISE_FUNCTIONS = ('captcha.helpers.noise_arcs', 'captcha.helpers.noise_
 CSRF_COOKIE_DOMAIN = None  # Acepta cualquier dominio (en entornos de desarrollo)
 CSRF_COOKIE_HTTPONLY = False  # Permite acceso a la cookie desde JavaScript
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.1.69']  # Incluye tu IP
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.1.69', '192.168.100.7']  # Incluye tu IP
