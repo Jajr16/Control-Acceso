@@ -63,6 +63,9 @@ import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.zIndex
 import com.example.prueba3.Clases.DatosWeb
 
 @OptIn(ExperimentalEncodingApi::class)
@@ -161,14 +164,18 @@ fun CredencialDaeScreen(
                     .verticalScroll(rememberScrollState())
             ) {
                 if (isZoomed) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.8f))
+                    Dialog(
+                        onDismissRequest = {
+                            isZoomed = false
+                            scale = 1f
+                            offset = Offset.Zero
+                        },
+                        properties = DialogProperties(usePlatformDefaultWidth = false)
                     ) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
+                                .background(Color.Black.copy(alpha = 0.7f))
                                 .clickable {
                                     isZoomed = false
                                     scale = 1f
@@ -176,20 +183,28 @@ fun CredencialDaeScreen(
                                 },
                             contentAlignment = Alignment.Center
                         ) {
-                            imageBitmap?.let { bitmap ->
-                                Image(
-                                    bitmap = bitmap.asImageBitmap(),
-                                    contentDescription = "Credencial ampliada",
-                                    modifier = Modifier
-                                        .graphicsLayer(
-                                            scaleX = scale,
-                                            scaleY = scale,
-                                            translationX = offset.x,
-                                            translationY = offset.y
-                                        )
-                                        .transformable(state = transformableState)
-                                        .fillMaxWidth()
-                                )
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth(0.9f)
+                                    .aspectRatio(0.6f), 
+                                elevation = CardDefaults.cardElevation(8.dp)
+                            ) {
+                                imageBitmap?.let { bitmap ->
+                                    Image(
+                                        bitmap = bitmap.asImageBitmap(),
+                                        contentDescription = "Credencial ampliada",
+                                        modifier = Modifier
+                                            .graphicsLayer(
+                                                scaleX = scale,
+                                                scaleY = scale,
+                                                translationX = offset.x,
+                                                translationY = offset.y
+                                            )
+                                            .transformable(state = transformableState)
+                                            .fillMaxSize(),
+                                        contentScale = ContentScale.Fit
+                                    )
+                                }
                             }
                         }
                     }
