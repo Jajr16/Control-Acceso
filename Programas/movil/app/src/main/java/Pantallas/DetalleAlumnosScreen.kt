@@ -146,7 +146,7 @@ fun DetalleAlumnosScreen(
                 InfoCard("Nombre", "${alumno?.nombreAlumno ?: ""} ${alumno?.apellidoPAlumno ?: ""} ${alumno?.apellidoMAlumno ?: ""}")
                 InfoCard("Boleta", alumno?.boleta ?: "No disponible")
                 InfoCard("ETS inscrito", alumno?.nombreETS ?: "No disponible")
-                InfoCard("Docente", "${alumno?.nombreDocente ?: ""} ${alumno?.apellidoPDocente ?: ""} ${alumno?.apellidoMDocente ?: ""}")
+                InfoCard("Docente", "${alumno?.nombreDocente ?: "El ETS aún no tiene un docente asignado."} ${alumno?.apellidoPDocente ?: ""} ${alumno?.apellidoMDocente ?: ""}")
                 InfoCard("Salón", alumno?.salon?.toString() ?: "No disponible")
                 InfoCard("Turno", alumno?.nombreTurno ?: "No disponible")
                 InfoCard("Fecha", alumno?.fecha ?: "No disponible")
