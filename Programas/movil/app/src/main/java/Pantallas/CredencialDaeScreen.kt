@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
@@ -113,6 +114,7 @@ fun CredencialDaeScreen(
 //    }
     val idETSFinal by viewModel.idETSFlujo.collectAsState()
     val boletaFinal by viewModel.boletaFlujo.collectAsState()
+    val alumnoEspecifico by viewModel.alumnoEspecifico.collectAsState()
 
 
     LaunchedEffect(registroSuccess) {
@@ -289,7 +291,7 @@ fun CredencialDaeScreen(
                     }
                 }
 
-                if (alumnoInfo != null) {
+                if (alumnoInfo != null && idETSFinal == null && boletaFinal == null) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -431,76 +433,52 @@ fun CredencialDaeScreen(
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        if (userRole == "Personal Academico") {
+//                        if (userRole == "Personal Academico") {
+//                            Button(
+//                                onClick = { navController.navigate("infoA/${idETSFinal}/${boletaFinal}") },
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                                    .padding(horizontal = 8.dp),
+//                                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+//                            ) {
+//                                Text(
+//                                    text = "Regresar a la creación del reporte",
+//                                    color = Color.Black,
+//                                    textAlign = TextAlign.Center
+//                                )
+//                            }
+//                        } else {
                             Button(
-                                onClick = { navController.navigate("infoA/${idETSFinal}/${boletaFinal}") }, // Asegúrate de tener la ruta correcta
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 8.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
-                            ) {
-                                Text(
-                                    text = "Regresar a la creación del reporte",
-                                    color = Color.Black,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        } else {
-                            Button(
-                                onClick = { showAsistenciaDialog = true },
+                                onClick = {
+                                    alumnoInfo?.let { info ->
+                                        val datosWeb = DatosWeb(
+                                            boleta = info.boleta,
+                                            curp = info.curp,
+                                            nombre = "${info.nombre} ${info.apellidoP} ${info.apellidoM}",
+                                            carrera = info.carrera,
+                                            escuela = info.unidadAcademica
+                                        )
+                                        viewModel.compararDatos(info.boleta, datosWeb)
+
+                                        if (comparacionResultado?.coinciden == true) {
+                                            showAsistenciaDialog = true
+                                            fechaHoraRegistro = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(Date())
+                                        } else {
+                                            mostrarComparacionAlRegistrar = true
+                                        }
+                                    }
+                                },
                                 modifier = Modifier.weight(1f)
                                     .padding(horizontal = 8.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.White)
                             ) {
                                 Text(
                                     text = "Registrar asistencia",
-                                    color = Color.Black,
-                                    textAlign = TextAlign.Center
+                                    color = Color.Black
                                 )
                             }
 
-                            Button(
-                                onClick = { showEscanearDialog = true },
-                                modifier = Modifier.weight(1f)
-                                    .padding(horizontal = 8.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
-                            ) {
-                                Text(
-                                    text = "Lista de alumnos",
-                                    color = Color.Black,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        Button(
-                            onClick = {
-                                alumnoInfo?.let { info ->
-                                    val datosWeb = DatosWeb(
-                                        boleta = info.boleta,
-                                        curp = info.curp,
-                                        nombre = "${info.nombre} ${info.apellidoP} ${info.apellidoM}",
-                                        carrera = info.carrera,
-                                        escuela = info.unidadAcademica
-                                    )
-                                    viewModel.compararDatos(info.boleta, datosWeb)
-
-                                    if (comparacionResultado?.coinciden == true) {
-                                        showAsistenciaDialog = true
-                                        fechaHoraRegistro = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(Date())
-                                    } else {
-                                        mostrarComparacionAlRegistrar = true
-                                    }
-                                }
-                            },
-                            modifier = Modifier.weight(1f)
-                                .padding(horizontal = 8.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.White)
-                        ) {
-                            Text(
-                                text = "Registrar asistencia",
-                                color = Color.Black
-                            )
-                        }
-                    }
+//                    }
 
                     if (showAsistenciaDialog) {
                         if (alumno?.nombreETS.isNullOrEmpty()) {
@@ -603,7 +581,185 @@ fun CredencialDaeScreen(
                         )
                     }
                 }
-            }
+            } else if (boletaFinal != null && idETSFinal != null){
+
+                    LaunchedEffect(Unit) {
+                        viewModel.fetchAlumnoEspecifico(boletaFinal!!)
+                    }
+
+                    androidx.compose.material.Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        elevation = 4.dp,
+                        shape = RoundedCornerShape(8.dp),
+                        backgroundColor = Color.White
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            // Fila superior: Foto y datos del alumno
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+//                            // Foto del alumno (más grande)
+//                            if (bitmap != null) {
+//                                //Log.d("InformacionAlumno", "Bitmap is not null, showing image")
+//                                Image(
+//                                    bitmap = bitmap.asImageBitmap(),
+//                                    contentDescription = "Foto del alumno",
+//                                    modifier = Modifier
+//                                        .size(150.dp)
+//                                        .clip(CircleShape)
+//                                        .border(2.dp, Color.Gray, CircleShape),
+//                                    contentScale = ContentScale.Crop
+//                                )
+                                if (fotoAlumno != null) {
+                                    val bitmap = BitmapFactory.decodeByteArray(
+                                        fotoAlumno,
+                                        0,
+                                        fotoAlumno!!.size
+                                    )
+                                    Image(
+                                        bitmap = bitmap.asImageBitmap(),
+                                        contentDescription = "Foto de perfil",
+                                        modifier = Modifier
+                                            .size(150.dp)
+                                            .clip(CircleShape)
+                                            .border(2.dp, Color.Gray, CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                } else {
+                                    //Log.d("InformacionAlumno", "Bitmap is null, showing default image")
+                                    Image(
+                                        painter = painterResource(id = R.drawable.icon_camara),
+                                        contentDescription = "Foto de perfil",
+                                        modifier = Modifier
+                                            .size(150.dp)
+                                            .clip(CircleShape)
+                                            .border(2.dp, Color.Gray, CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+
+                                // Datos del alumno y programa académico
+
+                                alumnoEspecifico?.let { alumno ->
+                                    Column(
+                                        modifier = Modifier
+                                            .padding(start = 16.dp)
+                                            .fillMaxWidth()
+                                    ) {
+                                        // Alumno
+                                        androidx.compose.material.Text(
+                                            text = "Alumno:",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color.Gray,
+                                            modifier = Modifier.padding(bottom = 4.dp)
+                                        )
+                                        androidx.compose.material.Text(
+                                            text = "${alumno.apellidoP.trim()} ${alumno.apellidoM.trim()} ${alumno.nombre.trim()}",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color.Black,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.padding(bottom = 12.dp)
+                                        )
+
+                                        // Programa académico
+                                        androidx.compose.material.Text(
+                                            text = "Programa académico:",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color.Gray,
+                                            modifier = Modifier.padding(bottom = 4.dp)
+                                        )
+                                        androidx.compose.material.Text(
+                                            text = alumno.unidadAcademica.trim(),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color.Black,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                } ?: run {
+                                    androidx.compose.material.Text(
+                                        text = "No se encontraron datos.",
+                                        color = Color.Red,
+                                        modifier = Modifier.padding(16.dp)
+                                    )
+                                }
+
+                            }
+
+                            // Fila inferior: Boleta y CURP
+                            alumnoEspecifico?.let { alumno ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    // Boleta
+                                    Column(
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        androidx.compose.material.Text(
+                                            text = "Boleta:",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color.Gray
+                                        )
+                                        androidx.compose.material.Text(
+                                            text = alumno.boleta.trim(),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color.Black,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+
+                                    // CURP
+                                    Column(
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        androidx.compose.material.Text(
+                                            text = "CURP:",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color.Gray
+                                        )
+                                        androidx.compose.material.Text(
+                                            text = alumno.curp.trim(),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color.Black,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+
+
+                    Button(
+                        onClick = { navController.navigate("infoA/${idETSFinal}/${boletaFinal}") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                    ) {
+                        Text(
+                            text = "Regresar a la creación del reporte",
+                            color = Color.Black,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+
+
+
+
+
+                }
         }
     }
 
@@ -624,12 +780,33 @@ fun CredencialDaeScreen(
                         // Guardar la información del alumno
                         alumnoInfo = credencialResponse.credenciales.firstOrNull()
 
+                        if (alumnoInfo != null){
+
+
+
+                            viewModel.limpiarInfoFlujo()
+
+
+
+                        }
+
                         val boletausable = alumnoInfo?.boleta
 
-                        boletausable?.let { boletaNonNull ->
-                            loadingFotoAlumno.value = true
-                            viewModel.fetchFotoAlumno(boletaNonNull) { loadingFotoAlumno.value = false }
+                        if (idETSFinal == null && boletaFinal == null){
+                            boletausable?.let { boletaNonNull ->
+                                loadingFotoAlumno.value = true
+                                viewModel.fetchFotoAlumno(boletaNonNull) { loadingFotoAlumno.value = false }
+                            }
+                        }else{
+
+                            boletaFinal?.let { boletaNonNull ->
+                                loadingFotoAlumno.value = true
+                                viewModel.fetchFotoAlumno(boletaNonNull) { loadingFotoAlumno.value = false }
+                            }
+
                         }
+
+
 
                         isLoading = false
                     } else {

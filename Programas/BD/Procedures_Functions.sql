@@ -140,12 +140,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-select *from login('2022630467', '123');
-SELECT * FROM usuario;
-SELECT crypt('123', gen_salt('bf'));
+-- select *from login('2022630467', '123');
+-- SELECT * FROM usuario;
+-- SELECT crypt('123', gen_salt('bf'));
 
-INSERT INTO alumno
-VALUES ('20230001', 'a@a.com', 'a', '0', 'IIA-2024' );
+-- INSERT INTO alumno
+-- VALUES ('20230001', 'a@a.com', 'a', '0', 'IIA-2024' );
 
 CREATE OR REPLACE FUNCTION ObtenerAsistenciaDetalles(
     etsprueba INTEGER
@@ -181,16 +181,16 @@ BEGIN
     INNER JOIN alumno a ON ai.boleta = a.boleta
     INNER JOIN persona p ON a.curp = p.curp
     INNER JOIN sexo s ON p.sexo = s.id_sexo
-    LEFT JOIN ingreso_salon ax ON ai.boleta = ax.boleta AND ax.idets = etsprueba -- Added condition here
+    LEFT JOIN ingreso_salon ax ON ai.boleta = ax.boleta AND ax.idets = etsprueba 
     WHERE ai.idets = etsprueba;
 END;
 $$;
 
 
-DROP FUNCTION ObtenerAsistenciaDetalles
+-- DROP FUNCTION ObtenerAsistenciaDetalles
 
 
-SELECT * FROM ObtenerAsistenciaDetalles(1);
+-- SELECT * FROM ObtenerAsistenciaDetalles(1);
 
 CREATE OR REPLACE FUNCTION obtenerpersona(
     boletaC VARCHAR(18)
@@ -252,8 +252,8 @@ BEGIN
         isalon.hora AS hora_ingreso,
         isalon.docente AS nombre_docente,
         te.tipo AS tipo_estado,
-        COALESCE(rn.precision, 0.0) AS presicion, -- Valor predeterminado
-        COALESCE(mr.motivo, 'No Motivo') AS motivo -- Valor predeterminado
+        COALESCE(rn.precision, 0.0) AS presicion, 
+        COALESCE(mr.motivo, 'No Motivo') AS motivo 
     FROM
         alumno a
     INNER JOIN
@@ -275,9 +275,9 @@ BEGIN
     INNER JOIN
         tipo_estado te ON isalon.estado = te.idtipo
     LEFT JOIN
-        resultadorn rn ON e.idets = rn.idets AND a.boleta = rn.boleta -- LEFT JOIN para permitir NULLs
+        resultadorn rn ON e.idets = rn.idets AND a.boleta = rn.boleta 
     LEFT JOIN
-        motivo_rechazo mr ON a.boleta = mr.boleta AND e.idets = mr.idets -- LEFT JOIN para permitir NULLs
+        motivo_rechazo mr ON a.boleta = mr.boleta AND e.idets = mr.idets -
     WHERE
         a.boleta = p_boleta AND e.idets = p_idets;
 END;
@@ -340,35 +340,35 @@ $$ LANGUAGE plpgsql;
 
 
 
-select * from verificar_ingreso_salon('2022630738',1)
+-- select * from verificar_ingreso_salon('2022630738',1)
 
 CREATE OR REPLACE FUNCTION eliminar_reporte_alumno(p_idets INTEGER, p_boleta VARCHAR)
 RETURNS BOOLEAN AS $$
 DECLARE
     registros_eliminados INTEGER := 0;
 BEGIN
-    -- Eliminar de la tabla resultadorn (dependiente de ingreso_salon)
+    
     DELETE FROM resultadorn
     WHERE idets = p_idets AND boleta = p_boleta;
     IF FOUND THEN
         registros_eliminados := registros_eliminados + 1;
     END IF;
 
-    -- Eliminar de la tabla motivo_rechazo (dependiente de ingreso_salon)
+    
     DELETE FROM motivo_rechazo
     WHERE idets = p_idets AND boleta = p_boleta;
     IF FOUND THEN
         registros_eliminados := registros_eliminados + 1;
     END IF;
 
-    -- Eliminar de la tabla ingreso_salon (tabla principal)
+    
     DELETE FROM ingreso_salon
     WHERE idets = p_idets AND boleta = p_boleta;
     IF FOUND THEN
         registros_eliminados := registros_eliminados + 1;
     END IF;
 
-    -- Si al menos un registro fue eliminado, consideramos la operación exitosa
+    
     IF registros_eliminados > 0 THEN
         RETURN TRUE;
     ELSE
