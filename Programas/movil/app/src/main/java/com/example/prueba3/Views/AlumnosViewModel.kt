@@ -28,6 +28,8 @@ import okhttp3.ResponseBody
 import java.text.SimpleDateFormat
 import java.util.Date
 import androidx.compose.runtime.State
+import retrofit2.HttpException
+import java.net.ConnectException
 import java.util.Locale
 
 class AlumnosViewModel : ViewModel() {
@@ -339,13 +341,17 @@ class AlumnosViewModel : ViewModel() {
     private val _eliminacionCompletada = MutableStateFlow<Boolean?>(null)
     val eliminacionCompletada: StateFlow<Boolean?> = _eliminacionCompletada
 
+    private val _eliminandoReporte = MutableStateFlow(false)
+    val eliminandoReporte: StateFlow<Boolean> = _eliminandoReporte
+
     fun eliminarReporte(boleta: String, idETS: Int) {
         viewModelScope.launch {
+            _eliminandoReporte.value = true
+            _eliminacionExitosa.value = null
+            _mensajeEliminacion.value = null
+            _eliminacionCompletada.value = null
             try {
-                _loadingState.value = true
-                _eliminacionExitosa.value = null
-                _mensajeEliminacion.value = null
-                _eliminacionCompletada.value = null // Resetear el estado de completado
+
 
                 val response = RetrofitInstance.ingresoSalonApi.eliminarReporte(idETS, boleta)
 
@@ -353,22 +359,32 @@ class AlumnosViewModel : ViewModel() {
                     val jsonResponse = response.body()
                     _eliminacionExitosa.value = true
                     _mensajeEliminacion.value = jsonResponse?.get("mensaje")?.asString ?: "Eliminación exitosa."
-                    // No verificar el ingreso inmediatamente aquí
+                    _eliminacionCompletada.value = true
+
                 } else {
-                    _eliminacionExitosa.value = false
                     val errorBody = response.errorBody()?.string()
                     val errorMessage = try {
-                        errorBody?.let { JSONObject(it).getString("mensaje") } ?: "Error al eliminar el reporte: Código ${response.code()}"
+                        errorBody?.let { JSONObject(it).getString("mensaje") }
+                            ?: "Ocurrió un fallo en el proceso: Código" // ${response.code()}
                     } catch (e: Exception) {
-                        "Error al eliminar el reporte: Código ${response.code()}"
+                        "Ocurrió un fallo en el proceso: Código" // ${response.code()}
                     }
                     _mensajeEliminacion.value = errorMessage
                 }
+            } catch (e: ConnectException) {
+                _eliminacionExitosa.value = false
+                _mensajeEliminacion.value = "Error de conexión";
+                _eliminacionCompletada.value = false
+            } catch (e: HttpException) {
+                _eliminacionExitosa.value = false
+                _mensajeEliminacion.value = "Ocurrió un fallo en el proceso: Código"; // ${e.code()}
+                _eliminacionCompletada.value = false
             } catch (e: Exception) {
                 _eliminacionExitosa.value = false
-                _mensajeEliminacion.value = "Error de red al eliminar el reporte: ${e.localizedMessage}"
+                _mensajeEliminacion.value = "Ocurrió un fallo en el proceso:"; //  ${e.localizedMessage}
+                _eliminacionCompletada.value = false
             } finally {
-                _loadingState.value = false
+                _eliminandoReporte.value = false
             }
         }
     }
@@ -376,12 +392,14 @@ class AlumnosViewModel : ViewModel() {
     fun clearEliminacionEstado() {
         _eliminacionExitosa.value = null
         _mensajeEliminacion.value = null
-        _eliminacionCompletada.value = true // Indica que el proceso de eliminación (y el diálogo) ha finalizado
+
     }
 
     fun clearEliminacionCompletada() {
         _eliminacionCompletada.value = null
     }
+
+
 
     private val _idETSFlujo = MutableStateFlow<String?>(null)
     val idETSFlujo: StateFlow<String?> = _idETSFlujo
