@@ -52,11 +52,6 @@ class AlumnosViewModel : ViewModel() {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
-    private val _registroSuccess = MutableStateFlow(false)
-    val registroSuccess: StateFlow<Boolean> = _registroSuccess.asStateFlow()
-
-    private val _alumnoRegistro = MutableStateFlow<List<regitrarAsistencia>>(emptyList())
-    val alumnoRegistro: StateFlow<List<regitrarAsistencia>> = _alumnoRegistro.asStateFlow()
 
     private val _fotoAlumno = MutableStateFlow<ByteArray?>(null)
     val fotoAlumno: StateFlow<ByteArray?> = _fotoAlumno
@@ -154,6 +149,37 @@ class AlumnosViewModel : ViewModel() {
     }
 
     //========== Registrar el ingreso a la instalacion del alumno
+    private val _registroSuccess = MutableStateFlow(false)
+    val registroSuccess: StateFlow<Boolean> = _registroSuccess.asStateFlow()
+
+    public val _asistenciaYaRegistrada = MutableStateFlow(false)
+    val asistenciaYaRegistrada: StateFlow<Boolean> = _asistenciaYaRegistrada.asStateFlow()
+
+    private val _alumnoRegistro = MutableStateFlow<List<regitrarAsistencia>>(emptyList())
+    val alumnoRegistro: StateFlow<List<regitrarAsistencia>> = _alumnoRegistro.asStateFlow()
+
+    fun verificarAsistencia(boleta: String) {
+        viewModelScope.launch {
+            try {
+                _loadingState.value = true
+                _errorMessage.value = null
+
+                val fechaActual = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
+                val response = RetrofitInstance.alumnosDetalle.verificarAsistencia(
+                    boleta = boleta,
+                    fecha = fechaActual
+                )
+
+                _asistenciaYaRegistrada.value = response.isNotEmpty()
+            } catch (e: Exception) {
+                _errorMessage.value = "Error al verificar asistencia: ${e.message}"
+            } finally {
+                _loadingState.value = false
+            }
+        }
+    }
+
     fun registrarAsistencia(boleta: String) {
         viewModelScope.launch {
             try {

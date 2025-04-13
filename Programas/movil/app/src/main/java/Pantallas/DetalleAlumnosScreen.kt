@@ -47,28 +47,33 @@ fun DetalleAlumnosScreen(
         val alumno = alumnosDetalle.firstOrNull()
         val isLoading by viewModel.loadingState.collectAsState(initial = false)
         val registroSuccess by viewModel.registroSuccess.collectAsState()
+        val asistenciaYaRegistrada by viewModel.asistenciaYaRegistrada.collectAsState()
         val fotoAlumno by viewModel.fotoAlumno.collectAsState()
 
         var showAsistenciaDialog by remember { mutableStateOf(false) }
-        var showEscanearDialog by remember { mutableStateOf(false) }
         var showMensajeAsistencia by remember { mutableStateOf(false) }
         var fechaHoraRegistro by remember { mutableStateOf("") }
 
-        val loadingFotoAlumno = remember { mutableStateOf(false) }
-
         LaunchedEffect(boleta) {
             viewModel.fetchDetalleAlumnos(boleta)
-            loadingFotoAlumno.value = true
-            viewModel.fetchFotoAlumno(boleta) { loadingFotoAlumno.value = false }
+//            viewModel.fetchFotoAlumno(boleta)
         }
 
-        // Manejar éxito/error del registro
+        // Verificar asistencia cuando se muestra el diálogo
+        LaunchedEffect(showAsistenciaDialog) {
+            if (showAsistenciaDialog) {
+                viewModel.verificarAsistencia(boleta)
+            }
+        }
+
+        // Manejar éxito del registro
         LaunchedEffect(registroSuccess) {
             if (registroSuccess) {
                 showMensajeAsistencia = true
-                delay(3000)
+                delay(2000) // Mostrar mensaje por 2 segundos
                 showMensajeAsistencia = false
-//                viewModel.resetRegistroSuccess()
+//                viewModel.resetAsistenciaFlags()
+                navController.popBackStack() // Regresar a la pantalla anterior
             }
         }
 
@@ -91,7 +96,7 @@ fun DetalleAlumnosScreen(
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Creación del reporte ",
+                    text = "Creación del reporte",
                     fontSize = 30.sp,
                     fontWeight = FontWeight.Normal,
                     color = Color.White
@@ -131,7 +136,7 @@ fun DetalleAlumnosScreen(
                         }
                         else -> {
                             Image(
-                                painter = painterResource(id = R.drawable.placeholder_image),
+                                painter = painterResource(id = R.drawable.icon_camara),
                                 contentDescription = "Foto no disponible",
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop
@@ -175,78 +180,100 @@ fun DetalleAlumnosScreen(
                     }
                 }
 
-                // Diálogo de confirmación de asistencia
+                // Diálogos de asistencia
                 if (showAsistenciaDialog) {
-                    if (alumno?.nombreETS.isNullOrEmpty()) {
-                        AlertDialog(
-                            onDismissRequest = { showAsistenciaDialog = false },
-                            title = { Text("Error", fontWeight = FontWeight.Bold) },
-                            text = {
-                                Text("El alumno no cuenta con ETS inscritos ó su ETS está programada en otra fecha.")
-                            },
-                            confirmButton = {
-                                Button(onClick = { showAsistenciaDialog = false }) {
-                                    Text("Aceptar")
-                                }
-                            }
-                        )
-                    } else {
-                        AlertDialog(
-                            onDismissRequest = { showAsistenciaDialog = false },
-                            title = {
-                                Text(
-                                    "Confirmar asistencia",
-                                    fontWeight = FontWeight.Bold
-                                )
-                            },
-                            text = {
-                                Column {
-                                    Text(
-                                        text = "El alumno ${alumno?.nombreAlumno ?: ""} ${alumno?.apellidoPAlumno ?: ""} con número de boleta ${alumno?.boleta ?: ""} está inscrito en:",
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                    Text(
-                                        text = "${alumno?.nombreETS ?: ""}",
-                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                                        modifier = Modifier.padding(vertical = 4.dp)
-                                    )
-                                    Text(
-                                        text = "Fecha y hora de registro:",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        modifier = Modifier.padding(top = 8.dp)
-                                    )
-                                    Text(
-                                        text = fechaHoraRegistro,
-                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                                        modifier = Modifier.padding(top = 4.dp)
-                                    )
-                                    Text(
-                                        text = "¿Deseas registrar su asistencia?",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        modifier = Modifier.padding(top = 16.dp)
-                                    )
-                                }
-                            },
-                            confirmButton = {
-                                Button(
-                                    onClick = {
-                                        showAsistenciaDialog = false
-                                        viewModel.registrarAsistencia(boleta)
+                    when {
+                        alumno?.nombreETS.isNullOrEmpty() -> {
+                            AlertDialog(
+                                onDismissRequest = { showAsistenciaDialog = false },
+                                title = { Text("Error", fontWeight = FontWeight.Bold) },
+                                text = {
+                                    Text("El alumno no cuenta con ETS inscritos ó su ETS está programada en otra fecha.")
+                                },
+                                confirmButton = {
+                                    Button(onClick = { showAsistenciaDialog = false }) {
+                                        Text("Aceptar")
                                     }
-                                ) {
-                                    Text("Aceptar")
                                 }
-                            },
-                            dismissButton = {
-                                Button(onClick = { showAsistenciaDialog = false }) {
-                                    Text("Cancelar")
+                            )
+                        }
+                        asistenciaYaRegistrada -> {
+                            AlertDialog(
+                                onDismissRequest = {
+                                    showAsistenciaDialog = false
+//                                    viewModel.resetAsistenciaFlags()
+                                },
+                                title = { Text("Asistencia ya registrada", fontWeight = FontWeight.Bold) },
+                                text = {
+                                    Text("El alumno ya tiene registrada su asistencia el día de hoy.")
+                                },
+                                confirmButton = {
+                                    Button(onClick = {
+                                        showAsistenciaDialog = false
+//                                        viewModel.resetAsistenciaFlags()
+                                    }) {
+                                        Text("Aceptar")
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
+                        else -> {
+                            AlertDialog(
+                                onDismissRequest = { showAsistenciaDialog = false },
+                                title = {
+                                    Text(
+                                        "Confirmar asistencia",
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                },
+                                text = {
+                                    Column {
+                                        Text(
+                                            text = "El alumno ${alumno?.nombreAlumno ?: ""} ${alumno?.apellidoPAlumno ?: ""} con número de boleta ${alumno?.boleta ?: ""} está inscrito en:",
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                        Text(
+                                            text = "${alumno?.nombreETS ?: ""}",
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                            modifier = Modifier.padding(vertical = 4.dp)
+                                        )
+                                        Text(
+                                            text = "Fecha y hora de registro:",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            modifier = Modifier.padding(top = 8.dp)
+                                        )
+                                        Text(
+                                            text = fechaHoraRegistro,
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                            modifier = Modifier.padding(top = 4.dp)
+                                        )
+                                        Text(
+                                            text = "¿Deseas registrar su asistencia?",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            modifier = Modifier.padding(top = 16.dp)
+                                        )
+                                    }
+                                },
+                                confirmButton = {
+                                    Button(
+                                        onClick = {
+                                            showAsistenciaDialog = false
+                                            viewModel.registrarAsistencia(boleta)
+                                        }
+                                    ) {
+                                        Text("Aceptar")
+                                    }
+                                },
+                                dismissButton = {
+                                    Button(onClick = { showAsistenciaDialog = false }) {
+                                        Text("Cancelar")
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
 
-                // Mensaje de asistencia registrada
                 if (showMensajeAsistencia) {
                     AlertDialog(
                         onDismissRequest = { showMensajeAsistencia = false },
@@ -271,7 +298,10 @@ fun DetalleAlumnosScreen(
                             }
                         },
                         confirmButton = {
-                            Button(onClick = { showMensajeAsistencia = false }) {
+                            Button(onClick = {
+                                showMensajeAsistencia = false
+                                navController.popBackStack() // Regresar a la pantalla anterior
+                            }) {
                                 Text("Aceptar")
                             }
                         }
