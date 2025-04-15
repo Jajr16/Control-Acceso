@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -25,6 +27,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.Icon
@@ -58,13 +61,16 @@ import androidx.compose.ui.res.painterResource
 import com.example.prueba3.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.CamaraViewModel
 import com.example.prueba3.Views.InformacionAlumnoViewModel
+import java.net.ConnectException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -225,17 +231,38 @@ fun InformacionAlumno(
                             Text("Borrar Reporte", color = Color.White)
                         }
 
-                        // Observar el estado de eliminación para mostrar el diálogo
-                        LaunchedEffect(eliminacionExitosa) {
-                            if (eliminacionExitosa == true) {
-                                mostrarDialogoEliminacion = true
-                            } else if (eliminacionExitosa == false) {
-                                Log.e("InformacionAlumno", "Error al eliminar: $mensajeEliminacion")
-                                // Mostrar Snackbar o Toast de error si lo deseas
+
+
+                        // Diálogo de error de eliminación
+                        val mensajeEliminacion by viewModel.mensajeEliminacion.collectAsState()
+                        var mostrarDialogoErrorEliminacion by remember { mutableStateOf(false) }
+
+                        LaunchedEffect(mensajeEliminacion) {
+                            if (!mensajeEliminacion.isNullOrEmpty()) {
+                                mostrarDialogoErrorEliminacion = true
                             }
                         }
 
-// Diálogo de confirmación de eliminación exitosa
+                        if (mostrarDialogoErrorEliminacion) {
+                            AlertDialog(
+                                onDismissRequest = { mostrarDialogoErrorEliminacion = false },
+                                title = { Text("Error") },
+                                text = {
+                                    if (mensajeEliminacion == "Error de conexión") {
+                                        Text("Error de conexión")
+                                    } else {
+                                        Text(mensajeEliminacion ?: "Ocurrió un fallo en el proceso")
+                                    }
+                                },
+                                confirmButton = {
+                                    Button(onClick = { mostrarDialogoErrorEliminacion = false }) {
+                                        Text("Aceptar")
+                                    }
+                                }
+                            )
+                        }
+
+                        // Diálogo de confirmación de eliminación exitosa
                         if (mostrarDialogoEliminacion) {
                             AlertDialog(
                                 onDismissRequest = {
@@ -248,6 +275,8 @@ fun InformacionAlumno(
                                     Button(onClick = {
                                         mostrarDialogoEliminacion = false
                                         viewModel.clearEliminacionEstado()
+                                        viewModel.verificarIngresoSalon(idETS.toInt(), boleta)
+                                        viewModel.clearEliminacionCompletada()
                                     }) {
                                         Text("Aceptar")
                                     }
@@ -255,14 +284,9 @@ fun InformacionAlumno(
                             )
                         }
 
-                        val eliminacionCompletadaState by viewModel.eliminacionCompletada.collectAsState()
 
-                        LaunchedEffect(eliminacionCompletadaState) {
-                            if (eliminacionCompletadaState == true) {
-                                viewModel.verificarIngresoSalon(idETS.toInt(), boleta)
-                                viewModel.clearEliminacionCompletada() // Limpia el estado para futuras eliminaciones
-                            }
-                        }
+
+
 
                     }
                 } else {
@@ -575,14 +599,36 @@ fun InformacionAlumno(
         // Observar el resultado del envío
         val envioExitoso by informacionAlumnoViewModel.envioExitoso.collectAsState(initial = null)
         val errorEnvio by informacionAlumnoViewModel.errorEnvio.collectAsState(initial = null)
+        val cargando by informacionAlumnoViewModel.cargando.collectAsState(initial = false)
+        val eliminandoReporteLoading by viewModel.eliminandoReporte.collectAsState()
         val context = LocalContext.current
+        var showErrorDialog by remember { mutableStateOf(false) }
+        var mensajeErrorEnvio by remember { mutableStateOf("") }
 
         LaunchedEffect(errorEnvio) {
-            errorEnvio?.let { mensaje ->
-                errorMessage = mensaje
-                showErrorDialog2 = true
-                informacionAlumnoViewModel.clearErrorEnvio() // Limpiar el estado
+            errorEnvio?.let { error ->
+                mensajeErrorEnvio = when (error) {
+                    is ConnectException -> "Error de conexión"
+                    else -> "Ocurrió un fallo en el proceso"
+                }
+                showErrorDialog = true
             }
+        }
+
+        if (showErrorDialog) {
+            AlertDialog(
+                onDismissRequest = { showErrorDialog = false },
+                title = { Text("Error") },
+                text = { Text(mensajeErrorEnvio) },
+                confirmButton = {
+                    Button(onClick = {
+                        showErrorDialog = false
+                        informacionAlumnoViewModel.clearErrorEnvio()
+                    }) {
+                        Text("Aceptar")
+                    }
+                }
+            )
         }
 
         LaunchedEffect(envioExitoso) {
@@ -592,7 +638,46 @@ fun InformacionAlumno(
             }
         }
 
+        if (eliminandoReporteLoading) {
+            Dialog(
+                onDismissRequest = { /* No permitir cerrar tocando fuera */ },
+                DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .background(Color.White, RoundedCornerShape(8.dp))
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(color = Color(0xFFCB5252)) // Puedes usar otro color
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Borrando reporte...", color = Color.Black)
+                    }
+                }
+            }
+        }
 
+        // Diálogo de Cargando
+        if (cargando) {
+            Dialog(
+                onDismissRequest = { /* No permitir cerrar tocando fuera */ },
+                DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .background(Color.White, RoundedCornerShape(8.dp))
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(color = Blue)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Enviando datos...", color = Color.Black)
+                    }
+                }
+            }
+        }
 
 
         if (showDialog) {
