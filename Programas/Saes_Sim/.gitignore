@@ -1,9 +1,0 @@
-# Binarios - Merge conflicts
-
-*.pyc
-__pycache__/
-run.sh
-
-virt
-venv/
-ffmpeg/
