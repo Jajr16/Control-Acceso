@@ -30,4 +30,10 @@ interface DetallesApi {
         @Query("fecha") fecha: String,
         @Query("hora") hora: String
     ): List<regitrarAsistencia>
+
+    @GET("alumno/verificar-asistencia")
+    suspend fun verificarAsistencia(
+        @Query("boleta") boleta: String,
+        @Query("fecha") fecha: String
+    ): List<regitrarAsistencia>
 }

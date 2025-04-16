@@ -1,6 +1,6 @@
 [submodule "Programas/SpringBoot-Java"]
 	path = Programas/SpringBoot-Java
 	url = https://github.com/Jajr16/SpringBoot-Java.git
-[submodule "Programas/Saes_Sim"]
-	path = Programas/Saes_Sim
+[submodule "Programas/Saes_Simulador"]
+	path = Programas/Saes_Simulador
 	url = https://github.com/Jajr16/Saes_Simulador.git
