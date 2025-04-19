@@ -158,8 +158,12 @@ fun EtsDetailScreen(
                             salon = etsDetail!!.salon,
                             salonState = salonState!!,
                             hora = etsDetail!!.ets.hora,
+                            userRole = savedRole, // Pasamos el rol del usuario
                             onRequestReplacement = {
-                                navController.navigate("solicitarReemplazo/${etsDetail!!.ets.unidadAprendizaje}")                            }
+                                if (savedRole == "Personal Academico" || savedRole == "Docente") {
+                                    navController.navigate("solicitarReemplazo/${etsDetail!!.ets.idETS}/${etsDetail!!.ets.unidadAprendizaje}")
+                                }
+                            }
                         )
                     } else {
                         Box(
@@ -220,6 +224,7 @@ fun SingleStyledCard(
     salon: List<Salon>,
     salonState: Boolean,
     hora: String,
+    userRole: String?,  // Añadir el parámetro del rol del usuario
     onRequestReplacement: () -> Unit
 ) {
     Card(
@@ -267,20 +272,22 @@ fun SingleStyledCard(
                 lineHeight = 24.sp
             )
 
-            // Botón para solicitar reemplazo
-            OutlinedButton(
-                onClick = onRequestReplacement,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.SwapHoriz,
-                    contentDescription = "Solicitar reemplazo",
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Text("Solicitar reemplazo")
+            // Mostrar el botón solo si el rol es "Personal Academico"
+            if (userRole == "Personal Academico" || userRole == "Docente") {
+                OutlinedButton(
+                    onClick = onRequestReplacement,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SwapHoriz,
+                        contentDescription = "Solicitar reemplazo",
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text("Solicitar reemplazo")
+                }
             }
         }
     }

@@ -56,7 +56,6 @@ fun DetalleAlumnosScreen(
 
         LaunchedEffect(boleta) {
             viewModel.fetchDetalleAlumnos(boleta)
-//            viewModel.fetchFotoAlumno(boleta)
         }
 
         // Verificar asistencia cuando se muestra el diálogo
@@ -72,7 +71,6 @@ fun DetalleAlumnosScreen(
                 showMensajeAsistencia = true
                 delay(2000) // Mostrar mensaje por 2 segundos
                 showMensajeAsistencia = false
-//                viewModel.resetAsistenciaFlags()
                 navController.popBackStack() // Regresar a la pantalla anterior
             }
         }
@@ -201,7 +199,6 @@ fun DetalleAlumnosScreen(
                             AlertDialog(
                                 onDismissRequest = {
                                     showAsistenciaDialog = false
-//                                    viewModel.resetAsistenciaFlags()
                                 },
                                 title = { Text("Asistencia ya registrada", fontWeight = FontWeight.Bold) },
                                 text = {
@@ -210,7 +207,6 @@ fun DetalleAlumnosScreen(
                                 confirmButton = {
                                     Button(onClick = {
                                         showAsistenciaDialog = false
-//                                        viewModel.resetAsistenciaFlags()
                                     }) {
                                         Text("Aceptar")
                                     }
@@ -258,7 +254,11 @@ fun DetalleAlumnosScreen(
                                     Button(
                                         onClick = {
                                             showAsistenciaDialog = false
-                                            viewModel.registrarAsistencia(boleta)
+                                            alumno?.idETS?.let { idETS ->
+                                                viewModel.registrarAsistencia(boleta, idETS)
+                                            } ?: run {
+//                                                _errorMessage.value = "No se pudo obtener el ETS del alumno"
+                                            }
                                         }
                                     ) {
                                         Text("Aceptar")

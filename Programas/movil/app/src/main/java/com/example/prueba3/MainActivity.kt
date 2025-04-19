@@ -23,6 +23,7 @@ import Pantallas.Reporte
 import Pantallas.ScreenAsignaremplazo
 import Pantallas.SolicitarReemplazo
 import Pantallas.WelcomeScreen
+import Pantallas.WelcomeScreenAcademico
 import Pantallas.WelcomeScreenDocente
 import android.os.Build
 import android.os.Bundle
@@ -103,6 +104,13 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
+                        composable("Menu Academico") {
+                            WelcomeScreenAcademico(
+                                navController = navController,
+                                loginViewModel = loginViewModel
+                            )
+                        }
+
                         composable("credencial/{boleta}") { backStackEntry ->
                             val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
                             CredencialScreen(
@@ -115,6 +123,7 @@ class MainActivity : ComponentActivity() {
 
                         composable("detallealumnos/{boleta}") { backStackEntry ->
                             val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
+
                             DetalleAlumnosScreen(
                                 navController = navController,
                                 loginViewModel = loginViewModel,
@@ -130,14 +139,20 @@ class MainActivity : ComponentActivity() {
                         composable("info") { ETSInscriptionProcessScreen(navController, loginViewModel) }
                         composable("CrearCuenta") { CreateAccountScreen(navController) }
 
-                    composable("solicitarReemplazo/{nombreETS}") { backStackEntry ->
-                        val nombreETS = backStackEntry.arguments?.getString("nombreETS")
-                        SolicitarReemplazo(
-                            navController = navController,
-                            loginViewModel = loginViewModel,
-                            nombreETS = nombreETS
-                        )
-                    }
+                        composable(
+                            "solicitarReemplazo/{idETS}/{nombreETS}",
+                            arguments = listOf(
+                                navArgument("idETS") { type = NavType.IntType },
+                                navArgument("nombreETS") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            SolicitarReemplazo(
+                                navController = navController,
+                                loginViewModel = loginViewModel,
+                                idETS = backStackEntry.arguments?.getInt("idETS"),
+                                nombreETS = backStackEntry.arguments?.getString("nombreETS")
+                            )
+                        }
 
                     composable("asignarReemplazo") { ScreenAsignaremplazo(navController, loginViewModel) }
 

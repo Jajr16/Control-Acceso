@@ -28,7 +28,8 @@ interface DetallesApi {
     suspend fun registrarAsistencia(
         @Query("boleta") boleta: String,
         @Query("fecha") fecha: String,
-        @Query("hora") hora: String
+        @Query("hora") hora: String,
+        @Query("idETS") idETS: Int
     ): List<regitrarAsistencia>
 
     @GET("alumno/verificar-asistencia")

@@ -6,6 +6,7 @@ import Pantallas.components.ValidateSession
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -15,33 +16,84 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.prueba3.Clases.Reemplazo
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.Views.ReemplazoViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SolicitarReemplazo(
     navController: NavController,
     loginViewModel: LoginViewModel,
-    reemplazoViewModel: ReemplazoViewModel = viewModel(),  // Corrección clave aquí
-    nombreETS: String? = null
+    reemplazoViewModel: ReemplazoViewModel = viewModel(),
+    nombreETS: String? = null,
+    idETS: Int? = null
 ) {
     val userRole = loginViewModel.getUserRole()
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    var showSuccessDialog by remember { mutableStateOf(false) }
 
     // Estados del formulario
     var reason by remember { mutableStateOf("") }
     val loadingState by reemplazoViewModel.loadingState.collectAsState()
+    val errorState by reemplazoViewModel.errorState.collectAsState()
+    val reemplazoState by reemplazoViewModel.reemplazoState.collectAsState()
+
+    // Verificar solicitud pendiente al iniciar
+    LaunchedEffect(idETS) {
+        idETS?.let { etsId ->
+            reemplazoViewModel.verificarSolicitudPendiente(
+                etsId = etsId,
+                docenteRFC = loginViewModel.getUserName() ?: ""
+            )
+        }
+    }
+
+    // Mostrar errores
+    errorState?.let { error ->
+        LaunchedEffect(error) {
+            if (!error.contains("Ya existe una solicitud pendiente")) {
+                snackbarHostState.showSnackbar(error)
+            }
+//            reemplazoViewModel.errorState.value = null
+        }
+    }
+
+    // Diálogo de éxito
+    if (showSuccessDialog) {
+        AlertDialog(
+            onDismissRequest = { showSuccessDialog = false },
+            title = {
+                Text(
+                    "Solicitud Exitosa",
+                    color = Color(0xFF4CAF50),
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = { Text("Tu solicitud de reemplazo ha sido registrada correctamente") },
+            confirmButton = {
+                Button(
+                    onClick = { showSuccessDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                ) {
+                    Text("Aceptar", fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = Color.White
+        )
+    }
+
+    // Mostrar estado pendiente
+    val showPendingState = reemplazoState != null ||
+            (errorState?.contains("Ya existe una solicitud pendiente") == true)
 
     ValidateSession(navController = navController) {
         Scaffold(
@@ -78,6 +130,40 @@ fun SolicitarReemplazo(
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
+                    // Mostrar estado pendiente
+                    if (showPendingState) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth(0.9f)
+                                .padding(bottom = 16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0x33FFA000)
+                            )
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .background(Color.Yellow, CircleShape)
+                                        .padding(end = 12.dp)
+                                )
+                                Text(
+                                    text = if (errorState?.contains("Ya existe una solicitud pendiente") == true) {
+                                        "Estado: PENDIENTE (solicitud existente)"
+                                    } else {
+                                        "Estado: ${reemplazoState?.estatus ?: "PENDIENTE"}"
+                                    },
+                                    color = Color.White,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+                    }
+
                     Divider(
                         color = Color.White,
                         thickness = 1.dp,
@@ -86,7 +172,7 @@ fun SolicitarReemplazo(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Mostrar solo el ETS recibido (sin dropdown)
+                    // Campo ETS
                     TextField(
                         value = nombreETS ?: "No se especificó ETS",
                         onValueChange = {},
@@ -104,17 +190,18 @@ fun SolicitarReemplazo(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Campo de motivo
+                    // Campo motivo
                     TextField(
                         value = reason,
                         onValueChange = { reason = it },
                         label = { Text("Motivo del reemplazo") },
+                        enabled = !showPendingState,
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
                             .height(120.dp),
                         colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.LightGray,
-                            unfocusedContainerColor = Color.LightGray,
+                            focusedContainerColor = if (showPendingState) Color.Gray else Color.LightGray,
+                            unfocusedContainerColor = if (showPendingState) Color.Gray else Color.LightGray,
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent
                         ),
@@ -127,29 +214,25 @@ fun SolicitarReemplazo(
                     // Botón de envío
                     Button(
                         onClick = {
-                            if (nombreETS.isNullOrEmpty() || reason.isEmpty()) {
+                            if (idETS == null || reason.isEmpty()) {
                                 coroutineScope.launch {
                                     snackbarHostState.showSnackbar("Complete todos los campos")
                                 }
                             } else {
-                                val nuevoReemplazo = Reemplazo(
-                                    idETS = nombreETS.hashCode(),
-                                    docenteRFC = loginViewModel.getUserName() ?: "RFC_DEFAULT", // Corrección aquí
-                                    motivo = reason,
-                                    estatus = "Pendiente"
+                                reemplazoViewModel.enviarSolicitudReemplazo(
+                                    idETS = idETS,
+                                    docenteRFC = loginViewModel.getUserName() ?: "",
+                                    motivo = reason
                                 )
-                                reemplazoViewModel.reemplazoState
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar("Solicitud enviada con éxito")
-                                    reason = ""
-                                }
+                                showSuccessDialog = true
+                                reason = ""
                             }
                         },
-                        enabled = !loadingState,
+                        enabled = !loadingState && !showPendingState,
                         modifier = Modifier.width(200.dp),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.White,
+                            containerColor = if (showPendingState) Color.Gray else Color.White,
                             contentColor = Color.Black
                         )
                     ) {
@@ -159,7 +242,13 @@ fun SolicitarReemplazo(
                                 modifier = Modifier.size(20.dp)
                             )
                         } else {
-                            Text("Enviar solicitud")
+                            Text(
+                                when {
+                                    showPendingState -> "Solicitud Pendiente"
+                                    else -> "Enviar solicitud"
+                                },
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }

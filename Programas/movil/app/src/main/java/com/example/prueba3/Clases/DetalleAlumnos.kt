@@ -10,6 +10,7 @@ data class DetalleAlumnos(
     val apellidoMAlumno: String,
     val boleta: String,
     val nombreETS: String,
+    val idETS: Int,
     val nombreTurno: String,
     val salon: Integer,
     val fecha: String,

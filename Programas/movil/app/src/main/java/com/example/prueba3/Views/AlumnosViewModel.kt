@@ -182,7 +182,7 @@ class AlumnosViewModel : ViewModel() {
         }
     }
 
-    fun registrarAsistencia(boleta: String) {
+    fun registrarAsistencia(boleta: String, idETS: Int) {
         viewModelScope.launch {
             try {
                 _loadingState.value = true
@@ -194,7 +194,8 @@ class AlumnosViewModel : ViewModel() {
                 val response = RetrofitInstance.alumnosDetalle.registrarAsistencia(
                     boleta = boleta,
                     fecha = fechaActual,
-                    hora = horaActual
+                    hora = horaActual,
+                    idETS = idETS
                 )
 
                 if (response.isNotEmpty()) {
@@ -211,8 +212,9 @@ class AlumnosViewModel : ViewModel() {
         }
     }
 
-    fun clearRegistrationState() {
+    fun resetAsistenciaFlags() {
         _registroSuccess.value = false
+        _asistenciaYaRegistrada.value = false
     }
 
     // ======================== Funcion para comparar datos credencial + DAE ========================

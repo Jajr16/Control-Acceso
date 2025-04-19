@@ -6,3 +6,8 @@ data class Reemplazo(
     val motivo: String,
     val estatus: String
 )
+
+data class VerificacionSolicitudResponse(
+    val tieneSolicitudPendiente: Boolean,
+    val solicitudExistente: Reemplazo? = null
+)

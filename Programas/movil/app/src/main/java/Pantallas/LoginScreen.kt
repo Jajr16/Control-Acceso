@@ -65,6 +65,8 @@ fun LoginScreen(
                         popUpTo("login") { inclusive = true } }
                     "Personal Academico", "Docente" -> navController.navigate("Menu Docente") {
                         popUpTo("login") { inclusive = true } }
+                    "Personal Academico", "Personal Gestión Escolar" -> navController.navigate("Menu Academico") {
+                        popUpTo("login") { inclusive = true } }
                 }
             }
         }
@@ -83,6 +85,8 @@ fun LoginScreen(
                     "Personal Seguridad" -> navController.navigate("scanQr") {
                         popUpTo("login") { inclusive = true } }
                     "Personal Academico", "Docente" -> navController.navigate("Menu Docente") {
+                        popUpTo("login") { inclusive = true } }
+                    "Personal Academico", "Personal Gestión Escolar" -> navController.navigate("Menu Academico") {
                         popUpTo("login") { inclusive = true } }
                 }
 
