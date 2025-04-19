@@ -37,6 +37,22 @@ BEGIN
             -- Contraseña correcta
             error_code := 0;
             p_message := 'Inicio de sesión exitoso.';
+
+			IF p_rol = 'Personal Academico' THEN
+				SELECT tp.cargo
+					INTO p_rol
+				FROM tipopersonal tp
+				INNER JOIN 
+					personalacademico pa
+				ON 
+					pa.tipopa = tp.tipopa 
+				INNER JOIN 
+					usuario u
+				ON 
+					pa.rfc = u.usuario			
+				WHERE u.usuario = p_username;
+			END IF;
+			
         ELSE
             -- Contraseña incorrecta
             error_code := -1;

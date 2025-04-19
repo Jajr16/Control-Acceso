@@ -28,8 +28,13 @@ import okhttp3.ResponseBody
 import java.text.SimpleDateFormat
 import java.util.Date
 import androidx.compose.runtime.State
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import retrofit2.HttpException
+import java.io.ByteArrayOutputStream
 import java.net.ConnectException
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.Locale
 
 class AlumnosViewModel : ViewModel() {
@@ -69,22 +74,57 @@ class AlumnosViewModel : ViewModel() {
     val loadingFotoAlumno: StateFlow<Boolean> = _loadingFotoAlumno // Public read-only state
 
 
-
-    // ======== Obtener la foto del alumno ============
     fun fetchFotoAlumno(boleta: String, onComplete: () -> Unit) {
         viewModelScope.launch {
+            _loadingState.value = true
             try {
-                _loadingState.value = true // Puedes usar un estado de carga específico si lo prefieres
-                val responseBody = RetrofitInstance.alumnoEspecifico.getFotoAlumno(boleta)
+                // 1. Obtener la URL de la imagen desde la API
+                val imageUrl = try {
+                    val response = RetrofitInstance.alumnoEspecifico.getFotoAlumno(boleta)
+                    response?.fotoUrl?.trim()?.replace("\"", "")
+                } catch (e: HttpException) {
+                    println("Error HTTP al obtener la URL: ${e.code()} - ${e.message()}")
+                    null
+                } catch (e: IOException) {
+                    println("Error de red al obtener la URL: ${e.message}")
+                    null
+                }
 
-                // Convertimos el contenido de ResponseBody a ByteArray
-                val fotoBytes = responseBody.bytes()
-                _fotoAlumno.value = fotoBytes
+                if (imageUrl.isNullOrBlank()) {
+                    throw IllegalArgumentException("URL de imagen inválida obtenida del servidor")
+                }
+
+                println("URL de la imagen obtenida: $imageUrl")
+
+                // 2. Descargar los bytes desde la URL obtenida
+                _fotoAlumno.value = withContext(Dispatchers.IO) {
+                    var connection: HttpURLConnection? = null
+                    return@withContext try {
+                        val url = URL(imageUrl)
+                        connection = url.openConnection() as HttpURLConnection
+                        connection!!.connectTimeout = 15_000
+                        connection!!.readTimeout = 15_000
+                        connection!!.doInput = true
+
+                        connection!!.inputStream.use { inputStream ->
+                            val buffer = ByteArrayOutputStream()
+                            inputStream.copyTo(buffer)
+                            buffer.toByteArray().takeIf { it.isNotEmpty() }
+                                ?: throw IOException("La imagen está vacía")
+                        }
+                    } catch (e: Exception) {
+                        Log.e("fetchFotoAlumno", "Error al descargar la imagen: ${e.message}", e)
+                        null
+                    } finally {
+                        connection?.disconnect()
+                    }
+                }
+
             } catch (e: Exception) {
-                println("Error al obtener la foto: ${e.localizedMessage}")
+                println("Error al obtener o descargar la foto: ${e.localizedMessage}")
                 _fotoAlumno.value = null
             } finally {
-                _loadingState.value = false // O actualiza el estado de carga específico
+                _loadingState.value = false
                 onComplete()
             }
         }
