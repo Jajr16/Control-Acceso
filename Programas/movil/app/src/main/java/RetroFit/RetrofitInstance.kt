@@ -10,7 +10,8 @@
 //http://192.168.100.7:8080/
 //https://springboot-java-production-0b2b.up.railway.app/
     object RetrofitInstance {
-            private const val BASE_URL = "http://192.168.1.131:8080/"
+            private const val BASE_URL = "http://192.168.100.4:8080/"
+
 //            private const val BASE_URL = "https://springboot-java-production-0b2b.up.railway.app/"
 
         private val okHttpClient = OkHttpClient.Builder()

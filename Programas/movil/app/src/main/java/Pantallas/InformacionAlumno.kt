@@ -134,8 +134,37 @@ fun InformacionAlumno(
 
     val eliminacionExitosa by viewModel.eliminacionExitosa.collectAsState()
     val mensajeEliminacion by viewModel.mensajeEliminacion.collectAsState()
+    val eliminacionCompletada by viewModel.eliminacionCompletada.collectAsState() // Observa este estado
+
 
     var mostrarDialogoEliminacion by remember { mutableStateOf(false) }
+
+    var mostrarDialogoErrorEliminacion by remember { mutableStateOf(false) }
+
+    // Observar el estado de eliminación exitosa para mostrar el diálogo
+    LaunchedEffect(eliminacionExitosa) {
+        if (eliminacionExitosa == true) {
+            mostrarDialogoEliminacion = true
+        }
+    }
+
+    // Observar el mensaje de eliminación (para errores)
+    LaunchedEffect(mensajeEliminacion) {
+        if (!mensajeEliminacion.isNullOrEmpty() && eliminacionExitosa == false) {
+            mostrarDialogoErrorEliminacion = true
+        }
+    }
+
+
+//    // Diálogo de error de eliminación
+//    val mensajeEliminacion by viewModel.mensajeEliminacion.collectAsState()
+//    var mostrarDialogoErrorEliminacion by remember { mutableStateOf(false) }
+//
+//    LaunchedEffect(mensajeEliminacion) {
+//        if (!mensajeEliminacion.isNullOrEmpty()) {
+//            mostrarDialogoErrorEliminacion = true
+//        }
+//    }
 
 
     // Estado para controlar la visibilidad del botón de eliminación
@@ -233,15 +262,7 @@ fun InformacionAlumno(
 
 
 
-                        // Diálogo de error de eliminación
-                        val mensajeEliminacion by viewModel.mensajeEliminacion.collectAsState()
-                        var mostrarDialogoErrorEliminacion by remember { mutableStateOf(false) }
 
-                        LaunchedEffect(mensajeEliminacion) {
-                            if (!mensajeEliminacion.isNullOrEmpty()) {
-                                mostrarDialogoErrorEliminacion = true
-                            }
-                        }
 
                         if (mostrarDialogoErrorEliminacion) {
                             AlertDialog(
@@ -268,6 +289,8 @@ fun InformacionAlumno(
                                 onDismissRequest = {
                                     mostrarDialogoEliminacion = false
                                     viewModel.clearEliminacionEstado()
+                                    viewModel.verificarIngresoSalon(idETS.toInt(), boleta) // Recargar al descartar (opcional)
+                                    viewModel.clearEliminacionCompletada()
                                 },
                                 title = { Text("Éxito") },
                                 text = { Text(mensajeEliminacion ?: "El reporte se eliminó exitosamente.") },
@@ -275,7 +298,7 @@ fun InformacionAlumno(
                                     Button(onClick = {
                                         mostrarDialogoEliminacion = false
                                         viewModel.clearEliminacionEstado()
-                                        viewModel.verificarIngresoSalon(idETS.toInt(), boleta)
+                                        viewModel.verificarIngresoSalon(idETS.toInt(), boleta) // Recargar al aceptar
                                         viewModel.clearEliminacionCompletada()
                                     }) {
                                         Text("Aceptar")

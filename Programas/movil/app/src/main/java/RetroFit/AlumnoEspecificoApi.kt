@@ -1,6 +1,7 @@
 package RetroFit
 
 import com.example.prueba3.Clases.AlumnoEspecifico
+import com.example.prueba3.Clases.FotoAlumnoResponse
 import com.google.android.gms.common.api.Response
 import okhttp3.ResponseBody
 import retrofit2.http.GET
@@ -11,8 +12,9 @@ interface AlumnoEspecificoApi {
     @GET("/InfoA/{boleta}")
     suspend fun getAlumnoEspecifico(@Path("boleta") boleta: String): AlumnoEspecifico
 
-    @GET("InfoA/foto/{boleta}")
-    suspend fun getFotoAlumno(@Path("boleta") boleta: String): ResponseBody
+    @GET("/InfoA/foto/{boleta}")
+    suspend fun getFotoAlumno(@Path("boleta") boleta: String): FotoAlumnoResponse
+
 
 
 
