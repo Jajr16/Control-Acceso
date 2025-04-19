@@ -207,7 +207,7 @@ fun Reporte(
                                     if (loadingImagenRedNeuronal.value) {
                                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(120.dp))
                                     } else {
-                                        if (imagenBytes != null) {
+                                        if (imagenBytes != null && imagenBytes!!.isNotEmpty()) {
                                             val bitmapRedNeuronal =
                                                 BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes!!.size)
                                             Image(
@@ -242,7 +242,7 @@ fun Reporte(
                                     if (loadingFotoAlumno.value) {
                                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(120.dp))
                                     } else {
-                                        if (fotoAlumno != null) {
+                                        if (fotoAlumno != null && fotoAlumno!!.isNotEmpty()) {
                                             val bitmap = BitmapFactory.decodeByteArray(
                                                 fotoAlumno,
                                                 0,
@@ -287,7 +287,9 @@ fun Reporte(
                                     if (loadingFotoAlumno.value) {
                                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(150.dp))
                                     } else {
-                                        if (fotoAlumno != null) {
+                                        Log.d("ReporteScreen", "Valor de fotoAlumno: ${fotoAlumno?.size}")
+                                        Log.d("ReporteScreen", "Valor de imagenBytes: ${imagenBytes?.size}")
+                                        if (fotoAlumno?.isNotEmpty() == true) {
                                             val bitmap = BitmapFactory.decodeByteArray(
                                                 fotoAlumno,
                                                 0,
