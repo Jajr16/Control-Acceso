@@ -1,67 +1,89 @@
 -- FUNCIÓN PARA EL LOGIN
 CREATE OR REPLACE FUNCTION login(
     p_username VARCHAR(18),
-    p_password VARCHAR(100),
-    OUT p_message VARCHAR(255),
-    OUT error_code INT,
-    OUT p_rol VARCHAR(255)
+    p_password VARCHAR(100)
+)
+RETURNS TABLE (
+    p_message VARCHAR(255),
+    error_code INT,
+    p_rol VARCHAR(255),
+    cargos TEXT
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    hashed_password TEXT; -- Cambiar a TEXT
+    hashed_password TEXT;
     user_found INT;
+    rol_base TEXT;
+    cargo_base TEXT;
 BEGIN
     -- Verificar si el usuario existe
-    SELECT COUNT(*)
-    INTO user_found
+    SELECT COUNT(*) INTO user_found
     FROM usuario
     WHERE usuario = p_username;
 
     IF user_found = 0 THEN
-        -- Usuario no encontrado
-        error_code := -2;
-        p_message := 'Usuario o contraseña incorrectos.';
-        p_rol := NULL;
-
+        RETURN QUERY SELECT 
+            'Usuario o contraseña incorrectos.'::VARCHAR(255), 
+            -2::INT, 
+            NULL::VARCHAR(255), 
+            NULL::TEXT;
     ELSE
-        -- Obtener la contraseña encriptada y el rol
+        -- Obtener contraseña y tipo de usuario
         SELECT u.password::TEXT, t.tipo
-        INTO hashed_password, p_rol
+        INTO hashed_password, rol_base
         FROM usuario u
         INNER JOIN tipousuario t ON u.tipou = t.idtu
         WHERE u.usuario = p_username;
 
-        -- Comparar contraseñas usando crypt()
-        IF crypt(p_password::TEXT, hashed_password::TEXT) = hashed_password THEN
-            -- Contraseña correcta
-            error_code := 0;
-            p_message := 'Inicio de sesión exitoso.';
+        -- Verificar contraseña
+        IF crypt(p_password, hashed_password) = hashed_password THEN
 
-			IF p_rol = 'Personal Academico' THEN
-				SELECT tp.cargo
-					INTO p_rol
-				FROM tipopersonal tp
-				INNER JOIN 
-					personalacademico pa
-				ON 
-					pa.tipopa = tp.tipopa 
-				INNER JOIN 
-					usuario u
-				ON 
-					pa.rfc = u.usuario			
-				WHERE u.usuario = p_username;
-			END IF;
-			
+            IF rol_base = 'Personal Academico' THEN
+                -- Ver si es docente
+                SELECT tp.cargo
+                INTO cargo_base
+                FROM tipopersonal tp
+                INNER JOIN personalacademico pa ON pa.tipopa = tp.tipopa
+                INNER JOIN usuario u ON pa.rfc = u.usuario
+                WHERE u.usuario = p_username;
+
+                IF cargo_base = 'Docente' THEN
+                    RETURN QUERY 
+                    SELECT 
+                        'Inicio de sesión exitoso.'::VARCHAR(255), 
+                        0::INT, 
+                        cargo_base::VARCHAR(255), 
+                        (
+                            SELECT STRING_AGG(tp.cargo, ', ')::TEXT
+                            FROM tipopersonal tp
+                            INNER JOIN personalacademico pa ON pa.tipopa = tp.tipopa
+                            INNER JOIN usuario u ON pa.rfc = u.usuario
+                            WHERE u.usuario = p_username
+                        );
+                ELSE
+                    RETURN QUERY SELECT 
+                        'Inicio de sesión exitoso.'::VARCHAR(255), 
+                        0::INT, 
+                        cargo_base::VARCHAR(255), 
+                        NULL::TEXT;
+                END IF;
+            ELSE
+                RETURN QUERY SELECT 
+                    'Inicio de sesión exitoso.'::VARCHAR(255), 
+                    0::INT, 
+                    rol_base::VARCHAR(255), 
+                    NULL::TEXT;
+            END IF;
+
         ELSE
-            -- Contraseña incorrecta
-            error_code := -1;
-            p_message := 'Usuario o contraseña incorrectos.';
-            p_rol := NULL;
+            RETURN QUERY SELECT 
+                'Usuario o contraseña incorrectos.'::VARCHAR(255), 
+                -1::INT, 
+                NULL::VARCHAR(255), 
+                NULL::TEXT;
         END IF;
     END IF;
-
-    RETURN;
 END;
 $$;
 
