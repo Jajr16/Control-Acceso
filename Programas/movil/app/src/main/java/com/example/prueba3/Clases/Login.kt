@@ -7,7 +7,7 @@ data class LoginResponse(
     var error_code: Int,
     var message: String,
     var rol: String,
-    val cargos: Optional<List<String>>
+    val cargos: List<String>?
 )
 
 data class LoginRequest(
