@@ -55,10 +55,10 @@ BEGIN
                         0::INT, 
                         cargo_base::VARCHAR(255), 
                         (
-                            SELECT STRING_AGG(tp.cargo, ', ')::TEXT
-                            FROM tipopersonal tp
-                            INNER JOIN personalacademico pa ON pa.tipopa = tp.tipopa
-                            INNER JOIN usuario u ON pa.rfc = u.usuario
+                            SELECT STRING_AGG(c.cargo, ', ')::TEXT
+                            FROM cargodocente cd
+							 INNER JOIN cargo c ON c.id_cargo = cd.id_cargo
+                            INNER JOIN usuario u ON cd.rfc = u.usuario
                             WHERE u.usuario = p_username
                         );
                 ELSE
