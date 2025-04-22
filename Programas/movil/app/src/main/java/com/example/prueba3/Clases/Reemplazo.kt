@@ -11,3 +11,10 @@ data class VerificacionSolicitudResponse(
     val tieneSolicitudPendiente: Boolean,
     val solicitudExistente: Reemplazo? = null
 )
+
+data class Docente(
+    val rfcDocente: String,
+    val nombreDocente: String
+)
+
+

@@ -34,7 +34,6 @@ fun WelcomeScreenAcademico(
         .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
     val username = sharedPreferences.getString("username", "") ?: ""
 
-    // Obtener datos personales del ViewModel
     LaunchedEffect(username) {
         viewModel.obtenerDatos(username)
     }
@@ -66,8 +65,8 @@ fun WelcomeScreenAcademico(
 
                 OptionButton(
                     title = "Solicitudes de Reemplazo",
-                    icon = ImageVector.vectorResource(id = R.drawable.ic_replacement),
-                    onClick = { navController.navigate("") },
+                    icon = ImageVector.vectorResource(id = R.drawable.exam),
+                    onClick = { navController.navigate("listadoReemplazos") },
                     modifier = Modifier.size(150.dp)
                 )
             }

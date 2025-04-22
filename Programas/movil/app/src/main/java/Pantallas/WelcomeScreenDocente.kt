@@ -73,6 +73,7 @@ fun WelcomeScreenDocente(navController: NavController, loginViewModel: LoginView
                     onClick = { navController.navigate("LETS") },
                     modifier = Modifier.size(150.dp)
                 )
+
             }
         }
     }
