@@ -545,7 +545,7 @@ fun InformacionAlumno(
                     }
 
                     Text(
-                        text = "Realiza los reportess con:",
+                        text = "Realiza los reportes con:",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
