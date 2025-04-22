@@ -86,8 +86,9 @@ fun LoginScreen(
                         popUpTo("login") { inclusive = true } }
                     "Personal Academico", "Docente" -> navController.navigate("Menu Docente") {
                         popUpTo("login") { inclusive = true } }
-                    "Personal Academico", "Personal Gestión Escolar" -> navController.navigate("Menu Academico") {
+                    "Personal Academico", "Jefe Departamento" -> navController.navigate("Menu Academico") {
                         popUpTo("login") { inclusive = true } }
+
                 }
 
                 it.rol = ""

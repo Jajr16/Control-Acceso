@@ -14,6 +14,7 @@ import Pantallas.EtsListScreen
 import Pantallas.EtsListScreenAlumno
 import Pantallas.InformacionAlumno
 import Pantallas.ListaAlumnosScreen
+import Pantallas.ListadoSolicitudesReemplazo
 import Pantallas.LoginScreen
 import Pantallas.MensajesScreen
 import Pantallas.QRScannerScreen
@@ -154,7 +155,26 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                    composable("asignarReemplazo") { ScreenAsignaremplazo(navController, loginViewModel) }
+                        composable("listadoReemplazos") { ListadoSolicitudesReemplazo(navController = navController, loginViewModel = loginViewModel) }
+
+                        composable(
+                            "detalleReemplazo/{idETS}/{docenteRFC}",
+                            arguments = listOf(
+                                navArgument("idETS") { type = NavType.IntType },
+                                navArgument("docenteRFC") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            val idETS = backStackEntry.arguments?.getInt("idETS")
+                            val docenteRFC = backStackEntry.arguments?.getString("docenteRFC")
+
+                            ScreenAsignaremplazo(
+                                navController = navController,
+                                loginViewModel = loginViewModel,
+                                idETS = idETS,
+                                docenteRFC = docenteRFC
+                            )
+                        }
+
 
 
                     composable("Calendar") { CalendarScreen(navController, loginViewModel, diasETSModel) }
