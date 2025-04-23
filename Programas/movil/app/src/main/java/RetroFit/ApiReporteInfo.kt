@@ -1,6 +1,7 @@
 package RetroFit
 
 
+import com.example.prueba3.Clases.ImagenReporteResponse
 import okhttp3.ResponseBody
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -16,5 +17,5 @@ interface ApiReporteInfo {
     suspend fun obtenerImagenReporte(
         @Query("idets") idets: Int,
         @Query("boleta") boleta: String
-    ): ResponseBody
+    ): ImagenReporteResponse
 }

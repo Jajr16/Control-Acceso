@@ -360,17 +360,61 @@ class AlumnosViewModel : ViewModel() {
             }
         }
 
+
+
     fun fetchImagenReporte(idets: Int, boleta: String, onComplete: () -> Unit) {
         viewModelScope.launch {
+            _loadingState.value = true
             try {
-                _loadingState.value = true // Puedes usar un estado de carga específico si lo prefieres
-                val imageResponseBody = RetrofitInstance.apiReporteInfo.obtenerImagenReporte(idets, boleta)
-                _imagenBytes.value = imageResponseBody.bytes()
+                // 1. Obtener la URL de la imagen desde la API
+                val imageUrl = try {
+                    val response = RetrofitInstance.apiReporteInfo.obtenerImagenReporte(idets, boleta)
+                    response?.imageUrl?.trim()?.replace("\"", "")
+                } catch (e: HttpException) {
+                    Log.e("ReporteViewModel", "Error HTTP al obtener la URL: ${e.code()} - ${e.message()}")
+                    null
+                } catch (e: IOException) {
+                    Log.e("ReporteViewModel", "Error de red al obtener la URL: ${e.message}")
+                    null
+                }
+
+                if (imageUrl.isNullOrBlank()) {
+                    Log.e("ReporteViewModel", "URL de imagen inválida obtenida del servidor")
+                    _imagenBytes.value = null
+                    return@launch
+                }
+
+                Log.d("ReporteViewModel", "URL de la imagen obtenida: $imageUrl")
+
+                // 2. Descargar los bytes desde la URL obtenida
+                _imagenBytes.value = withContext(Dispatchers.IO) {
+                    var connection: HttpURLConnection? = null
+                    return@withContext try {
+                        val url = URL(imageUrl)
+                        connection = url.openConnection() as HttpURLConnection
+                        connection!!.connectTimeout = 15_000
+                        connection!!.readTimeout = 15_000
+                        connection!!.doInput = true
+
+                        connection!!.inputStream.use { inputStream ->
+                            val buffer = ByteArrayOutputStream()
+                            inputStream.copyTo(buffer)
+                            buffer.toByteArray().takeIf { it.isNotEmpty() }
+                                ?: throw IOException("La imagen del reporte está vacía")
+                        }
+                    } catch (e: Exception) {
+                        Log.e("ReporteViewModel", "Error al descargar la imagen del reporte: ${e.message}", e)
+                        null
+                    } finally {
+                        connection?.disconnect()
+                    }
+                }
+
             } catch (e: Exception) {
-                Log.e("ReporteViewModel", "Error al obtener la imagen: ${e.message}")
+                Log.e("ReporteViewModel", "Error general al obtener o descargar la imagen del reporte: ${e.localizedMessage}")
                 _imagenBytes.value = null
             } finally {
-                _loadingState.value = false // O actualiza el estado de carga específico
+                _loadingState.value = false
                 onComplete()
             }
         }
