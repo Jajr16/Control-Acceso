@@ -702,15 +702,20 @@ fun InformacionAlumno(
             }
         }
 
+        var isServidorTrabajandoAsistencia by remember { mutableStateOf(false) } // Nuevo estado para bloqueo de asistencia
+        var isServidorTrabajandoIncidencia by remember { mutableStateOf(false) } // Nuevo estado para bloqueo de incidencia
+
 
         if (showDialog) {
-            fun cerrarDialogo() {
-                showDialog = false
-                showError = false
-                tipo = ""
+            fun cerrarDialogoAsistencia() {
+                if (!isServidorTrabajandoAsistencia) {
+                    showDialog = false
+                    showError = false
+                    tipo = ""
+                }
             }
 
-            Dialog(onDismissRequest = { cerrarDialogo() }) {
+            Dialog(onDismissRequest = { cerrarDialogoAsistencia() }) {
                 Box(
                     modifier = Modifier
                         .background(Color.White, shape = RoundedCornerShape(8.dp))
@@ -722,7 +727,7 @@ fun InformacionAlumno(
                             modifier = Modifier.fillMaxWidth(),
                             contentAlignment = Alignment.TopEnd
                         ) {
-                            IconButton(onClick = { cerrarDialogo() }) {
+                            IconButton(onClick = { cerrarDialogoAsistencia() }) {
                                 Icon(Icons.Default.Close, contentDescription = "Cerrar")
                             }
                         }
@@ -804,7 +809,6 @@ fun InformacionAlumno(
                             )
                         }
 
-                        // Botones "Sí" y "No"
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -817,29 +821,41 @@ fun InformacionAlumno(
                                     val verificacionIAHecha = precision != null && bitmap != null
 
                                     if (tipoValido && (!esReconocimientoFacial || verificacionIAHecha)) {
+                                        isServidorTrabajandoAsistencia = true // Bloquear el botón al iniciar la operación
                                         informacionAlumnoViewModel.enviarDatosAlServidor(
-                                            razon, // Envía null para la razón
+                                            razon = null,
                                             tipo,
                                             boleta,
                                             idETS,
                                             camaraViewModel.precision.value?.toString(),
                                             horaActual,
                                             camaraViewModel.imagenBitmap.value,
-                                            context
+                                            context,
+                                            onComplete = { // Callback cuando la operación del servidor termina
+                                                isServidorTrabajandoAsistencia = false // Desbloquear el botón
+                                                showError = false
+                                                showSuccessDialog2 = true
+                                            },
+                                            onError = { error -> // Callback en caso de error
+                                                isServidorTrabajandoAsistencia = false // Desbloquear el botón
+                                                showError = true
+                                                showErrorDialog2 = true
+                                                errorMessage = error // Actualiza errorMessage
+                                            }
                                         )
-                                        showError = false
-                                        showSuccessDialog2 = true
                                     } else {
                                         showError = true
                                     }
                                 },
-                                modifier = Modifier.padding(horizontal = 8.dp)
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                enabled = !isServidorTrabajandoAsistencia // Deshabilitar el botón mientras trabaja el servidor
                             ) {
                                 Text("Sí")
                             }
                             Button(
-                                onClick = { cerrarDialogo() },
-                                modifier = Modifier.padding(horizontal = 8.dp)
+                                onClick = { cerrarDialogoAsistencia() },
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                enabled = !isServidorTrabajandoAsistencia // Deshabilitar el botón mientras trabaja el servidor
                             ) {
                                 Text("No")
                             }
@@ -850,11 +866,9 @@ fun InformacionAlumno(
 
 
 
+
             if (showSuccessDialog2) {
-                Dialog(onDismissRequest = {
-                    showSuccessDialog2 = false
-                    navController.navigate("listaAlumnos/$idETS")
-                }) {
+                Dialog(onDismissRequest = { showSuccessDialog2 = false; navController.navigate("listaAlumnos/$idETS") }) {
                     Box(
                         modifier = Modifier
                             .background(Color.White, shape = RoundedCornerShape(8.dp))
@@ -921,14 +935,16 @@ fun InformacionAlumno(
 
 
         if (showDialog2) {
-            fun cerrarDialogo() {
-                showDialog2 = false
-                showError = false
-                razon = ""
-                tipo = ""
+            fun cerrarDialogoIncidencia() {
+                if (!isServidorTrabajandoIncidencia) {
+                    showDialog2 = false
+                    showError = false
+                    razon = ""
+                    tipo = ""
+                }
             }
 
-            Dialog(onDismissRequest = { cerrarDialogo() }) {
+            Dialog(onDismissRequest = { cerrarDialogoIncidencia() }) {
                 Box(
                     modifier = Modifier
                         .background(Color.White, shape = RoundedCornerShape(8.dp))
@@ -940,7 +956,7 @@ fun InformacionAlumno(
                             modifier = Modifier.fillMaxWidth(),
                             contentAlignment = Alignment.TopEnd
                         ) {
-                            IconButton(onClick = { cerrarDialogo() }) {
+                            IconButton(onClick = { cerrarDialogoIncidencia() }) {
                                 Icon(Icons.Default.Close, contentDescription = "Cerrar")
                             }
                         }
@@ -1052,11 +1068,11 @@ fun InformacionAlumno(
                         ) {
                             Button(
                                 onClick = {
-
                                     val esReconocimientoFacial = tipo.contains("reconocimiento facial")
                                     val verificacionIAHecha = precision != null && bitmap != null
 
                                     if ((razonValida && tipoValido) && (!esReconocimientoFacial || verificacionIAHecha)) {
+                                        isServidorTrabajandoIncidencia = true // Bloquear el botón al iniciar la operación
                                         informacionAlumnoViewModel.enviarDatosAlServidor(
                                             razon,
                                             tipo,
@@ -1065,23 +1081,32 @@ fun InformacionAlumno(
                                             camaraViewModel.precision.value?.toString(), // Envía el valor nulo tal cual
                                             horaActual,
                                             camaraViewModel.imagenBitmap.value, // Envía el valor nulo tal cual
-                                            context
+                                            context,
+                                            onComplete = { // Callback cuando la operación del servidor termina
+                                                isServidorTrabajandoIncidencia = false // Desbloquear el botón
+                                                showError = false
+                                                showSuccessDialog2 = true
+                                            },
+                                            onError = { error -> // Callback en caso de error
+                                                isServidorTrabajandoIncidencia = false // Desbloquear el botón
+                                                showError = true
+                                                showErrorDialog2 = true
+                                                errorMessage = error // Actualiza errorMessage
+                                            }
                                         )
-
-
-                                        showError = false
-                                        //showSuccessDialog2 = true
                                     } else {
                                         showError = true
                                     }
                                 },
-                                modifier = Modifier.padding(horizontal = 8.dp)
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                enabled = !isServidorTrabajandoIncidencia // Deshabilitar el botón mientras trabaja el servidor
                             ) {
                                 Text("Sí")
                             }
                             Button(
-                                onClick = { cerrarDialogo() },
-                                modifier = Modifier.padding(horizontal = 8.dp)
+                                onClick = { cerrarDialogoIncidencia() },
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                enabled = !isServidorTrabajandoIncidencia // Deshabilitar el botón mientras trabaja el servidor
                             ) {
                                 Text("No")
                             }

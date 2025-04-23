@@ -42,16 +42,18 @@ class InformacionAlumnoViewModel : ViewModel() {
         precision: String?,
         hora: String,
         imagenBitmap: Bitmap?,
-        context: Context
+        context: Context,
+        onComplete: () -> Unit, // <---- AÑADE ESTE PARÁMETRO
+        onError: (String) -> Unit // <---- AÑADE ESTE PARÁMETRO
     ) {
         viewModelScope.launch {
             _cargando.value = true
+            _envioExitoso.value = null // Reiniciar el estado de éxito
+            _errorEnvio.value = null   // Reiniciar el estado de error
             try {
-
-                Log.d("RetrofitResponse", "Mande: : $razon")
+                Log.d("RetrofitResponse", "Mande razón: $razon")
 
                 var imagenPart: MultipartBody.Part? = null
-
                 if (imagenBitmap != null) {
                     val imagenFile = bitmapToFile(imagenBitmap, context)
                     val imagenBody = imagenFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
@@ -59,9 +61,6 @@ class InformacionAlumnoViewModel : ViewModel() {
                 }
 
                 val razonBody = razon?.toRequestBody("text/plain".toMediaTypeOrNull())
-
-                Log.d("RetrofitResponse", "Mande: : $razon")
-
                 val tipoBody = tipo.toRequestBody("text/plain".toMediaTypeOrNull())
                 val boletaBody = boleta.toRequestBody("text/plain".toMediaTypeOrNull())
                 val idETSBody = idETS.toRequestBody("text/plain".toMediaTypeOrNull())
@@ -82,21 +81,29 @@ class InformacionAlumnoViewModel : ViewModel() {
                     val respuesta: CreacionReporte? = response.body()
                     val mensaje: String? = respuesta?.mensaje
                     Log.d("RetrofitResponse", "Respuesta del servidor: $mensaje")
-                    _envioExitoso.emit(mensaje)
+                    _envioExitoso.emit(mensaje ?: "Operación exitosa")
+                    onComplete() // <---- LLAMA AL CALLBACK DE ÉXITO
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val errorMessage = "Ocurrió un fallo en el proceso: ${response.code()}, ${errorBody ?: "Error desconocido"}"
-                    _errorEnvio.emit(Exception(errorMessage)) // Emitimos una Exception con el mensaje
+                    Log.e("RetrofitResponse", errorMessage)
+                    _errorEnvio.emit(Exception(errorMessage))
+                    onError(errorMessage) // <---- LLAMA AL CALLBACK DE ERROR
                 }
             } catch (e: ConnectException) {
-                Log.e("RetrofitResponse", "Error de conexión:") //  ${e.message}
+                Log.e("RetrofitResponse", "Error de conexión: ${e.message}")
                 _errorEnvio.emit(e)
+                onError("Error de conexión: ${e.message}") // <---- LLAMA AL CALLBACK DE ERROR
             } catch (e: HttpException) {
-                Log.e("RetrofitResponse", "Error HTTP: ") // ${e.code()} ${e.message()}
-                _errorEnvio.emit(Exception("Ocurrió un fallo en el proceso:")) // ${e.code()} ${e.message()}
+                val errorMessage = "Ocurrió un fallo en el proceso: ${e.code()} ${e.message()}"
+                Log.e("RetrofitResponse", "Error HTTP: $errorMessage")
+                _errorEnvio.emit(Exception(errorMessage))
+                onError(errorMessage) // <---- LLAMA AL CALLBACK DE ERROR
             } catch (e: Exception) {
-                Log.e("RetrofitResponse", "Error general:") // ${e.message}
-                _errorEnvio.emit(Exception("Ocurrió un fallo en el proceso:")) // ${e.message}
+                val errorMessage = "Ocurrió un fallo inesperado: ${e.message}"
+                Log.e("RetrofitResponse", "Error general: $errorMessage")
+                _errorEnvio.emit(Exception(errorMessage))
+                onError(errorMessage) // <---- LLAMA AL CALLBACK DE ERROR
             } finally {
                 _cargando.value = false
             }
