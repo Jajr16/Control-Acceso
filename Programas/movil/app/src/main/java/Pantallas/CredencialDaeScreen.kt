@@ -407,7 +407,7 @@ fun CredencialDaeScreen(
                         }
                     }
 
-                    if (userRole == "Personal Seguridad" || userRole == "Personal académico") {
+                    if (userRole == "Personal Seguridad") {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -610,7 +610,9 @@ fun CredencialDaeScreen(
                             )
                         }
                     }
-                } else if (boletaFinal != null && idETSFinal != null) {
+                }
+            } else if (userRole == "Docente") {
+                    Log.d("CredencialDaeScreen", "pase aqui: $boletaFinal")
                     LaunchedEffect(Unit) {
                         viewModel.fetchAlumnoEspecifico(boletaFinal!!)
                     }
@@ -758,7 +760,6 @@ fun CredencialDaeScreen(
                         )
                     }
                 }
-            }
         }
     }
 
@@ -767,6 +768,7 @@ fun CredencialDaeScreen(
             scope.launch {
                 try {
                     val response = RetrofitInstance.alumnosDetalle.getCredencial(url)
+
 
                     if (response.isSuccessful && response.body() != null) {
                         val credencialResponse = response.body()!!
@@ -779,9 +781,11 @@ fun CredencialDaeScreen(
                         // Guardar la información del alumno
                         alumnoInfo = credencialResponse.credenciales.firstOrNull()
 
-                        if (alumnoInfo != null) {
-                            viewModel.limpiarInfoFlujo()
-                        }
+
+
+                       if (alumnoInfo != null && userRole != "Personal académico" && userRole != "Docente") {
+                         viewModel.limpiarInfoFlujo()
+                       }
 
                         val boletausable = alumnoInfo?.boleta
 
