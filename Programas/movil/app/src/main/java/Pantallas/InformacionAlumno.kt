@@ -702,9 +702,8 @@ fun InformacionAlumno(
             }
         }
 
-        var isServidorTrabajandoAsistencia by remember { mutableStateOf(false) } // Nuevo estado para bloqueo de asistencia
-        var isServidorTrabajandoIncidencia by remember { mutableStateOf(false) } // Nuevo estado para bloqueo de incidencia
-
+        var isServidorTrabajandoAsistencia by remember { mutableStateOf(false) }
+        var isServidorTrabajandoIncidencia by remember { mutableStateOf(false) }
 
         if (showDialog) {
             fun cerrarDialogoAsistencia() {
@@ -722,7 +721,6 @@ fun InformacionAlumno(
                         .padding(16.dp)
                 ) {
                     Column {
-                        // Botón de cierre (X)
                         Box(
                             modifier = Modifier.fillMaxWidth(),
                             contentAlignment = Alignment.TopEnd
@@ -732,21 +730,18 @@ fun InformacionAlumno(
                             }
                         }
 
-                        // Título
                         Text(
                             text = "Registrar asistencia",
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
 
-                        // Mensaje con la hora actual
                         Text(
                             text = "Se registrará la asistencia del alumno a las $horaActual. ¿Está de acuerdo?",
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
 
-                        // Campo de Tipo (Dropdown)
                         ExposedDropdownMenuBox(
                             expanded = expanded,
                             onExpandedChange = { expanded = it }
@@ -789,7 +784,6 @@ fun InformacionAlumno(
                             )
                         }
 
-                        // Mensaje de error de reconocimiento facial
                         if ((tipo.contains("reconocimiento facial") && precision == null && bitmap == null) && showError) {
                             Text(
                                 text = "Para hacer un reporte de reconocimiento facial necesita haber hecho el proceso de verificar con IA.",
@@ -799,7 +793,6 @@ fun InformacionAlumno(
                             )
                         }
 
-                        // Mensaje de error general si intenta dar "Sí" sin llenar los campos
                         if (showError && !(tipo.contains("reconocimiento facial") && precision == null && bitmap == null)) {
                             Text(
                                 text = "Debe completar todos los campos correctamente.",
@@ -821,7 +814,7 @@ fun InformacionAlumno(
                                     val verificacionIAHecha = precision != null && bitmap != null
 
                                     if (tipoValido && (!esReconocimientoFacial || verificacionIAHecha)) {
-                                        isServidorTrabajandoAsistencia = true // Bloquear el botón al iniciar la operación
+                                        isServidorTrabajandoAsistencia = true
                                         informacionAlumnoViewModel.enviarDatosAlServidor(
                                             razon = null,
                                             tipo,
@@ -831,16 +824,16 @@ fun InformacionAlumno(
                                             horaActual,
                                             camaraViewModel.imagenBitmap.value,
                                             context,
-                                            onComplete = { // Callback cuando la operación del servidor termina
-                                                isServidorTrabajandoAsistencia = false // Desbloquear el botón
+                                            onComplete = {
+                                                isServidorTrabajandoAsistencia = false
                                                 showError = false
                                                 showSuccessDialog2 = true
                                             },
-                                            onError = { error -> // Callback en caso de error
-                                                isServidorTrabajandoAsistencia = false // Desbloquear el botón
+                                            onError = { error ->
+                                                isServidorTrabajandoAsistencia = false
                                                 showError = true
                                                 showErrorDialog2 = true
-                                                errorMessage = error // Actualiza errorMessage
+                                                errorMessage = error
                                             }
                                         )
                                     } else {
@@ -848,14 +841,14 @@ fun InformacionAlumno(
                                     }
                                 },
                                 modifier = Modifier.padding(horizontal = 8.dp),
-                                enabled = !isServidorTrabajandoAsistencia // Deshabilitar el botón mientras trabaja el servidor
+                                enabled = !isServidorTrabajandoAsistencia
                             ) {
                                 Text("Sí")
                             }
                             Button(
                                 onClick = { cerrarDialogoAsistencia() },
                                 modifier = Modifier.padding(horizontal = 8.dp),
-                                enabled = !isServidorTrabajandoAsistencia // Deshabilitar el botón mientras trabaja el servidor
+                                enabled = !isServidorTrabajandoAsistencia
                             ) {
                                 Text("No")
                             }
@@ -1072,26 +1065,26 @@ fun InformacionAlumno(
                                     val verificacionIAHecha = precision != null && bitmap != null
 
                                     if ((razonValida && tipoValido) && (!esReconocimientoFacial || verificacionIAHecha)) {
-                                        isServidorTrabajandoIncidencia = true // Bloquear el botón al iniciar la operación
+                                        isServidorTrabajandoIncidencia = true
                                         informacionAlumnoViewModel.enviarDatosAlServidor(
                                             razon,
                                             tipo,
                                             boleta,
                                             idETS,
-                                            camaraViewModel.precision.value?.toString(), // Envía el valor nulo tal cual
+                                            camaraViewModel.precision.value?.toString(),
                                             horaActual,
-                                            camaraViewModel.imagenBitmap.value, // Envía el valor nulo tal cual
+                                            camaraViewModel.imagenBitmap.value,
                                             context,
-                                            onComplete = { // Callback cuando la operación del servidor termina
-                                                isServidorTrabajandoIncidencia = false // Desbloquear el botón
+                                            onComplete = {
+                                                isServidorTrabajandoIncidencia = false
                                                 showError = false
                                                 showSuccessDialog2 = true
                                             },
-                                            onError = { error -> // Callback en caso de error
-                                                isServidorTrabajandoIncidencia = false // Desbloquear el botón
+                                            onError = { error ->
+                                                isServidorTrabajandoIncidencia = false
                                                 showError = true
                                                 showErrorDialog2 = true
-                                                errorMessage = error // Actualiza errorMessage
+                                                errorMessage = error
                                             }
                                         )
                                     } else {
@@ -1099,14 +1092,14 @@ fun InformacionAlumno(
                                     }
                                 },
                                 modifier = Modifier.padding(horizontal = 8.dp),
-                                enabled = !isServidorTrabajandoIncidencia // Deshabilitar el botón mientras trabaja el servidor
+                                enabled = !isServidorTrabajandoIncidencia
                             ) {
                                 Text("Sí")
                             }
                             Button(
                                 onClick = { cerrarDialogoIncidencia() },
                                 modifier = Modifier.padding(horizontal = 8.dp),
-                                enabled = !isServidorTrabajandoIncidencia // Deshabilitar el botón mientras trabaja el servidor
+                                enabled = !isServidorTrabajandoIncidencia
                             ) {
                                 Text("No")
                             }
@@ -1194,7 +1187,7 @@ fun ProblemOption(text: String) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            imageVector = Icons.Default.Info, // Icono informativo
+            imageVector = Icons.Default.Info,
             contentDescription = "Problema",
             tint = Color.White,
             modifier = Modifier.size(20.dp)
