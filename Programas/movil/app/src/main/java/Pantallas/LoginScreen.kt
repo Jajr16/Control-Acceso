@@ -41,6 +41,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import com.example.prueba3.Clases.getFCMToken
 import com.example.prueba3.R
 
 @Composable
@@ -58,6 +59,12 @@ fun LoginScreen(
     LaunchedEffect(Unit) {
         loginViewModel.getUserRole()?.let { savedRole ->
             if (savedRole != null || savedRole != "") {
+                val savedUsername = loginViewModel.getUserName()
+
+                if (savedRole in listOf("Alumno", "Personal Academico", "Docente") && savedUsername != null) {
+                    getFCMToken(savedUsername)
+                }
+
                 when (savedRole) {
                     "Alumno" -> navController.navigate("Menu Alumno") {
                         popUpTo("login") { inclusive = true } }
@@ -80,15 +87,21 @@ fun LoginScreen(
                 loginViewModel.saveUserRole(it.rol)
 
                 when (it.rol) {
+                    "Alumno", "Personal Academico", "Docente" -> {
+                        // Solo estos roles recibirán notificaciones
+                        getFCMToken(it.usuario)
+                    }
+                }
+
+                when (it.rol) {
                     "Alumno" -> navController.navigate("Menu Alumno") {
                         popUpTo(navController.graph.startDestinationId) { inclusive = true } }
                     "Personal Seguridad" -> navController.navigate("scanQr") {
                         popUpTo("login") { inclusive = true } }
-                    "Personal Academico", "Docente" -> navController.navigate("Menu Docente") {
+                    "Docente" -> navController.navigate("Menu Docente") {
                         popUpTo("login") { inclusive = true } }
-                    "Personal Academico", "Jefe Departamento" -> navController.navigate("Menu Academico") {
+                    "Jefe Departamento" -> navController.navigate("Menu Academico") {
                         popUpTo("login") { inclusive = true } }
-
                 }
 
                 it.rol = ""

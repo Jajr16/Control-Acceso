@@ -49,12 +49,47 @@ import com.example.prueba3.Views.CamaraViewModel
 import com.example.prueba3.Views.DiasETSModel
 import com.example.prueba3.Views.InformacionAlumnoViewModel
 import com.example.prueba3.Views.MensajesViewModel
-import com.example.prueba3.Views.ReemplazoViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 import com.example.prueba3.ui.theme.Prueba3Theme
 import java.lang.Integer.parseInt
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.util.Log
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.MaterialTheme
+
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 class MainActivity : ComponentActivity() {
+    private val _showDialog = mutableStateOf(false)
+    private val _dialogTitle = mutableStateOf("")
+    private val _dialogMessage = mutableStateOf("")
+
+    private fun mostrarMensajeEnUI(title: String?, body: String?) {
+        runOnUiThread {
+            _dialogTitle.value = title ?: "Notificación"
+            _dialogMessage.value = body ?: ""
+            _showDialog.value = true
+        }
+    }
+
+
+    private val broadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == "NOTIFICACION_RECIBIDA") {
+                val title = intent.getStringExtra("title")
+                val body = intent.getStringExtra("body")
+                // Aquí implementas cómo mostrar el mensaje en tu UI
+                mostrarMensajeEnUI(title, body)
+            }
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,6 +102,15 @@ class MainActivity : ComponentActivity() {
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 )
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            broadcastReceiver,
+            IntentFilter("NOTIFICACION_RECIBIDA")
+        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
 
         val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val loginViewModel = LoginViewModel(sharedPreferences)
@@ -175,32 +219,30 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-
-
-                    composable("Calendar") { CalendarScreen(navController, loginViewModel, diasETSModel) }
-                    composable(
-                        route = "CredencialDAE?url={url}&boleta={boleta}", // Ruta con dos argumentos
-                        arguments = listOf(
-                            navArgument("url") { // Argumento "url"
-                                type = NavType.StringType // Tipo String
-                                nullable = true // Permite valores nulos
-                            },
-                            navArgument("boleta") { // Argumento "boleta"
-                                type = NavType.StringType // Tipo String
-                                defaultValue = "" // Valor por defecto
-                            }
-                        )
-                    ) { backStackEntry ->
-                        val url = backStackEntry.arguments?.getString("url")
-                        val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
-
-                            CredencialDaeScreen(
-                                navController = navController,
-                                loginViewModel = loginViewModel,
-                                url = url,
-                                alumnosViewModel,
-                                boleta = boleta
+                        composable("Calendar") { CalendarScreen(navController, loginViewModel, diasETSModel) }
+                        composable(
+                            route = "CredencialDAE?url={url}&boleta={boleta}", // Ruta con dos argumentos
+                            arguments = listOf(
+                                navArgument("url") { // Argumento "url"
+                                    type = NavType.StringType // Tipo String
+                                    nullable = true // Permite valores nulos
+                                },
+                                navArgument("boleta") { // Argumento "boleta"
+                                    type = NavType.StringType // Tipo String
+                                    defaultValue = "" // Valor por defecto
+                                }
                             )
+                        ) { backStackEntry ->
+                            val url = backStackEntry.arguments?.getString("url")
+                            val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
+
+                                CredencialDaeScreen(
+                                    navController = navController,
+                                    loginViewModel = loginViewModel,
+                                    url = url,
+                                    alumnosViewModel,
+                                    boleta = boleta
+                                )
                         }
                         composable("ConsultarAlumnos") {
                             ConsultarScreen(navController, viewModel = alumnosViewModel, loginViewModel = loginViewModel)
@@ -298,8 +340,49 @@ class MainActivity : ComponentActivity() {
 //                        EtsCardButton(navController, parsedETS, Periodo,Turno, Fecha,PA)
                         }
                     }
+                    if (_showDialog.value) {
+                        AlertDialog(
+                            onDismissRequest = { _showDialog.value = false },
+                            title = {
+                                Text(
+                                    text = _dialogTitle.value,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                            },
+                            text = {
+                                Text(
+                                    text = _dialogMessage.value,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = { _showDialog.value = false }
+                                ) {
+                                    Text("Aceptar")
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        LocalBroadcastManager.getInstance(this)
+            .unregisterReceiver(broadcastReceiver)
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            Log.d("MainActivity", "Permiso de notificaciones concedido")
+        } else {
+            Log.d("MainActivity", "Permiso de notificaciones denegado")
+        }
+    }
+
 }

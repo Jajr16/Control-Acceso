@@ -43,9 +43,14 @@ roomKtx = "2.6.1"
 transportApi = "3.0.0"
 firebasePerfKtx = "21.0.5"
 composeMaterial = "1.4.1"
+firebaseCrashlyticsKtx = "19.4.2"
+playServicesWearable = "19.0.0"
 
 [libraries]
+firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx" }
 firebase-database-ktx = { module = "com.google.firebase:firebase-database-ktx" }
+google-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx" }
+google-firebase-messaging-ktx = { module = "com.google.firebase:firebase-messaging-ktx" }
 kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
 hiltAndroid = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hiltCompiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
@@ -99,6 +104,8 @@ androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = 
 transport-api = { group = "com.google.android.datatransport", name = "transport-api", version.ref = "transportApi" }
 firebase-perf-ktx = { group = "com.google.firebase", name = "firebase-perf-ktx", version.ref = "firebasePerfKtx" }
 androidx-compose-material = { group = "androidx.wear.compose", name = "compose-material", version.ref = "composeMaterial" }
+firebase-crashlytics-ktx = { group = "com.google.firebase", name = "firebase-crashlytics-ktx", version.ref = "firebaseCrashlyticsKtx" }
+play-services-wearable = { group = "com.google.android.gms", name = "play-services-wearable", version.ref = "playServicesWearable" }
 
 
 [plugins]
