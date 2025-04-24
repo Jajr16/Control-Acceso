@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
     id("kotlin-kapt")
 }
 
@@ -114,6 +115,7 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.transport.api)
     implementation(libs.androidx.compose.material)
+    implementation(libs.play.services.wearable)
     testImplementation(libs.junit)
     implementation(libs.material3)
     androidTestImplementation(libs.androidx.junit)
@@ -144,6 +146,9 @@ dependencies {
     kapt(libs.hiltCompiler)
 
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
+    implementation(libs.firebase.analytics.ktx)
+    implementation(libs.google.firebase.crashlytics.ktx)
+    implementation(libs.google.firebase.messaging.ktx)
     implementation(libs.firebase.analytics)
 
     implementation("com.google.android.gms:play-services-auth:20.7.0")

@@ -9,10 +9,10 @@ import retrofit2.http.Path
 
 interface AlumnoEspecificoApi {
 
-    @GET("/InfoA/{boleta}")
+    @GET("/{boleta}")
     suspend fun getAlumnoEspecifico(@Path("boleta") boleta: String): AlumnoEspecifico
 
-    @GET("/InfoA/foto/{boleta}")
+    @GET("/foto/{boleta}")
     suspend fun getFotoAlumno(@Path("boleta") boleta: String): FotoAlumnoResponse
 
 
