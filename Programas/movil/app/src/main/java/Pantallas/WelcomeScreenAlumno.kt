@@ -34,12 +34,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.prueba3.R
+import com.example.prueba3.Views.CamaraViewModel
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.Views.PersonaViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 
 @Composable
-fun WelcomeScreenAlumno(navController: NavController, loginViewModel: LoginViewModel, viewModel: PersonaViewModel = androidx.lifecycle.viewmodel.compose.viewModel()){
+fun WelcomeScreenAlumno(navController: NavController, loginViewModel: LoginViewModel, cameraViewModel: CamaraViewModel,viewModel: PersonaViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
 
     val sharedPreferences = navController.context
         .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
@@ -47,6 +48,12 @@ fun WelcomeScreenAlumno(navController: NavController, loginViewModel: LoginViewM
 
     LaunchedEffect(username) {
         viewModel.obtenerDatos(username)
+    }
+
+    LaunchedEffect(Unit) {
+
+        cameraViewModel.setPythonResponse(null)
+
     }
 
     val datos by viewModel.datosPersona.collectAsState()

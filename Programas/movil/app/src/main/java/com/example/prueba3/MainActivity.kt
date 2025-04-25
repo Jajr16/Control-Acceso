@@ -174,7 +174,7 @@ class MainActivity : ComponentActivity() {
                             Camara(navController, boleta, idETS, loginViewModel = loginViewModel, cameraViewModel = camaraViewModel) // Pasa camaraViewModel
                         }
                         composable("notificaciones") { NotificationsScreen(navController) }
-                        composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }
+                        composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel,cameraViewModel = camaraViewModel) }
 
                         composable("Menu") { WelcomeScreen(navController = navController, loginViewModel = loginViewModel) }
                         composable("Menu Docente") {
