@@ -10,7 +10,7 @@
 
     object RetrofitInstance {
 //        private const val BASE_URL = "http://192.168.1.72:8080/"
-        private const val BASE_URL = "https://springboot-ooxx.onrender.com/"
+        private const val BASE_URL = "https://serverspringboot-asceeudmhackgbfr.mexicocentral-01.azurewebsites.net/"
 
         private val okHttpClient = OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)  // Timeout de conexión

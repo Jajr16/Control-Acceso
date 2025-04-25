@@ -155,4 +155,8 @@ dependencies {
     implementation(libs.accompanist.insets)
     implementation(libs.hilt.android.compiler)
     kapt("com.google.dagger:hilt-android-compiler:2.44")
+
+    implementation("androidx.multidex:multidex:2.0.1")
+    implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.1.0")
+
 }

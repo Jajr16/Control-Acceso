@@ -106,9 +106,8 @@ fun ChatScreen(
 
         LaunchedEffect(destinatarioActual, usuarioActualRemembered, mensajes) {
             Log.d("ChatScreen", "LaunchedEffect triggered")
-            if (initialLoad.value && usuarioActualRemembered != null) {
+            if (usuarioActualRemembered != null) {
                 mensajesViewModel.getMessages(usuarioActualRemembered, destinatarioActual)
-                initialLoad.value = false
             }
         }
 
