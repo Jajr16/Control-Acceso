@@ -92,6 +92,8 @@ fun WelcomeScreenAlumno(navController: NavController, loginViewModel: LoginViewM
             )
         }
 
+        Spacer(modifier = Modifier.height(10.dp))
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center

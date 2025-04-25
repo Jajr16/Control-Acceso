@@ -9,8 +9,8 @@
     import java.util.concurrent.TimeUnit
 
     object RetrofitInstance {
-        private const val BASE_URL = "http://192.168.100.4:8080/"
-        //private const val BASE_URL = "https://serverspringboot-asceeudmhackgbfr.mexicocentral-01.azurewebsites.net/"
+        //private const val BASE_URL = "http://192.168.100.4:8080/"
+        private const val BASE_URL = "https://serverspringboot-asceeudmhackgbfr.mexicocentral-01.azurewebsites.net/"
 
 
         private val okHttpClient = OkHttpClient.Builder()
