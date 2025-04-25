@@ -97,17 +97,22 @@ class MensajesViewModel @Inject constructor(): ViewModel() {
     fun sendMessage(remitente: String, destinatario: String, mensaje: String) {
         viewModelScope.launch {
             try {
-                val result = RetrofitInstance.getListaUsuariosChat.enviarMensaje(sendMensaje(remitente, destinatario, mensaje))
+                val result = RetrofitInstance.getListaUsuariosChat.enviarMensaje(
+                    sendMensaje(remitente, destinatario, mensaje)
+                )
                 if (result.success) {
-                    _nuevoMensajeEnviado.emit(Unit) // Emitir un valor cuando el mensaje se envía con éxito
+                    // Actualizar mensajes inmediatamente después de enviar
+                    getMessages(remitente, destinatario)
+                    _nuevoMensajeEnviado.emit(Unit)
                 } else {
-                    _errorMessage.value = "Error sending message"
+                    _errorMessage.value = "Error al enviar mensaje"
                 }
             } catch (e: Exception) {
                 _errorMessage.value = "Error sending message: ${e.message}"
             }
         }
     }
+
 
     fun refreshMessages(remitente: String, destinatario: String) {
         viewModelScope.launch {

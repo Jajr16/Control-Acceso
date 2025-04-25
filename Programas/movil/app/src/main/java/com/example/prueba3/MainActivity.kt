@@ -56,6 +56,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
@@ -67,29 +69,62 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 class MainActivity : ComponentActivity() {
+    private val messageHandler = Handler(Looper.getMainLooper())
     private val _showDialog = mutableStateOf(false)
     private val _dialogTitle = mutableStateOf("")
     private val _dialogMessage = mutableStateOf("")
 
     private fun mostrarMensajeEnUI(title: String?, body: String?) {
-        runOnUiThread {
+        try {
             _dialogTitle.value = title ?: "Notificación"
             _dialogMessage.value = body ?: ""
             _showDialog.value = true
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error mostrando mensaje en UI: ${e.message}", e)
         }
     }
 
 
     private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == "NOTIFICACION_RECIBIDA") {
-                val title = intent.getStringExtra("title")
-                val body = intent.getStringExtra("body")
-                // Aquí implementas cómo mostrar el mensaje en tu UI
-                mostrarMensajeEnUI(title, body)
+            try {
+                if (intent?.action == "NOTIFICACION_RECIBIDA") {
+                    val title = intent.getStringExtra("title")
+                    val body = intent.getStringExtra("body")
+
+                    // Usar Handler para asegurar que estamos en el hilo principal
+                    messageHandler.post {
+                        handleIncomingMessage(title, body)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error procesando mensaje: ${e.message}", e)
             }
         }
     }
+
+    private fun handleIncomingMessage(title: String?, body: String?) {
+        try {
+            if (!isFinishing && !isDestroyed) {
+                // Si la app está en primer plano, mostrar en UI
+                mostrarMensajeEnUI(title, body)
+            } else {
+                // Si está en segundo plano, mostrar notificación
+                mostrarNotificacion(title, body)
+            }
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error manejando mensaje: ${e.message}", e)
+        }
+    }
+
+    private fun mostrarNotificacion(title: String?, body: String?) {
+        try {
+            // Código para mostrar notificación
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error mostrando notificación: ${e.message}", e)
+        }
+    }
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
