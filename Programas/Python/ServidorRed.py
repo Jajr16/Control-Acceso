@@ -23,6 +23,8 @@ def procesar_imagen():
     imagen = request.files['image']
     boleta = request.form['boleta']
 
+    print(boleta)
+
     try:
         # Mostrar la imagen (usar la función aislada)
         # mostrar_imagen(imagen.read(), boleta)

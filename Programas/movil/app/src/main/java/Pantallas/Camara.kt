@@ -73,7 +73,7 @@ fun Camara(
 
     val context = LocalContext.current
 
-
+    val userRole = loginViewModel.getUserRole()
 
     ValidateSession(navController = navController) {
         val permissions = rememberMultiplePermissionsState(
@@ -203,7 +203,11 @@ fun Camara(
                 onDismiss = {
                     showResultDialog = false
                     if (reconocimientoExitoso) {
-                        navController.navigate("InfoA/$idETS/$boleta")
+                        if (userRole == "Docente")
+                            navController.navigate("InfoA/$idETS/$boleta")
+                        else {
+                            navController.navigate("Menu Alumno")
+                        }
                     }
                 }
             )
@@ -301,38 +305,6 @@ fun ResultDialog(exito: Boolean, precision: Float?, onDismiss: () -> Unit) {
     )
 }
 
-
-
-
-//fun enviarFotoAlServidor(bytes: ByteArray, boleta: String, idETS: String, context: Context) {
-//    val apiService = RetrofitInstance.apiRed
-//
-//    val imageRequestBody = bytes.toRequestBody("image/jpeg".toMediaTypeOrNull(), 0, bytes.size)
-//    val imagePart = MultipartBody.Part.createFormData("image", "foto.jpg", imageRequestBody)
-//
-//    val boletaRequestBody = boleta.toRequestBody("text/plain".toMediaTypeOrNull())
-//
-//    // idETS como RequestBody con text/plain
-//    val idETSRequestBody = idETS.toRequestBody("text/plain".toMediaTypeOrNull())
-//
-//    GlobalScope.launch(Dispatchers.IO) {
-//        try {
-//            val response = apiService.uploadImage(imagePart, boletaRequestBody, idETSRequestBody)
-//
-//            withContext(Dispatchers.Main) {
-//                Toast.makeText(
-//                    context,
-//                    "Status: ${response.status}\nDetalles: ${response.detalles}",
-//                    Toast.LENGTH_LONG
-//                ).show()
-//            }
-//        } catch (e: Exception) {
-//            withContext(Dispatchers.Main) {
-//                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-//            }
-//        }
-//    }
-//}
 
 
 
