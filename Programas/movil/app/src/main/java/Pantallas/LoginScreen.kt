@@ -120,15 +120,15 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp, 0.dp, 16.dp, bottom = 70.dp) // Margen para no pegarse a los bordes
+            .padding(30.dp, 0.dp, 16.dp, bottom = 30.dp) // Margen para no pegarse a los bordes
     ) {
         Image(
-            painter = painterResource(id = R.drawable.poli),
+            painter = painterResource(id = R.drawable.escom),
             contentDescription = "Logo IPN",
             modifier = Modifier
-                .fillMaxWidth(0.75f)
+                .fillMaxWidth(0.9f)
                 //.padding(start = 20.dp, top = 160.dp, end = 20.dp, bottom = 20.dp)
-                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 20.dp)
+                .padding(start = 20.dp, top = 120.dp, end = 20.dp, bottom = 20.dp)
                 .align(Alignment.TopCenter),
             contentScale = ContentScale.Crop
         )
