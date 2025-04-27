@@ -3,6 +3,7 @@ package Pantallas
 import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -63,10 +64,24 @@ fun EtsDetailScreen(
 ) {
     val userRole = loginViewModel.getUserRole()
 
+    val sharedPreferences = navController.context
+        .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+    val username = sharedPreferences.getString("username", "") ?: ""
+
+    val docenteRfc by viewModel.rfcDocenteState.collectAsState()
+
+    LaunchedEffect(idETS) {
+        //val idETS2 = idETS.toInt()
+        viewModel.fetchRfcDocente(idETS)
+        viewModel.fetchEtsDetail(idETS)
+    }
+
     ValidateSession(navController = navController) {
         val etsDetail by remember { viewModel.etsDetailState }.collectAsState()
         val salonState by remember { viewModel.salonDetailState }.collectAsState()
         val isLoading by remember { viewModel.loadingState }.collectAsState()
+
+
 
         LaunchedEffect(idETS) {
             viewModel.fetchEtsDetail(idETS)
@@ -158,7 +173,9 @@ fun EtsDetailScreen(
                             salon = etsDetail!!.salon,
                             salonState = salonState!!,
                             hora = etsDetail!!.ets.hora,
-                            userRole = savedRole, // Pasamos el rol del usuario
+                            userRole = savedRole,
+                            username = username,
+                            docenteRfc= docenteRfc!!,
                             onRequestReplacement = {
                                 if (savedRole == "Personal Academico" || savedRole == "Docente") {
                                     navController.navigate("solicitarReemplazo/${etsDetail!!.ets.idETS}/${etsDetail!!.ets.unidadAprendizaje}")
@@ -224,9 +241,16 @@ fun SingleStyledCard(
     salon: List<Salon>,
     salonState: Boolean,
     hora: String,
-    userRole: String?,  // Añadir el parámetro del rol del usuario
+    userRole: String?,
+    username: String,
+    docenteRfc: String,
     onRequestReplacement: () -> Unit
+
+
 ) {
+
+
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -273,7 +297,7 @@ fun SingleStyledCard(
             )
 
             // Mostrar el botón solo si el rol es "Personal Academico"
-            if (userRole == "Personal Academico" || userRole == "Docente") {
+            if (userRole == "Personal Academico" || userRole == "Docente" && username == docenteRfc) {
                 OutlinedButton(
                     onClick = onRequestReplacement,
                     modifier = Modifier
