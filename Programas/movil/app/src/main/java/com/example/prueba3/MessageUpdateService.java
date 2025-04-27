@@ -19,14 +19,14 @@ public class MessageUpdateService extends Service {
     private static final String TAG = "MessageUpdateService";
     public static final String ACTION_UPDATE_MESSAGES = "com.example.prueba3.UPDATE_MESSAGES";
 
+    static final int NOTIFICATION_ID = 1;
+    static final String CHANNEL_ID = "message_update_channel"; // Más descriptivo
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
-
-    static final int NOTIFICATION_ID = 1;
-    static final String CHANNEL_ID = "my_channel_id";
 
     @SuppressLint("ForegroundServiceType")
     @Override
@@ -44,8 +44,13 @@ public class MessageUpdateService extends Service {
             return START_NOT_STICKY;
         }
 
-        // Crear y mostrar la notificación
-        Notification notification = createNotification();
+        // Crear el canal de notificación si la versión de Android es Oreo o superior
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChannel();
+        }
+
+        // Crear y mostrar la notificación de primer plano (incluyendo la categoría)
+        Notification notification = createForegroundNotification();
         startForeground(NOTIFICATION_ID, notification);
 
         // Enviar un Broadcast para notificar la actualización de mensajes
@@ -59,24 +64,27 @@ public class MessageUpdateService extends Service {
         return START_NOT_STICKY;
     }
 
-    private Notification createNotification() {
+    private Notification createForegroundNotification() {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
                 notificationIntent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
 
-        return new NotificationCompat.Builder(this, CHANNEL_ID)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Actualizando mensajes")
                 .setContentText("Obteniendo últimos mensajes...")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.ic_launcher_foreground) // Reemplaza con tu icono adecuado
                 .setContentIntent(pendingIntent)
-                .build();
+                .setCategory(NotificationCompat.CATEGORY_SERVICE) // Establece la categoría de servicio
+                .setOngoing(true); // Indica que es un servicio en primer plano
+
+        return builder.build();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void createNotificationChannel() {
-        CharSequence name = "Mi Canal";
-        String description = "Canal para notificaciones importantes";
-        int importance = NotificationManager.IMPORTANCE_HIGH;
+        CharSequence name = "Actualización de Mensajes"; // Nombre más descriptivo
+        String description = "Canal para notificaciones de actualización de mensajes en tiempo real."; // Descripción más clara
+        int importance = NotificationManager.IMPORTANCE_HIGH; // Considera la importancia según la urgencia
         NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
         channel.setDescription(description);
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
