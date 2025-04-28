@@ -14,10 +14,13 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 public class MessageUpdateService extends Service {
     private static final String TAG = "MessageUpdateService";
-    public static final String ACTION_UPDATE_MESSAGES = "com.example.prueba3.UPDATE_MESSAGES";
+    public static final String ACTION_UPDATE_MESSAGES = "com.example.prueba3.ACTION_UPDATE_MESSAGES";
 
     static final int NOTIFICATION_ID = 1;
     static final String CHANNEL_ID = "message_update_channel"; // Más descriptivo
@@ -31,18 +34,32 @@ public class MessageUpdateService extends Service {
     @SuppressLint("ForegroundServiceType")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        FirebaseCrashlytics.getInstance().log("UpdateService: onStartCommand llamado con acción = " + intent.getAction());
+
         if (intent == null) {
             Log.e(TAG, "Intent is null in onStartCommand");
+            FirebaseCrashlytics.getInstance().log("UpdateService: Error - Intent es nulo en onStartCommand");
             return START_NOT_STICKY;
         }
 
         String remitente = intent.getStringExtra("remitente");
         String destinatario = intent.getStringExtra("destinatario");
 
+        Log.d(TAG, "UpdateService: Remitente (Intent) = " + remitente);
+        Log.d(TAG, "UpdateService: Destinatario (Intent) = " + destinatario);
+        FirebaseCrashlytics.getInstance().log("UpdateService: Remitente (Intent) = " + remitente);
+        FirebaseCrashlytics.getInstance().log("UpdateService: Destinatario (Intent) = " + destinatario);
+
         if (remitente == null || destinatario == null) {
             Log.e(TAG, "Remitente or destinatario is null");
+            FirebaseCrashlytics.getInstance().log("UpdateService: Error - Remitente o destinatario es nulo en onStartCommand");
             return START_NOT_STICKY;
         }
+
+        // No necesitamos la notificación de primer plano para la comunicación interna
+        // si solo estamos usando LocalBroadcastManager para actualizar la UI.
+        // Si aún quieres la notificación (por ejemplo, para mantener el servicio vivo),
+        // puedes dejar esta parte.
 
         // Crear el canal de notificación si la versión de Android es Oreo o superior
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -53,14 +70,18 @@ public class MessageUpdateService extends Service {
         Notification notification = createForegroundNotification();
         startForeground(NOTIFICATION_ID, notification);
 
-        // Enviar un Broadcast para notificar la actualización de mensajes
+        // Enviar un Broadcast LOCAL para notificar la actualización de mensajes
         Intent broadcastIntent = new Intent(ACTION_UPDATE_MESSAGES);
         broadcastIntent.putExtra("remitente", remitente);
         broadcastIntent.putExtra("destinatario", destinatario);
-        sendBroadcast(broadcastIntent);
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcastIntent);
+        Log.d(TAG, "UpdateService: Broadcast LOCAL enviado con remitente = " + remitente + ", destinatario = " + destinatario);
+        FirebaseCrashlytics.getInstance().log("UpdateService: Broadcast LOCAL enviado con remitente = " + remitente + ", destinatario = " + destinatario);
 
         // Detener el servicio después de enviar el Broadcast
         stopSelf();
+        FirebaseCrashlytics.getInstance().log("UpdateService: Servicio detenido");
+        Log.d(TAG, "UpdateService: Servicio detenido");
         return START_NOT_STICKY;
     }
 
@@ -89,5 +110,19 @@ public class MessageUpdateService extends Service {
         channel.setDescription(description);
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
         notificationManager.createNotificationChannel(channel);
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.d(TAG, "UpdateService: Servicio creado");
+        FirebaseCrashlytics.getInstance().log("UpdateService: Servicio creado");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "UpdateService: Servicio destruido");
+        FirebaseCrashlytics.getInstance().log("UpdateService: Servicio destruido");
     }
 }
