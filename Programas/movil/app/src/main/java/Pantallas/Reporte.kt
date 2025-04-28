@@ -355,7 +355,7 @@ fun Reporte(
                                     InfoRow("Tipo de examen", tipoText)
                                     InfoRow("Fecha del ingreso", reporteItem.fechaIngreso ?: "N/A")
                                     InfoRow("Hora del ingreso", reporteItem.horaIngreso ?: "N/A")
-                                    InfoRow("Nombre del ocente", reporteItem.nombreDocente ?: "N/A")
+                                    InfoRow("Nombre del docente", reporteItem.nombreDocente ?: "N/A")
                                     InfoRow("Razón del reporte", reporteItem.tipoEstado ?: "N/A")
                                     InfoRow("motivo del rechazo", reporteItem.motivo ?: "N/A")
                                     if (reporteItem.presicion != null && reporteItem.presicion != "0") {
