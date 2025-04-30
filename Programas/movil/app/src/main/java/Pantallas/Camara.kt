@@ -16,13 +16,18 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -57,6 +62,8 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
+import java.io.FileOutputStream
 import java.util.concurrent.Executor
 
 
@@ -68,11 +75,9 @@ fun Camara(
     idETS: String,
     loginViewModel: LoginViewModel,
     cameraViewModel: CamaraViewModel,
-
-    ) {
+) {
 
     val context = LocalContext.current
-
     val userRole = loginViewModel.getUserRole()
 
     ValidateSession(navController = navController) {
@@ -90,109 +95,110 @@ fun Camara(
 
         val camaraController = remember { LifecycleCameraController(context) }
         val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current
-        val userRole = loginViewModel.getUserRole()
 
         val pythonResponse = cameraViewModel.pythonResponse.collectAsState().value
-
         val errorMessage = cameraViewModel.errorMessage.collectAsState().value
-        val precision = cameraViewModel.precision.value // Acceder directamente al valor
+        val precision = cameraViewModel.precision.value
 
         var showResultDialog by remember { mutableStateOf(false) }
         var reconocimientoExitoso by remember { mutableStateOf(false) }
-
+        var isLoading by remember { mutableStateOf(false) } // Nuevo estado para el indicador de carga
 
         LaunchedEffect(key1 = Unit) {
             permissions.launchMultiplePermissionRequest()
         }
 
-
-
         LaunchedEffect(key1 = pythonResponse) {
+            isLoading = false // Ocultar el indicador de carga al recibir la respuesta
             pythonResponse?.let {
-                reconocimientoExitoso = it.precision != null
+                reconocimientoExitoso = it.verified
                 showResultDialog = true
             }
         }
 
-
-
         LaunchedEffect(errorMessage) {
+            isLoading = false // Ocultar el indicador de carga en caso de error
             if (errorMessage != null) {
                 Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
             }
         }
 
         Scaffold(
-            topBar = {
-                MenuTopBar(
-                    true, true, loginViewModel,
-                    navController
-                )
-            },
-            bottomBar = {
-                MenuBottomBar(navController = navController, userRole)
-            },
+            topBar = { MenuTopBar(true, true, loginViewModel, navController) },
+            bottomBar = { MenuBottomBar(navController = navController, userRole) },
             containerColor = Color.Transparent,
             contentColor = Color.White
         ) { paddingValues ->
-            Column(
+            Box( // Usamos un Box para superponer el indicador de carga
                 modifier = Modifier
                     .fillMaxSize()
                     .background(BlueBackground)
-                    .padding(paddingValues)
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center // Centramos el contenido por defecto
             ) {
-                Text(
-                    text = "Tome la fotografía",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    textAlign = TextAlign.Center
-                )
-
-                if (permissions.allPermissionsGranted) {
-                    CamaraComposable(
-                        camaraController,
-                        lifecycle,
-                        modifier = Modifier.weight(1f)
-                    )
-                } else {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally // Centramos los elementos de la columna
+                ) {
                     Text(
-                        text = "Permisos denegados",
+                        text = "Tome la fotografía",
+                        style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f),
+                            .padding(16.dp),
+                        fontWeight = FontWeight.Bold,
                         color = Color.White,
                         textAlign = TextAlign.Center
                     )
-                }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    FloatingActionButton(
-                        onClick = {
-                            val executor = ContextCompat.getMainExecutor(context)
-                            tomarFoto(camaraController, executor, cameraViewModel) { bytes ->
-                                val imageRequestBody = bytes.toRequestBody("image/jpeg".toMediaTypeOrNull(), 0, bytes.size)
-                                val imagePart = MultipartBody.Part.createFormData("image", "foto.jpg", imageRequestBody)
-                                val boletaRequestBody = boleta.toRequestBody("text/plain".toMediaTypeOrNull())
-                                cameraViewModel.uploadImage(imagePart, boletaRequestBody)
-                            }
-                        }
-                    ) {
-                        Icon(
-                            painterResource(id = R.drawable.icon_camara),
-                            tint = Color.White,
-                            contentDescription = ""
+                    if (permissions.allPermissionsGranted) {
+                        CamaraComposable(
+                            camaraController,
+                            lifecycle,
+                            modifier = Modifier.weight(1f)
+                        )
+                    } else {
+                        Text(
+                            text = "Permisos denegados",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            color = Color.White,
+                            textAlign = TextAlign.Center
                         )
                     }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        FloatingActionButton(
+                            onClick = {
+                                isLoading = true // Mostrar el indicador de carga al hacer clic
+                                val executor = ContextCompat.getMainExecutor(context)
+                                tomarFoto(camaraController, executor, cameraViewModel) { bytes ->
+                                    // Create a temporary file to hold the image data
+                                    val tempFile = File.createTempFile("captured_image", ".jpg", context.cacheDir).apply {
+                                        FileOutputStream(this).use { it.write(bytes) }
+                                    }
+                                    cameraViewModel.uploadImage(tempFile, boleta) // Call the updated ViewModel function
+                                }
+                            }
+                        ) {
+                            Icon(
+                                painterResource(id = R.drawable.icon_camara),
+                                tint = Color.White,
+                                contentDescription = ""
+                            )
+                        }
+                    }
                 }
+
+//                if (isLoading) {
+//                    LoadingIndicator()
+//                }
+
             }
         }
 
@@ -211,9 +217,31 @@ fun Camara(
                     }
                 }
             )
-
         }
+    }
+}
 
+@Composable
+fun LoadingIndicator() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White.copy(alpha = 0.7f))
+    ) {
+        CircularProgressIndicator(
+            color = Color.Blue, // Reemplaza con el color de tu tema
+            strokeWidth = 6.dp,
+            modifier = Modifier.requiredSize(100.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Cargando...",
+            style = MaterialTheme.typography.bodyMedium, // Puedes elegir otro estilo
+            fontWeight = FontWeight.Bold,
+            color = Color.Blue // Reemplaza con el color de tu tema
+        )
     }
 }
 
@@ -223,7 +251,7 @@ fun CamaraComposable(
     lifecycle: LifecycleOwner,
     modifier: Modifier = Modifier
 ) {
-    camaraController.cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+    camaraController.cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
     camaraController.bindToLifecycle(lifecycle)
     AndroidView(
         modifier = modifier.fillMaxSize(),
