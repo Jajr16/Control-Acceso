@@ -3,6 +3,12 @@ package Pantallas
 import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
+import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -13,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -30,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -41,12 +47,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.prueba3.MessageUpdateService
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.Views.MensajesViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 
+@SuppressLint("InlinedApi")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MensajesScreen(
@@ -61,7 +68,7 @@ fun MensajesScreen(
         val userRole = loginViewModel.getUserRole()
 
         LaunchedEffect(Unit) {
-            mensajesViewModel.getUsuarios()
+            mensajesViewModel.getUsuarios(user)
             mensajesViewModel.getChats(user)
         }
 
@@ -71,6 +78,39 @@ fun MensajesScreen(
         //        ALMACENAR LOS CHATS
         val chats by remember {mensajesViewModel.chats}.collectAsState()
         val mensajeError by mensajesViewModel.mensajeError.collectAsState()
+
+        // State para la lista de mensajes del chat actual
+        val mensajesChat by mensajesViewModel.mensajes.collectAsState()
+
+        // Registrar el BroadcastReceiver para escuchar las actualizaciones de mensajes
+        val context = androidx.compose.ui.platform.LocalContext.current
+        val updateMessageReceiver = remember {
+            object : BroadcastReceiver() {
+                override fun onReceive(context: Context?, intent: Intent?) {
+                    if (intent?.action == MessageUpdateService.ACTION_UPDATE_MESSAGES) {
+                        val remitente = intent.getStringExtra("remitente")
+                        val destinatario = intent.getStringExtra("destinatario")
+                        Log.d("MensajesScreen", "Broadcast recibido: remitente=$remitente, destinatario=$destinatario")
+                        // Llama a la función del ViewModel para refrescar los mensajes
+                        if (remitente == user || destinatario == user) {
+                            // Determina el otro participante del chat
+                            val otherUser = if (remitente == user) destinatario else remitente
+                            if (otherUser != null) {
+                                mensajesViewModel.refreshMessages(user, otherUser)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        DisposableEffect(context) {
+            val filter = IntentFilter(MessageUpdateService.ACTION_UPDATE_MESSAGES)
+            context.registerReceiver(updateMessageReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+            onDispose {
+                context.unregisterReceiver(updateMessageReceiver)
+            }
+        }
 
         if (active) {
             Box(
@@ -95,14 +135,17 @@ fun MensajesScreen(
                     },
                     modifier = Modifier.wrapContentHeight(),
                 ) {
+                    println("Esto es " + listaPersonasToChat)
                     val filteredPeopleToChat = listaPersonasToChat.filter {
                         when (userRole) {
-                            "Alumno" -> it.tipoU == "Personal Academico"
-                            "Personal Academico" -> it.tipoU == "Alumno"
-                                    || it.tipoU == "Personal Academico"
+                            "Alumno" -> it.tipo == "Personal Academico"
+                            "Personal Academico" -> it.tipo == "Alumno"
+                                    || it.tipo == "Personal Academico"
                             else -> false
                         }
                     }
+
+                    println("Esto es " + filteredPeopleToChat)
 
                     val filteredMeToChat = filteredPeopleToChat.filter {
                         when (user) {

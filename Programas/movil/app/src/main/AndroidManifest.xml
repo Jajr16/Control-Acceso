@@ -17,9 +17,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-feature android:name="android.hardware.camera.autofocus"
         android:required="false" />
-
-
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
 
 
@@ -48,13 +48,18 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <service android:name=".MessageUpdateService" android:exported="false"/>
+        <service
+            android:name=".MessageUpdateService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Prueba3">
+            android:theme="@style/Theme.Prueba3"
+            android:screenOrientation="portrait">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

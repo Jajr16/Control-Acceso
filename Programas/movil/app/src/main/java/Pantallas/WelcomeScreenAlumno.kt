@@ -1,6 +1,7 @@
 package Pantallas
 
 import Pantallas.Plantillas.WelcomeScreenBase
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +21,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,12 +34,41 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.prueba3.R
+import com.example.prueba3.Views.CamaraViewModel
 import com.example.prueba3.Views.LoginViewModel
+import com.example.prueba3.Views.PersonaViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 
 @Composable
-fun WelcomeScreenAlumno(navController: NavController, loginViewModel: LoginViewModel){
-    WelcomeScreenBase(navController, loginViewModel, "Bienvenido Alumno") {
+fun WelcomeScreenAlumno(navController: NavController, loginViewModel: LoginViewModel, cameraViewModel: CamaraViewModel,viewModel: PersonaViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+
+    val sharedPreferences = navController.context
+        .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+    val username = sharedPreferences.getString("username", "") ?: ""
+
+    LaunchedEffect(username) {
+        viewModel.obtenerDatos(username)
+    }
+
+    LaunchedEffect(Unit) {
+
+        cameraViewModel.setPythonResponse(null)
+
+    }
+
+    val datos by viewModel.datosPersona.collectAsState()
+
+    // Obtener el nombre del primer elemento si hay datos
+    val nombreUsuario = datos.firstOrNull()?.nombre ?: ""
+
+    val appellidoP = datos.firstOrNull()?.apellidoP ?: ""
+
+    val appellidoM = datos.firstOrNull()?.apellidoM ?: ""
+
+    // Construir el mensaje dinámico
+    val mensaje = if (nombreUsuario.isNotEmpty()) "Bienvenido $nombreUsuario $appellidoP $appellidoM " else "Bienvenido Alumno"
+
+    WelcomeScreenBase(navController, loginViewModel, mensaje) {
         Spacer(modifier = Modifier.height(50.dp))
 
         Row(
@@ -58,6 +91,24 @@ fun WelcomeScreenAlumno(navController: NavController, loginViewModel: LoginViewM
                 modifier = Modifier.size(150.dp)
             )
         }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+
+            OptionButton(
+                title = "Probar reconocimiento facial",
+                icon = ImageVector.vectorResource(id = R.drawable.icon_camara),
+                onClick = { navController.navigate("camara/$username/Valor") },
+                modifier = Modifier.size(150.dp)
+            )
+
+            }
+
+
     }
 
 }

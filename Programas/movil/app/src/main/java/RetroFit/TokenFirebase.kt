@@ -11,3 +11,8 @@ interface TokenFirebase {
         @Query("token") token: String
     ): retrofit2.Response<FirebaseResponse>
 }
+
+data class FirebaseResponse(
+    val message: String,
+    val status: Int
+)

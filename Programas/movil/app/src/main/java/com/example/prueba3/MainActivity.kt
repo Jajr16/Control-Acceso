@@ -49,12 +49,82 @@ import com.example.prueba3.Views.CamaraViewModel
 import com.example.prueba3.Views.DiasETSModel
 import com.example.prueba3.Views.InformacionAlumnoViewModel
 import com.example.prueba3.Views.MensajesViewModel
-import com.example.prueba3.Views.ReemplazoViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 import com.example.prueba3.ui.theme.Prueba3Theme
 import java.lang.Integer.parseInt
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.MaterialTheme
+
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 class MainActivity : ComponentActivity() {
+    private val messageHandler = Handler(Looper.getMainLooper())
+    private val _showDialog = mutableStateOf(false)
+    private val _dialogTitle = mutableStateOf("")
+    private val _dialogMessage = mutableStateOf("")
+
+    private fun mostrarMensajeEnUI(title: String?, body: String?) {
+        try {
+            _dialogTitle.value = title ?: "Notificación"
+            _dialogMessage.value = body ?: ""
+            _showDialog.value = true
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error mostrando mensaje en UI: ${e.message}", e)
+        }
+    }
+
+
+    private val broadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            try {
+                if (intent?.action == "NOTIFICACION_RECIBIDA") {
+                    val title = intent.getStringExtra("title")
+                    val body = intent.getStringExtra("body")
+
+                    // Usar Handler para asegurar que estamos en el hilo principal
+                    messageHandler.post {
+                        handleIncomingMessage(title, body)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error procesando mensaje: ${e.message}", e)
+            }
+        }
+    }
+
+    private fun handleIncomingMessage(title: String?, body: String?) {
+        try {
+            if (!isFinishing && !isDestroyed) {
+                // Si la app está en primer plano, mostrar en UI
+                mostrarMensajeEnUI(title, body)
+            } else {
+                // Si está en segundo plano, mostrar notificación
+                mostrarNotificacion(title, body)
+            }
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error manejando mensaje: ${e.message}", e)
+        }
+    }
+
+    private fun mostrarNotificacion(title: String?, body: String?) {
+        try {
+            // Código para mostrar notificación
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error mostrando notificación: ${e.message}", e)
+        }
+    }
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,6 +137,15 @@ class MainActivity : ComponentActivity() {
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 )
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            broadcastReceiver,
+            IntentFilter("NOTIFICACION_RECIBIDA")
+        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
 
         val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         val loginViewModel = LoginViewModel(sharedPreferences)
@@ -95,7 +174,7 @@ class MainActivity : ComponentActivity() {
                             Camara(navController, boleta, idETS, loginViewModel = loginViewModel, cameraViewModel = camaraViewModel) // Pasa camaraViewModel
                         }
                         composable("notificaciones") { NotificationsScreen(navController) }
-                        composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel) }
+                        composable("Menu Alumno") { WelcomeScreenAlumno(navController, loginViewModel = loginViewModel,cameraViewModel = camaraViewModel) }
 
                         composable("Menu") { WelcomeScreen(navController = navController, loginViewModel = loginViewModel) }
                         composable("Menu Docente") {
@@ -175,32 +254,30 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-
-
-                    composable("Calendar") { CalendarScreen(navController, loginViewModel, diasETSModel) }
-                    composable(
-                        route = "CredencialDAE?url={url}&boleta={boleta}", // Ruta con dos argumentos
-                        arguments = listOf(
-                            navArgument("url") { // Argumento "url"
-                                type = NavType.StringType // Tipo String
-                                nullable = true // Permite valores nulos
-                            },
-                            navArgument("boleta") { // Argumento "boleta"
-                                type = NavType.StringType // Tipo String
-                                defaultValue = "" // Valor por defecto
-                            }
-                        )
-                    ) { backStackEntry ->
-                        val url = backStackEntry.arguments?.getString("url")
-                        val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
-
-                            CredencialDaeScreen(
-                                navController = navController,
-                                loginViewModel = loginViewModel,
-                                url = url,
-                                alumnosViewModel,
-                                boleta = boleta
+                        composable("Calendar") { CalendarScreen(navController, loginViewModel, diasETSModel) }
+                        composable(
+                            route = "CredencialDAE?url={url}&boleta={boleta}", // Ruta con dos argumentos
+                            arguments = listOf(
+                                navArgument("url") { // Argumento "url"
+                                    type = NavType.StringType // Tipo String
+                                    nullable = true // Permite valores nulos
+                                },
+                                navArgument("boleta") { // Argumento "boleta"
+                                    type = NavType.StringType // Tipo String
+                                    defaultValue = "" // Valor por defecto
+                                }
                             )
+                        ) { backStackEntry ->
+                            val url = backStackEntry.arguments?.getString("url")
+                            val boleta = backStackEntry.arguments?.getString("boleta") ?: ""
+
+                                CredencialDaeScreen(
+                                    navController = navController,
+                                    loginViewModel = loginViewModel,
+                                    url = url,
+                                    alumnosViewModel,
+                                    boleta = boleta
+                                )
                         }
                         composable("ConsultarAlumnos") {
                             ConsultarScreen(navController, viewModel = alumnosViewModel, loginViewModel = loginViewModel)
@@ -298,8 +375,49 @@ class MainActivity : ComponentActivity() {
 //                        EtsCardButton(navController, parsedETS, Periodo,Turno, Fecha,PA)
                         }
                     }
+                    if (_showDialog.value) {
+                        AlertDialog(
+                            onDismissRequest = { _showDialog.value = false },
+                            title = {
+                                Text(
+                                    text = _dialogTitle.value,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                            },
+                            text = {
+                                Text(
+                                    text = _dialogMessage.value,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = { _showDialog.value = false }
+                                ) {
+                                    Text("Aceptar")
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        LocalBroadcastManager.getInstance(this)
+            .unregisterReceiver(broadcastReceiver)
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            Log.d("MainActivity", "Permiso de notificaciones concedido")
+        } else {
+            Log.d("MainActivity", "Permiso de notificaciones denegado")
+        }
+    }
+
 }

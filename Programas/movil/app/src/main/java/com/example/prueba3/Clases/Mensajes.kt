@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 data class ListadoUsuarios (
     var usuario: String,
     var nombre: String,
-    var tipoU: String
+    var tipo: String
 )
 
 //  CLASES PARA RECIBIR LOS CHATS DEL USUARIO

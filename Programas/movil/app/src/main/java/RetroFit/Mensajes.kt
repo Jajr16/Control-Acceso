@@ -12,8 +12,8 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface Mensajes {
-    @GET("mensajes/PersonasToChat")
-    suspend fun getPersonasToChat(): List<ListadoUsuarios>
+    @GET("mensajes/PersonasToChat/{usuario}")
+    suspend fun getPersonasToChat(@Path("usuario") user: String): List<ListadoUsuarios>
 
     @GET("mensajes/{usuario}")
     suspend fun getChats(@Path("usuario") user: String): Response<ChatsResponses>

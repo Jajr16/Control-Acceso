@@ -50,8 +50,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.example.prueba3.Clases.Mensaje
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -69,23 +70,6 @@ fun ChatScreen(
 
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
-        val receiver = remember {
-            object : BroadcastReceiver() {
-                override fun onReceive(context: Context?, intent: Intent?) {
-                    val remitente = intent?.getStringExtra("remitente") ?: ""
-                    val destinatario = intent?.getStringExtra("destinatario") ?: ""
-                    coroutineScope.launch {
-                        mensajesViewModel.refreshMessages(remitente, destinatario)
-                    }
-                }
-            }
-        }
-
-        DisposableEffect(receiver) {
-            val filter = IntentFilter(MessageUpdateService.ACTION_UPDATE_MESSAGES)
-            context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
-            onDispose { context.unregisterReceiver(receiver) }
-        }
 
         var message by remember { mutableStateOf("") }
         val username = loginViewModel.getUserName()
@@ -96,19 +80,50 @@ fun ChatScreen(
 
         LaunchedEffect(mensajes) { // Scroll to the bottom after messages update
             if (mensajes.isNotEmpty()) {
-                lazyListState.animateScrollToItem(mensajes.size -1) // Scroll to last item
+                lazyListState.animateScrollToItem(mensajes.size - 1) // Scroll to last item
             }
         }
-
-        val initialLoad = remember { mutableStateOf(true) }
         val destinatarioActual = remember(destinatario) { destinatario }
         val usuarioActualRemembered = remember(usuarioActual) { usuarioActual }
 
-        LaunchedEffect(destinatarioActual, usuarioActualRemembered, mensajes) {
-            Log.d("ChatScreen", "LaunchedEffect triggered")
-            if (initialLoad.value && usuarioActualRemembered != null) {
+        val updateMessageReceiver = remember {
+            object : BroadcastReceiver() {
+                override fun onReceive(context: Context?, intent: Intent?) {
+                    FirebaseCrashlytics.getInstance().log("ChatScreen: Broadcast Recibido - Action=${intent?.action}")
+                    Log.d("ChatScreen", "Broadcast recibido: ${intent?.action}")
+                    if (intent?.action == MessageUpdateService.ACTION_UPDATE_MESSAGES) {
+                        val broadcastRemitente = intent?.getStringExtra("remitente")
+                        val broadcastDestinatario = intent?.getStringExtra("destinatario")
+                        Log.d("ChatScreen", "Broadcast recibido: remitente=$broadcastRemitente, destinatario=$broadcastDestinatario")
+                        FirebaseCrashlytics.getInstance().log("ChatScreen: Datos del Broadcast - Remitente=$broadcastRemitente, Destinatario=$broadcastDestinatario, Usuario Actual=$usuarioActualRemembered, Destinatario Actual=$destinatarioActual")
+                        // Refrescar los mensajes si la conversación actual coincide
+                        if ((broadcastRemitente == usuarioActualRemembered && broadcastDestinatario == destinatarioActual) ||
+                            (broadcastRemitente == destinatarioActual && broadcastDestinatario == usuarioActualRemembered)) {
+                            Log.d("ChatScreen", "Si entró")
+                            FirebaseCrashlytics.getInstance().log("ChatScreen: Conversación coincidente. Llamando a getMessages()")
+                            coroutineScope.launch {
+                                mensajesViewModel.getMessages(usuarioActualRemembered ?: "", destinatarioActual)
+                            }
+                        } else {
+                            FirebaseCrashlytics.getInstance().log("ChatScreen: Conversación NO coincidente.")
+                        }
+                    }
+                }
+            }
+        }
+
+        val filter = IntentFilter(MessageUpdateService.ACTION_UPDATE_MESSAGES)
+        val localBroadcastManager = LocalBroadcastManager.getInstance(context)
+        DisposableEffect(context, updateMessageReceiver) {
+            localBroadcastManager.registerReceiver(updateMessageReceiver, filter)
+            onDispose { localBroadcastManager.unregisterReceiver(updateMessageReceiver) }
+        }
+
+        LaunchedEffect(destinatarioActual, usuarioActualRemembered) {
+            Log.d("ChatScreen", "LaunchedEffect triggered para cargar mensajes con destinatario=$destinatarioActual, usuario=$usuarioActualRemembered")
+            FirebaseCrashlytics.getInstance().log("ChatScreen: LaunchedEffect triggered para cargar mensajes con remitente = $usuarioActualRemembered, destinatario = $destinatarioActual")
+            if (usuarioActualRemembered != null) {
                 mensajesViewModel.getMessages(usuarioActualRemembered, destinatarioActual)
-                initialLoad.value = false
             }
         }
 
@@ -151,6 +166,7 @@ fun ChatScreen(
                             onClick = {
                                 if (message.isNotBlank()) {
                                     if (username != null) {
+                                        FirebaseCrashlytics.getInstance().log("ChatScreen: Intentando enviar mensaje: $message a $destinatario desde $username")
                                         mensajesViewModel.sendMessage(
                                             username,
                                             destinatario,
@@ -177,10 +193,12 @@ fun ChatScreen(
                     .background(BlueBackground)
                     .padding(padding)
             ) {
-                val nuevoMensajeEnviado = mensajesViewModel.nuevoMensajeEnviado.collectAsState(initial = null)
+                val nuevoMensajeEnviado by mensajesViewModel.nuevoMensajeEnviado.collectAsState(initial = null)
 
-                LaunchedEffect(nuevoMensajeEnviado.value, message) {
-                    if (nuevoMensajeEnviado.value != null) {
+                LaunchedEffect(nuevoMensajeEnviado) {
+                    if (nuevoMensajeEnviado != null) {
+                        Log.d("ChatScreen", "Evento nuevoMensajeEnviado recibido")
+                        FirebaseCrashlytics.getInstance().log("ChatScreen: Evento nuevoMensajeEnviado recibido. Recargando mensajes.")
                         if (usuarioActualRemembered != null) {
                             mensajesViewModel.getMessages(usuarioActualRemembered, destinatarioActual)
                         }
