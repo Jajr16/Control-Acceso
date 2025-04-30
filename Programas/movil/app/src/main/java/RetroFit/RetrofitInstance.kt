@@ -7,7 +7,8 @@
     import retrofit2.Retrofit
     import retrofit2.converter.gson.GsonConverterFactory
     import java.util.concurrent.TimeUnit
-
+//http://192.168.100.7:8080/
+//https://springboot-java-production-0b2b.up.railway.app/
     object RetrofitInstance {
         private const val BASE_URL = "http://192.168.100.4:8080/"
         //private const val BASE_URL = "https://serverspringboot-asceeudmhackgbfr.mexicocentral-01.azurewebsites.net/"

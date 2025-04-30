@@ -78,7 +78,7 @@ fun SolicitarReemplazo(
                     fontWeight = FontWeight.Bold
                 )
             },
-            text = { Text("Tu solicitud de reemplazo ha sido registrada correctamente") },
+            text = { Text("La solicitud de reemplazo ha sido registrada correctamente") },
             confirmButton = {
                 Button(
                     onClick = { showSuccessDialog = false },
