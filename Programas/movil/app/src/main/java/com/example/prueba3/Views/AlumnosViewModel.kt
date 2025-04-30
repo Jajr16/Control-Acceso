@@ -28,6 +28,7 @@ import okhttp3.ResponseBody
 import java.text.SimpleDateFormat
 import java.util.Date
 import androidx.compose.runtime.State
+import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
@@ -194,39 +195,18 @@ class AlumnosViewModel : ViewModel() {
     private val _registroSuccess = MutableStateFlow(false)
     val registroSuccess: StateFlow<Boolean> = _registroSuccess.asStateFlow()
 
-    public val _asistenciaYaRegistrada = MutableStateFlow(false)
+    private val _asistenciaYaRegistrada = MutableStateFlow(false)
     val asistenciaYaRegistrada: StateFlow<Boolean> = _asistenciaYaRegistrada.asStateFlow()
 
     private val _alumnoRegistro = MutableStateFlow<List<regitrarAsistencia>>(emptyList())
     val alumnoRegistro: StateFlow<List<regitrarAsistencia>> = _alumnoRegistro.asStateFlow()
 
-    fun verificarAsistencia(boleta: String) {
+    fun gestionarAsistencia(boleta: String, idETS: Int, registrar: Boolean = false) {
         viewModelScope.launch {
             try {
                 _loadingState.value = true
                 _errorMessage.value = null
-
-                val fechaActual = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-
-                val response = RetrofitInstance.alumnosDetalle.verificarAsistencia(
-                    boleta = boleta,
-                    fecha = fechaActual
-                )
-
-                _asistenciaYaRegistrada.value = response.isNotEmpty()
-            } catch (e: Exception) {
-                _errorMessage.value = "Error al verificar asistencia: ${e.message}"
-            } finally {
-                _loadingState.value = false
-            }
-        }
-    }
-
-    fun registrarAsistencia(boleta: String, idETS: Int) {
-        viewModelScope.launch {
-            try {
-                _loadingState.value = true
-                _errorMessage.value = null
+                resetAsistenciaFlags()
 
                 val fechaActual = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
                 val horaActual = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
@@ -238,24 +218,73 @@ class AlumnosViewModel : ViewModel() {
                     idETS = idETS
                 )
 
-                if (response.isNotEmpty()) {
-                    _alumnoRegistro.value = response
-                    _registroSuccess.value = true
-                } else {
-                    _errorMessage.value = "No se pudo registrar la asistencia"
-                }
+                _alumnoRegistro.value = response
+                _registroSuccess.value = true
+                _asistenciaYaRegistrada.value = true
+
             } catch (e: Exception) {
-                _errorMessage.value = "Error: ${e.message}"
+                handleAsistenciaError(e, registrar)
             } finally {
                 _loadingState.value = false
             }
         }
     }
 
+    private fun handleAsistenciaError(e: Exception, registrar: Boolean) {
+        when {
+            e is HttpException && e.response()?.errorBody() != null -> {
+                try {
+                    val errorResponse = e.response()?.errorBody()?.string()
+                    if (errorResponse?.contains("asistencia ya fue registrada", ignoreCase = true) == true) {
+                        _asistenciaYaRegistrada.value = true
+                        _errorMessage.value = "La asistencia ya fue registrada hoy para este ETS"
+                    } else {
+                        _errorMessage.value = "Error del servidor: ${e.code()}\n$errorResponse"
+                    }
+                } catch (ex: Exception) {
+                    _errorMessage.value = "Error al procesar respuesta del servidor"
+                }
+            }
+
+            e is IOException -> {
+                _errorMessage.value = "Error de conexión. Verifica tu internet."
+            }
+
+            e is HttpException -> {
+                _errorMessage.value = "Error del servidor: ${e.code()}"
+            }
+
+            else -> {
+                _errorMessage.value = if (registrar) {
+                    "Error al registrar asistencia: ${e.message}"
+                } else {
+                    "Error al verificar asistencia: ${e.message}"
+                }
+            }
+        }
+    }
+
+    fun verificarAsistencia(boleta: String, idETS: Int) {
+        gestionarAsistencia(boleta, idETS, registrar = false)
+    }
+
+
+    fun registrarAsistencia(boleta: String, idETS: Int) {
+        gestionarAsistencia(boleta, idETS, registrar = true)
+    }
+
+
+    fun clearErrorMessage() {
+        _errorMessage.value = null
+    }
+
     fun resetAsistenciaFlags() {
         _registroSuccess.value = false
         _asistenciaYaRegistrada.value = false
     }
+
+
+
 
     // ======================== Funcion para comparar datos credencial + DAE ========================
     fun compararDatos(boleta: String, datosWeb: DatosWeb) {

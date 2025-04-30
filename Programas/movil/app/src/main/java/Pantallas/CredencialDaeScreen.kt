@@ -67,6 +67,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import com.example.prueba3.Clases.DatosWeb
+import java.io.IOException
 
 @OptIn(ExperimentalEncodingApi::class)
 @Composable
@@ -96,6 +97,9 @@ fun CredencialDaeScreen(
     var showMensajeAsistencia by remember { mutableStateOf(false) }
     var fechaHoraRegistro by remember { mutableStateOf("") }
     val registroSuccess by viewModel.registroSuccess.collectAsState()
+    val asistenciaYaRegistrada by viewModel.asistenciaYaRegistrada.collectAsState()
+    val loadingState by viewModel.loadingState.collectAsState()
+    val errorMessageVM by viewModel.errorMessage.collectAsState()
 
     val comparacionResultado by viewModel.comparacionResultado.collectAsState()
     val mostrarDialogoComparacion by viewModel.mostrarDialogoComparacion.collectAsState()
@@ -113,22 +117,25 @@ fun CredencialDaeScreen(
     val idETSFinal by viewModel.idETSFlujo.collectAsState()
     val boletaFinal by viewModel.boletaFlujo.collectAsState()
     val alumnoEspecifico by viewModel.alumnoEspecifico.collectAsState()
-    val asistenciaYaRegistrada by viewModel.asistenciaYaRegistrada.collectAsState()
 
+    // Efecto para verificar asistencia cuando el rol es Personal Seguridad
     LaunchedEffect(boleta) {
-        if (userRole == "Personal Seguridad") {
-            viewModel.verificarAsistencia(boleta)
+        if (userRole == "Personal Seguridad" && alumno?.idETS != null) {
+            viewModel.verificarAsistencia(boleta, alumno.idETS)
         }
     }
 
+    // Efecto para mostrar mensaje de éxito en registro
     LaunchedEffect(registroSuccess) {
         if (registroSuccess) {
             showMensajeAsistencia = true
             delay(3000)
             showMensajeAsistencia = false
+            viewModel.resetAsistenciaFlags()
         }
     }
 
+    // Efecto para comparar datos cuando se obtiene información del alumno
     LaunchedEffect(alumnoInfo) {
         if (userRole == "Personal Seguridad") {
             alumnoInfo?.let { info ->
@@ -140,6 +147,16 @@ fun CredencialDaeScreen(
                     escuela = info.unidadAcademica
                 )
                 viewModel.compararDatos(info.boleta, datosWeb)
+            }
+        }
+    }
+
+    // Efecto para mostrar errores del ViewModel
+    LaunchedEffect(errorMessageVM) {
+        errorMessageVM?.let { message ->
+            scope.launch {
+                snackbarHostState.showSnackbar(message)
+                viewModel.clearErrorMessage()
             }
         }
     }
@@ -165,6 +182,7 @@ fun CredencialDaeScreen(
                     )
                     .verticalScroll(rememberScrollState())
             ) {
+                // Diálogo de imagen ampliada
                 if (isZoomed) {
                     Dialog(
                         onDismissRequest = {
@@ -212,6 +230,7 @@ fun CredencialDaeScreen(
                     }
                 }
 
+                // Título de la pantalla
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxWidth()
@@ -236,6 +255,7 @@ fun CredencialDaeScreen(
 
                 Spacer(modifier = Modifier.height(25.dp))
 
+                // Contenido principal
                 Box(modifier = Modifier.fillMaxSize()) {
                     when {
                         isLoading -> {
@@ -271,6 +291,7 @@ fun CredencialDaeScreen(
                     }
                 }
 
+                // Sección de información del alumno
                 if (alumnoInfo != null && idETSFinal == null && boletaFinal == null) {
                     Card(
                         modifier = Modifier
@@ -407,6 +428,7 @@ fun CredencialDaeScreen(
                         }
                     }
 
+                    // Botones para Personal de Seguridad
                     if (userRole == "Personal Seguridad") {
                         Row(
                             modifier = Modifier
@@ -440,15 +462,25 @@ fun CredencialDaeScreen(
                                 },
                                 modifier = Modifier.weight(1f)
                                     .padding(horizontal = 8.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                                enabled = !loadingState
                             ) {
-                                Text(
-                                    text = "Registrar asistencia",
-                                    color = Color.Black
-                                )
+                                if (loadingState) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        color = Color.Black,
+                                        strokeWidth = 2.dp
+                                    )
+                                } else {
+                                    Text(
+                                        text = "Registrar asistencia",
+                                        color = Color.Black
+                                    )
+                                }
                             }
+                        }
 
-
+                        // Diálogo de comparación de datos
                         if (mostrarComparacionAlRegistrar && comparacionResultado?.coinciden == false) {
                             AlertDialog(
                                 onDismissRequest = {
@@ -484,6 +516,7 @@ fun CredencialDaeScreen(
                             )
                         }
 
+                        // Diálogo de confirmación de asistencia
                         if (showAsistenciaDialog) {
                             when {
                                 userRole == "Personal Seguridad" && alumno?.nombreETS.isNullOrEmpty() -> {
@@ -500,11 +533,11 @@ fun CredencialDaeScreen(
                                         }
                                     )
                                 }
-                                userRole == "Personal Seguridad" || userRole == "Personal Academico" && asistenciaYaRegistrada -> {
+                                asistenciaYaRegistrada -> {
                                     AlertDialog(
                                         onDismissRequest = {
                                             showAsistenciaDialog = false
-                                            viewModel._asistenciaYaRegistrada.value = false
+                                            viewModel.resetAsistenciaFlags()
                                         },
                                         title = { Text("Asistencia ya registrada", fontWeight = FontWeight.Bold) },
                                         text = {
@@ -513,7 +546,7 @@ fun CredencialDaeScreen(
                                         confirmButton = {
                                             Button(onClick = {
                                                 showAsistenciaDialog = false
-                                                viewModel._asistenciaYaRegistrada.value = false
+                                                viewModel.resetAsistenciaFlags()
                                             }) {
                                                 Text("Aceptar")
                                             }
@@ -564,13 +597,25 @@ fun CredencialDaeScreen(
                                                     alumno?.idETS?.let { idETS ->
                                                         viewModel.registrarAsistencia(boleta, idETS)
                                                     }
-                                                }
+                                                },
+                                                enabled = !loadingState
                                             ) {
-                                                Text("Aceptar")
+                                                if (loadingState) {
+                                                    CircularProgressIndicator(
+                                                        modifier = Modifier.size(20.dp),
+                                                        color = Color.White,
+                                                        strokeWidth = 2.dp
+                                                    )
+                                                } else {
+                                                    Text("Aceptar")
+                                                }
                                             }
                                         },
                                         dismissButton = {
-                                            Button(onClick = { showAsistenciaDialog = false }) {
+                                            Button(
+                                                onClick = { showAsistenciaDialog = false },
+                                                enabled = !loadingState
+                                            ) {
                                                 Text("Cancelar")
                                             }
                                         }
@@ -579,6 +624,7 @@ fun CredencialDaeScreen(
                             }
                         }
 
+                        // Mensaje de éxito en registro
                         if (showMensajeAsistencia) {
                             AlertDialog(
                                 onDismissRequest = { showMensajeAsistencia = false },
@@ -610,20 +656,19 @@ fun CredencialDaeScreen(
                             )
                         }
                     }
-                }
-            } else if (userRole == "Docente") {
-                    Log.d("CredencialDaeScreen", "pase aqui: $boletaFinal")
+                } else if (userRole == "Docente") {
+                    // Vista para Docente
                     LaunchedEffect(Unit) {
                         viewModel.fetchAlumnoEspecifico(boletaFinal!!)
                     }
 
-                    androidx.compose.material.Card(
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
-                        elevation = 4.dp,
+                        elevation = CardDefaults.cardElevation(4.dp),
                         shape = RoundedCornerShape(8.dp),
-                        backgroundColor = Color.White
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
                     ) {
                         Column(
                             modifier = Modifier
@@ -667,13 +712,13 @@ fun CredencialDaeScreen(
                                             .padding(start = 16.dp)
                                             .fillMaxWidth()
                                     ) {
-                                        androidx.compose.material.Text(
+                                        Text(
                                             text = "Alumno:",
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = Color.Gray,
                                             modifier = Modifier.padding(bottom = 4.dp)
                                         )
-                                        androidx.compose.material.Text(
+                                        Text(
                                             text = "${alumno.apellidoP.trim()} ${alumno.apellidoM.trim()} ${alumno.nombre.trim()}",
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = Color.Black,
@@ -681,13 +726,13 @@ fun CredencialDaeScreen(
                                             modifier = Modifier.padding(bottom = 12.dp)
                                         )
 
-                                        androidx.compose.material.Text(
+                                        Text(
                                             text = "Programa académico:",
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = Color.Gray,
                                             modifier = Modifier.padding(bottom = 4.dp)
                                         )
-                                        androidx.compose.material.Text(
+                                        Text(
                                             text = alumno.unidadAcademica.trim(),
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = Color.Black,
@@ -695,7 +740,7 @@ fun CredencialDaeScreen(
                                         )
                                     }
                                 } ?: run {
-                                    androidx.compose.material.Text(
+                                    Text(
                                         text = "No se encontraron datos.",
                                         color = Color.Red,
                                         modifier = Modifier.padding(16.dp)
@@ -713,12 +758,12 @@ fun CredencialDaeScreen(
                                     Column(
                                         modifier = Modifier.weight(1f)
                                     ) {
-                                        androidx.compose.material.Text(
+                                        Text(
                                             text = "Boleta:",
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = Color.Gray
                                         )
-                                        androidx.compose.material.Text(
+                                        Text(
                                             text = alumno.boleta.trim(),
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = Color.Black,
@@ -729,12 +774,12 @@ fun CredencialDaeScreen(
                                     Column(
                                         modifier = Modifier.weight(1f)
                                     ) {
-                                        androidx.compose.material.Text(
+                                        Text(
                                             text = "CURP:",
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = Color.Gray
                                         )
-                                        androidx.compose.material.Text(
+                                        Text(
                                             text = alumno.curp.trim(),
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = Color.Black,
@@ -746,6 +791,7 @@ fun CredencialDaeScreen(
                         }
                     }
 
+                    // Botón para regresar a la creación del reporte
                     Button(
                         onClick = { navController.navigate("infoA/${idETSFinal}/${boletaFinal}") },
                         modifier = Modifier
@@ -760,15 +806,16 @@ fun CredencialDaeScreen(
                         )
                     }
                 }
+            }
         }
     }
 
+    // Efecto para cargar la credencial
     LaunchedEffect(url) {
         if (url != null) {
             scope.launch {
                 try {
                     val response = RetrofitInstance.alumnosDetalle.getCredencial(url)
-
 
                     if (response.isSuccessful && response.body() != null) {
                         val credencialResponse = response.body()!!
@@ -781,11 +828,9 @@ fun CredencialDaeScreen(
                         // Guardar la información del alumno
                         alumnoInfo = credencialResponse.credenciales.firstOrNull()
 
-
-
-                       if (alumnoInfo != null && userRole != "Personal académico" && userRole != "Docente") {
-                         viewModel.limpiarInfoFlujo()
-                       }
+                        if (alumnoInfo != null && userRole != "Personal académico" && userRole != "Docente") {
+                            viewModel.limpiarInfoFlujo()
+                        }
 
                         val boletausable = alumnoInfo?.boleta
 
@@ -819,5 +864,4 @@ fun CredencialDaeScreen(
             isLoading = false
         }
     }
-}
 }
