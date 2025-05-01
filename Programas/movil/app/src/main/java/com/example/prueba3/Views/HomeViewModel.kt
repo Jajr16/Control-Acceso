@@ -51,7 +51,7 @@ class HomeViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 _StatusValidacion.value = false // Error en la validación
-                _errorMessage.value = "Error en la validación: ${e.message}"
+                _errorMessage.value = "Error en la validación:"
             }
         }
     }

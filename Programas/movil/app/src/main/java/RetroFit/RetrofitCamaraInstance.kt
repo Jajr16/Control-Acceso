@@ -35,23 +35,24 @@ object RetrofitCamaraInstance {
 
         private val cameraApi = retrofit.create(CamaraApi::class.java)
 
-        suspend fun uploadImage(studentId: String, imageFile: File): Result<PythonResponse> {
-            return try {
-                val imgPart = MultipartBody.Part.createFormData(
-                    "img",
-                    imageFile.name,
-                    imageFile.asRequestBody("image/jpge".toMediaType())
-                )
-                val studentIdBody = studentId.toRequestBody("text/plain".toMediaType())
-                val response = cameraApi.uploadImage(studentIdBody, imgPart)
-                if (response.isSuccessful) {
-                    Result.success(response.body()!!)
-                } else {
-                    Result.failure(Exception("HTTP ${response.code()}: ${response.errorBody()?.string()}"))
-                }
-            } catch (e: Exception) {
-                Result.failure(e)
+    suspend fun uploadImage(studentId: String, imageFile: File): Result<PythonResponse> {
+        return try {
+            val imgPart = MultipartBody.Part.createFormData(
+                "img",
+                imageFile.name,
+                imageFile.asRequestBody("image/png".toMediaType())
+            )
+            val studentIdBody = studentId.toRequestBody("text/plain".toMediaType())
+            val response = cameraApi.uploadImage(studentIdBody, imgPart)
+            if (response.isSuccessful) {
+                Result.success(response.body()!!)
+            } else {
+                val errorBody = response.errorBody()?.string() ?: "Error desconocido en la respuesta del servidor."
+                Result.failure(Exception("HTTP ${response.code()}: $errorBody"))
             }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
+    }
 
     }

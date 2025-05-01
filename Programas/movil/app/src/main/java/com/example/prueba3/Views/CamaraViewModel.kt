@@ -35,10 +35,10 @@ class CamaraViewModel : ViewModel() {
         imagenBitmap.value = imagen
     }
 
-    fun uploadImage(imageFile: File, boleta: String) { // Changed parameters
+    fun uploadImage(imageFile: File, boleta: String) {
         viewModelScope.launch {
             try {
-                RetrofitCamaraInstance.uploadImage(boleta, imageFile) // Call the new Retrofit function
+                RetrofitCamaraInstance.uploadImage(boleta, imageFile)
                     .onSuccess { pythonResponseData ->
                         _pythonResponse.value = pythonResponseData
                         pythonResponseData?.let {
@@ -46,22 +46,27 @@ class CamaraViewModel : ViewModel() {
                             val threshold = 0.4f
 
                             if (distance > threshold) {
-                                setPrecision(0.0f)
+                                setPrecision(-1.0f)
                                 Log.d("CamaraViewModel", "Distancia ($distance) mayor que el umbral ($threshold), precisión establecida en 0.")
                             } else {
-                                // Transformación lineal: 0 -> 1.0, 0.4 -> 0.6
-                                val normalizedDistance = distance / threshold
-                                val calculatedPrecision = 1.0f - (0.4f * normalizedDistance)
-                                setPrecision(calculatedPrecision)
-                                Log.d("CamaraViewModel", "Distancia: $distance, Precisión calculada: $calculatedPrecision")
+                                if (distance <= 0.3) {
+                                    // Rango de 0 a 0.3: mapear de 1.0 (100%) a 0.8 (80%)
+                                    val normalizedDistance = distance / 0.3f
+                                    val calculatedPrecision = 1.0f - (0.2f * normalizedDistance)
+                                    setPrecision(calculatedPrecision)
+                                    Log.d("CamaraViewModel", "Distancia: $distance, Precisión calculada: $calculatedPrecision (rango 0-0.3)")
+                                } else { // distance > 0.3 y distance <= 0.4
+                                    // Rango de 0.31 a 0.4: mapear de ~0.799 (cercano a 80%) a 0.6 (60%)
+                                    val normalizedDistance = (distance - 0.31f) / (0.4f - 0.31f) // Normalizar al rango 0-1
+                                    val calculatedPrecision = 0.799f - (0.199f * normalizedDistance)
+                                    setPrecision(calculatedPrecision)
+                                    Log.d("CamaraViewModel", "Distancia: $distance, Precisión calculada: $calculatedPrecision (rango 0.31-0.4)")
+                                }
                             }
-                            // The 'else' block for distance being null is no longer strictly necessary
-                            // since 'it.distance' is a Double, it will always have a value (unless the JSON is malformed).
-                            // However, you might want to keep it for robustness in case of unexpected data.
                         }
                     }
                     .onFailure { error ->
-                        _errorMessage.value = "Error en la comunicación con Python: ${error.message}"
+                        _errorMessage.value = error.message
                         setPrecision(null)
                     }
             } catch (e: Exception) {
@@ -90,7 +95,7 @@ class CamaraViewModel : ViewModel() {
         // La lógica de la precisión ahora está en uploadImage
     }
 
-    fun setErrorMessage(message: String) {
+    fun setErrorMessage(message: String?) {
         _errorMessage.value = message
     }
 }

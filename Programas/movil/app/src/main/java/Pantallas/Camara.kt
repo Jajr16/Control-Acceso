@@ -102,14 +102,15 @@ fun Camara(
 
         var showResultDialog by remember { mutableStateOf(false) }
         var reconocimientoExitoso by remember { mutableStateOf(false) }
-        var isLoading by remember { mutableStateOf(false) } // Nuevo estado para el indicador de carga
+        var isLoading by remember { mutableStateOf(false) }
+        var showConnectionErrorDialog by remember { mutableStateOf(false) }
 
         LaunchedEffect(key1 = Unit) {
             permissions.launchMultiplePermissionRequest()
         }
 
         LaunchedEffect(key1 = pythonResponse) {
-            isLoading = false // Ocultar el indicador de carga al recibir la respuesta
+            isLoading = false
             pythonResponse?.let {
                 reconocimientoExitoso = it.verified
                 showResultDialog = true
@@ -117,9 +118,11 @@ fun Camara(
         }
 
         LaunchedEffect(errorMessage) {
-            isLoading = false // Ocultar el indicador de carga en caso de error
+            isLoading = false
             if (errorMessage != null) {
-                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                if (errorMessage.contains("Error de red", ignoreCase = true)) {
+                    showConnectionErrorDialog = true
+                }
             }
         }
 
@@ -129,15 +132,15 @@ fun Camara(
             containerColor = Color.Transparent,
             contentColor = Color.White
         ) { paddingValues ->
-            Box( // Usamos un Box para superponer el indicador de carga
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(BlueBackground)
                     .padding(paddingValues),
-                contentAlignment = Alignment.Center // Centramos el contenido por defecto
+                contentAlignment = Alignment.Center
             ) {
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally // Centramos los elementos de la columna
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = "Tome la fotografía",
@@ -175,14 +178,15 @@ fun Camara(
                     ) {
                         FloatingActionButton(
                             onClick = {
-                                isLoading = true // Mostrar el indicador de carga al hacer clic
+                                isLoading = true
+                                cameraViewModel.setErrorMessage(null) // Limpiar errores previos
+                                cameraViewModel.setPythonResponse(null) // Limpiar respuesta previa
                                 val executor = ContextCompat.getMainExecutor(context)
                                 tomarFoto(camaraController, executor, cameraViewModel) { bytes ->
-                                    // Create a temporary file to hold the image data
                                     val tempFile = File.createTempFile("captured_image", ".jpg", context.cacheDir).apply {
                                         FileOutputStream(this).use { it.write(bytes) }
                                     }
-                                    cameraViewModel.uploadImage(tempFile, boleta) // Call the updated ViewModel function
+                                    cameraViewModel.uploadImage(tempFile, boleta)
                                 }
                             }
                         ) {
@@ -195,10 +199,9 @@ fun Camara(
                     }
                 }
 
-//                if (isLoading) {
-//                    LoadingIndicator()
-//                }
-
+                if (isLoading) {
+                    LoadingDialog()
+                }
             }
         }
 
@@ -206,6 +209,7 @@ fun Camara(
             ResultDialog(
                 exito = reconocimientoExitoso,
                 precision = precision,
+                errorMessage = errorMessage, // Pasa el errorMessage
                 onDismiss = {
                     showResultDialog = false
                     if (reconocimientoExitoso) {
@@ -215,34 +219,54 @@ fun Camara(
                             navController.navigate("Menu Alumno")
                         }
                     }
+
+                    if (!reconocimientoExitoso) {
+                        if (userRole == "Docente")
+                            navController.navigate("InfoA/$idETS/$boleta")
+                        else {
+                            navController.navigate("Menu Alumno")
+                        }
+                    }
+
+
                 }
             )
         }
+
+        if (showConnectionErrorDialog) {
+            AlertDialog(
+                onDismissRequest = { showConnectionErrorDialog = false },
+                title = { Text("Error de Conexión") },
+                text = { Text("No se pudo conectar con el servidor. Por favor, verifica tu conexión a internet e intenta de nuevo.") },
+                confirmButton = {
+                    Button(onClick = { showConnectionErrorDialog = false }) {
+                        Text("OK")
+                    }
+                }
+            )
+        }
+
+
     }
 }
 
 @Composable
-fun LoadingIndicator() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White.copy(alpha = 0.7f))
-    ) {
-        CircularProgressIndicator(
-            color = Color.Blue, // Reemplaza con el color de tu tema
-            strokeWidth = 6.dp,
-            modifier = Modifier.requiredSize(100.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Cargando...",
-            style = MaterialTheme.typography.bodyMedium, // Puedes elegir otro estilo
-            fontWeight = FontWeight.Bold,
-            color = Color.Blue // Reemplaza con el color de tu tema
-        )
-    }
+fun LoadingDialog() {
+    AlertDialog(
+        onDismissRequest = { /* No se puede cerrar tocando fuera */ },
+        text = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center, // Centrar verticalmente el contenido
+                modifier = Modifier.fillMaxWidth() // Ocupar todo el ancho disponible
+            ) {
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Cargando...")
+            }
+        },
+        confirmButton = {}
+    )
 }
 
 @Composable
@@ -299,7 +323,7 @@ private fun tomarFoto(
 }
 
 @Composable
-fun ResultDialog(exito: Boolean, precision: Float?, onDismiss: () -> Unit) {
+fun ResultDialog(exito: Boolean, precision: Float?, onDismiss: () -> Unit, errorMessage: String?) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(if (exito) "Reconocimiento Facial Exitoso" else "Reconocimiento Facial Fallido") },
@@ -315,14 +339,22 @@ fun ResultDialog(exito: Boolean, precision: Float?, onDismiss: () -> Unit) {
                         Text("Es dudosa la identidad del alumno. \nPrecisión del reconocimiento facial: ${precisionPorcentaje}%")
 
                     }
-                    if (precision < 0.6){
-                        Text("El casi seguro que el alumno no es quien dice ser. \nPrecisión del reconocimiento facial: ${precisionPorcentaje}%")
 
-
-                    }
                 }
-            } else {
-                Text("No se pudo realizar el reconocimiento facial.")
+            } else if (!exito) {
+                if (precision != null) {
+                    val precisionPorcentaje = precision * 100
+                if (precision < 0.6) {
+                    Text("El casi seguro que el alumno no es quien dice ser. \nPrecisión del reconocimiento facial: menor al 60% porciento%")
+
+                }
+                }
+            }else {
+                if (errorMessage != null && errorMessage.isNotEmpty()) {
+                    Text("Error al realizar el reconocimiento facial: $errorMessage")
+                } else {
+                    Text("No se pudo realizar el reconocimiento facial.")
+                }
             }
         },
         confirmButton = {
