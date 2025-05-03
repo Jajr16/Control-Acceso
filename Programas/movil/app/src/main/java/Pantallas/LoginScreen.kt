@@ -213,27 +213,27 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = "¿Su cuenta está bloqueada?",
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-            )
-
-            Text (
-                text = "Presione aquí para pedir su activación",
-                style = TextStyle(
-                    color = Color.Blue,  // Color del texto como hipervínculo
-                    textDecoration = TextDecoration.Underline,  // Subrayado para parecer un enlace
-                    fontWeight = FontWeight.Bold
-                ),
-                modifier = Modifier
-                    .clickable {
-                        // Acción de navegación al hacer clic
-                        if (navController != null) {
-                            navController.navigate("screen2")
-                        }
-                    }
-                    .align(Alignment.CenterHorizontally),
-            )
+//            Text(
+//                text = "¿Su cuenta está bloqueada?",
+//                modifier = Modifier.align(Alignment.CenterHorizontally),
+//            )
+//
+//            Text (
+//                text = "Presione aquí para pedir su activación",
+//                style = TextStyle(
+//                    color = Color.Blue,  // Color del texto como hipervínculo
+//                    textDecoration = TextDecoration.Underline,  // Subrayado para parecer un enlace
+//                    fontWeight = FontWeight.Bold
+//                ),
+//                modifier = Modifier
+//                    .clickable {
+//                        // Acción de navegación al hacer clic
+//                        if (navController != null) {
+//                            navController.navigate("screen2")
+//                        }
+//                    }
+//                    .align(Alignment.CenterHorizontally),
+//            )
 
             // Mostrar mensaje de error si es necesario
             if (errorMessage.isNotEmpty()) {

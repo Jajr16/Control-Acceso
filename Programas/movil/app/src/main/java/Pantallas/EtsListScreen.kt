@@ -174,26 +174,42 @@ fun EtsListScreen(
                         )
                     }
                 } else {
-                    // Lista scrollable de ETS
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(start = 16.dp, end = 16.dp, bottom = 60.dp), // Padding para la lista
-                        contentPadding = PaddingValues(top = 10.dp) // Padding superior para la lista
-                    ) {
-                        items(filteredList) { ets ->
-                            EtsACardButton(
-                                navController = navController,
-                                idETS = ets.idETS,
-                                idPeriodo = ets.idPeriodo,
-                                Turno = ets.turno,
-                                Fecha = ets.fecha,
-                                UnidadAprendizaje = ets.unidadAprendizaje
+                    if (filteredList.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(padding),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No hay ETS creados",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color.White,
+                                textAlign = TextAlign.Center
                             )
-                            Spacer(modifier = Modifier.height(8.dp)) // Espacio entre cada elemento
                         }
-                        item {
-                            Spacer(modifier = Modifier.height(8.dp)) // Espacio adicional al final
+                    } else {
+                        // Lista scrollable de ETS
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(start = 16.dp, end = 16.dp, bottom = 60.dp),
+                            contentPadding = PaddingValues(top = 10.dp)
+                        ) {
+                            items(filteredList) { ets ->
+                                EtsACardButton(
+                                    navController = navController,
+                                    idETS = ets.idETS,
+                                    idPeriodo = ets.idPeriodo,
+                                    Turno = ets.turno,
+                                    Fecha = ets.fecha,
+                                    UnidadAprendizaje = ets.unidadAprendizaje
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+                            item {
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
                         }
                     }
                 }

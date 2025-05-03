@@ -16,13 +16,18 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -57,6 +62,8 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
+import java.io.FileOutputStream
 import java.util.concurrent.Executor
 
 
@@ -68,11 +75,9 @@ fun Camara(
     idETS: String,
     loginViewModel: LoginViewModel,
     cameraViewModel: CamaraViewModel,
-
-    ) {
+) {
 
     val context = LocalContext.current
-
     val userRole = loginViewModel.getUserRole()
 
     ValidateSession(navController = navController) {
@@ -90,108 +95,112 @@ fun Camara(
 
         val camaraController = remember { LifecycleCameraController(context) }
         val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current
-        val userRole = loginViewModel.getUserRole()
 
         val pythonResponse = cameraViewModel.pythonResponse.collectAsState().value
-
         val errorMessage = cameraViewModel.errorMessage.collectAsState().value
-        val precision = cameraViewModel.precision.value // Acceder directamente al valor
+        val precision = cameraViewModel.precision.value
 
         var showResultDialog by remember { mutableStateOf(false) }
         var reconocimientoExitoso by remember { mutableStateOf(false) }
-
+        var isLoading by remember { mutableStateOf(false) }
+        var showConnectionErrorDialog by remember { mutableStateOf(false) }
 
         LaunchedEffect(key1 = Unit) {
             permissions.launchMultiplePermissionRequest()
         }
 
-
-
         LaunchedEffect(key1 = pythonResponse) {
+            isLoading = false
             pythonResponse?.let {
-                reconocimientoExitoso = it.precision != null
+                reconocimientoExitoso = it.verified
                 showResultDialog = true
             }
         }
 
-
-
         LaunchedEffect(errorMessage) {
+            isLoading = false
             if (errorMessage != null) {
-                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                if (errorMessage.contains("Error de red", ignoreCase = true)) {
+                    showConnectionErrorDialog = true
+                }
             }
         }
 
         Scaffold(
-            topBar = {
-                MenuTopBar(
-                    true, true, loginViewModel,
-                    navController
-                )
-            },
-            bottomBar = {
-                MenuBottomBar(navController = navController, userRole)
-            },
+            topBar = { MenuTopBar(true, true, loginViewModel, navController) },
+            bottomBar = { MenuBottomBar(navController = navController, userRole) },
             containerColor = Color.Transparent,
             contentColor = Color.White
         ) { paddingValues ->
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(BlueBackground)
-                    .padding(paddingValues)
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Tome la fotografía",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    textAlign = TextAlign.Center
-                )
-
-                if (permissions.allPermissionsGranted) {
-                    CamaraComposable(
-                        camaraController,
-                        lifecycle,
-                        modifier = Modifier.weight(1f)
-                    )
-                } else {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     Text(
-                        text = "Permisos denegados",
+                        text = "Tome la fotografía",
+                        style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f),
+                            .padding(16.dp),
+                        fontWeight = FontWeight.Bold,
                         color = Color.White,
                         textAlign = TextAlign.Center
                     )
-                }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    FloatingActionButton(
-                        onClick = {
-                            val executor = ContextCompat.getMainExecutor(context)
-                            tomarFoto(camaraController, executor, cameraViewModel) { bytes ->
-                                val imageRequestBody = bytes.toRequestBody("image/jpeg".toMediaTypeOrNull(), 0, bytes.size)
-                                val imagePart = MultipartBody.Part.createFormData("image", "foto.jpg", imageRequestBody)
-                                val boletaRequestBody = boleta.toRequestBody("text/plain".toMediaTypeOrNull())
-                                cameraViewModel.uploadImage(imagePart, boletaRequestBody)
-                            }
-                        }
-                    ) {
-                        Icon(
-                            painterResource(id = R.drawable.icon_camara),
-                            tint = Color.White,
-                            contentDescription = ""
+                    if (permissions.allPermissionsGranted) {
+                        CamaraComposable(
+                            camaraController,
+                            lifecycle,
+                            modifier = Modifier.weight(1f)
+                        )
+                    } else {
+                        Text(
+                            text = "Permisos denegados",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            color = Color.White,
+                            textAlign = TextAlign.Center
                         )
                     }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        FloatingActionButton(
+                            onClick = {
+                                isLoading = true
+                                cameraViewModel.setErrorMessage(null) // Limpiar errores previos
+                                cameraViewModel.setPythonResponse(null) // Limpiar respuesta previa
+                                val executor = ContextCompat.getMainExecutor(context)
+                                tomarFoto(camaraController, executor, cameraViewModel) { bytes ->
+                                    val tempFile = File.createTempFile("captured_image", ".jpg", context.cacheDir).apply {
+                                        FileOutputStream(this).use { it.write(bytes) }
+                                    }
+                                    cameraViewModel.uploadImage(tempFile, boleta)
+                                }
+                            }
+                        ) {
+                            Icon(
+                                painterResource(id = R.drawable.icon_camara),
+                                tint = Color.White,
+                                contentDescription = ""
+                            )
+                        }
+                    }
+                }
+
+                if (isLoading) {
+                    LoadingDialog()
                 }
             }
         }
@@ -200,6 +209,7 @@ fun Camara(
             ResultDialog(
                 exito = reconocimientoExitoso,
                 precision = precision,
+                errorMessage = errorMessage, // Pasa el errorMessage
                 onDismiss = {
                     showResultDialog = false
                     if (reconocimientoExitoso) {
@@ -209,12 +219,54 @@ fun Camara(
                             navController.navigate("Menu Alumno")
                         }
                     }
+
+                    if (!reconocimientoExitoso) {
+                        if (userRole == "Docente")
+                            navController.navigate("InfoA/$idETS/$boleta")
+                        else {
+                            navController.navigate("Menu Alumno")
+                        }
+                    }
+
+
                 }
             )
-
         }
 
+        if (showConnectionErrorDialog) {
+            AlertDialog(
+                onDismissRequest = { showConnectionErrorDialog = false },
+                title = { Text("Error de Conexión") },
+                text = { Text("No se pudo conectar con el servidor. Por favor, verifica tu conexión a internet e intenta de nuevo.") },
+                confirmButton = {
+                    Button(onClick = { showConnectionErrorDialog = false }) {
+                        Text("OK")
+                    }
+                }
+            )
+        }
+
+
     }
+}
+
+@Composable
+fun LoadingDialog() {
+    AlertDialog(
+        onDismissRequest = { /* No se puede cerrar tocando fuera */ },
+        text = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center, // Centrar verticalmente el contenido
+                modifier = Modifier.fillMaxWidth() // Ocupar todo el ancho disponible
+            ) {
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Cargando...")
+            }
+        },
+        confirmButton = {}
+    )
 }
 
 @Composable
@@ -271,7 +323,7 @@ private fun tomarFoto(
 }
 
 @Composable
-fun ResultDialog(exito: Boolean, precision: Float?, onDismiss: () -> Unit) {
+fun ResultDialog(exito: Boolean, precision: Float?, onDismiss: () -> Unit, errorMessage: String?) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(if (exito) "Reconocimiento Facial Exitoso" else "Reconocimiento Facial Fallido") },
@@ -287,14 +339,22 @@ fun ResultDialog(exito: Boolean, precision: Float?, onDismiss: () -> Unit) {
                         Text("Es dudosa la identidad del alumno. \nPrecisión del reconocimiento facial: ${precisionPorcentaje}%")
 
                     }
-                    if (precision < 0.6){
-                        Text("El casi seguro que el alumno no es quien dice ser. \nPrecisión del reconocimiento facial: ${precisionPorcentaje}%")
 
-
-                    }
                 }
-            } else {
-                Text("No se pudo realizar el reconocimiento facial.")
+            } else if (!exito) {
+                if (precision != null) {
+                    val precisionPorcentaje = precision * 100
+                if (precision < 0.6) {
+                    Text("El casi seguro que el alumno no es quien dice ser. \nPrecisión del reconocimiento facial: menor al 60% porciento%")
+
+                }
+                }
+            }else {
+                if (errorMessage != null && errorMessage.isNotEmpty()) {
+                    Text("Error al realizar el reconocimiento facial: $errorMessage")
+                } else {
+                    Text("No se pudo realizar el reconocimiento facial.")
+                }
             }
         },
         confirmButton = {

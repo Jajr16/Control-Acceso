@@ -52,16 +52,33 @@ fun DetalleAlumnosScreen(
 
         var showAsistenciaDialog by remember { mutableStateOf(false) }
         var showMensajeAsistencia by remember { mutableStateOf(false) }
+        var showMensajeAsistenciaExistente by remember { mutableStateOf(false) }
         var fechaHoraRegistro by remember { mutableStateOf("") }
 
+        val errorMessage by viewModel.errorMessage.collectAsState()
+
+        // Cargar datos del alumno al entrar
         LaunchedEffect(boleta) {
             viewModel.fetchDetalleAlumnos(boleta)
+            alumno?.idETS?.let { idETS ->
+                viewModel.verificarAsistencia(boleta, idETS)
+            }
         }
 
-        // Verificar asistencia cuando se muestra el diálogo
-        LaunchedEffect(showAsistenciaDialog) {
-            if (showAsistenciaDialog) {
-                viewModel.verificarAsistencia(boleta)
+        // Mostrar mensaje de asistencia existente si corresponde
+        LaunchedEffect(asistenciaYaRegistrada) {
+            if (asistenciaYaRegistrada && !showAsistenciaDialog) {
+                showMensajeAsistenciaExistente = true
+            }
+        }
+
+        // Manejar mensajes de error
+        LaunchedEffect(errorMessage) {
+            errorMessage?.let { message ->
+                if (message.contains("La asistencia ya fue registrada") ||
+                    message.contains("ya fue registrada", ignoreCase = true)) {
+                    showMensajeAsistenciaExistente = true
+                }
             }
         }
 
@@ -69,6 +86,7 @@ fun DetalleAlumnosScreen(
         LaunchedEffect(registroSuccess) {
             if (registroSuccess) {
                 showMensajeAsistencia = true
+                fechaHoraRegistro = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(Date())
                 delay(2000) // Mostrar mensaje por 2 segundos
                 showMensajeAsistencia = false
                 navController.popBackStack() // Regresar a la pantalla anterior
@@ -178,18 +196,22 @@ fun DetalleAlumnosScreen(
                     }
                 }
 
-                // Diálogos de asistencia
+                // Diálogo de confirmación de asistencia
                 if (showAsistenciaDialog) {
                     when {
                         alumno?.nombreETS.isNullOrEmpty() -> {
                             AlertDialog(
-                                onDismissRequest = { showAsistenciaDialog = false },
+                                onDismissRequest = {
+                                    showAsistenciaDialog = false
+                                },
                                 title = { Text("Error", fontWeight = FontWeight.Bold) },
                                 text = {
                                     Text("El alumno no cuenta con ETS inscritos ó su ETS está programada en otra fecha.")
                                 },
                                 confirmButton = {
-                                    Button(onClick = { showAsistenciaDialog = false }) {
+                                    Button(onClick = {
+                                        showAsistenciaDialog = false
+                                    }) {
                                         Text("Aceptar")
                                     }
                                 }
@@ -202,7 +224,12 @@ fun DetalleAlumnosScreen(
                                 },
                                 title = { Text("Asistencia ya registrada", fontWeight = FontWeight.Bold) },
                                 text = {
-                                    Text("El alumno ya tiene registrada su asistencia el día de hoy.")
+                                    Column {
+                                        Text("El alumno ya tiene registrada su asistencia el día de hoy.")
+                                        errorMessage?.let {
+                                            Text(it, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
+                                        }
+                                    }
                                 },
                                 confirmButton = {
                                     Button(onClick = {
@@ -215,7 +242,9 @@ fun DetalleAlumnosScreen(
                         }
                         else -> {
                             AlertDialog(
-                                onDismissRequest = { showAsistenciaDialog = false },
+                                onDismissRequest = {
+                                    showAsistenciaDialog = false
+                                },
                                 title = {
                                     Text(
                                         "Confirmar asistencia",
@@ -256,8 +285,6 @@ fun DetalleAlumnosScreen(
                                             showAsistenciaDialog = false
                                             alumno?.idETS?.let { idETS ->
                                                 viewModel.registrarAsistencia(boleta, idETS)
-                                            } ?: run {
-//                                                _errorMessage.value = "No se pudo obtener el ETS del alumno"
                                             }
                                         }
                                     ) {
@@ -265,7 +292,9 @@ fun DetalleAlumnosScreen(
                                     }
                                 },
                                 dismissButton = {
-                                    Button(onClick = { showAsistenciaDialog = false }) {
+                                    Button(onClick = {
+                                        showAsistenciaDialog = false
+                                    }) {
                                         Text("Cancelar")
                                     }
                                 }
@@ -274,9 +303,12 @@ fun DetalleAlumnosScreen(
                     }
                 }
 
+                // Mensaje de asistencia registrada exitosamente
                 if (showMensajeAsistencia) {
                     AlertDialog(
-                        onDismissRequest = { showMensajeAsistencia = false },
+                        onDismissRequest = {
+                            showMensajeAsistencia = false
+                        },
                         title = {
                             Text(
                                 "Asistencia registrada",
@@ -300,7 +332,67 @@ fun DetalleAlumnosScreen(
                         confirmButton = {
                             Button(onClick = {
                                 showMensajeAsistencia = false
-                                navController.popBackStack() // Regresar a la pantalla anterior
+                                navController.popBackStack()
+                            }) {
+                                Text("Aceptar")
+                            }
+                        }
+                    )
+                }
+
+                // Diálogo de error general
+                if (!errorMessage.isNullOrEmpty()) {
+                    AlertDialog(
+                        onDismissRequest = { viewModel.clearErrorMessage() },
+                        title = {
+                            Text(
+                                if (errorMessage!!.contains("servidor") ||
+                                    errorMessage!!.contains("conexión", ignoreCase = true))
+                                    "Problema de conexión"
+                                else "Error",
+                                color = Color.Red
+                            )
+                        },
+                        text = {
+                            Column {
+                                Text(errorMessage!!)
+                                if (errorMessage!!.contains("servidor") ||
+                                    errorMessage!!.contains("conexión", ignoreCase = true)) {
+                                    Text(
+                                        "Por favor verifica tu conexión e intenta nuevamente",
+                                        modifier = Modifier.padding(top = 8.dp)
+                                    )
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            Button(onClick = { viewModel.clearErrorMessage() }) {
+                                Text("Aceptar")
+                            }
+                        }
+                    )
+                }
+
+                // Mensaje de asistencia ya registrada (al entrar a la pantalla)
+                if (showMensajeAsistenciaExistente) {
+                    AlertDialog(
+                        onDismissRequest = {
+                            showMensajeAsistenciaExistente = false
+                            viewModel.clearErrorMessage()
+                        },
+                        title = { Text("Asistencia ya registrada", fontWeight = FontWeight.Bold) },
+                        text = {
+                            Column {
+                                Text("El alumno ya tiene registrada su asistencia el día de hoy.")
+                                errorMessage?.let {
+                                    Text(it, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            Button(onClick = {
+                                showMensajeAsistenciaExistente = false
+                                viewModel.clearErrorMessage()
                             }) {
                                 Text("Aceptar")
                             }
