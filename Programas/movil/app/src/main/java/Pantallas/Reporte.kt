@@ -358,8 +358,10 @@ fun Reporte(
                                     InfoRow("Nombre del docente", reporteItem.nombreDocente ?: "N/A")
                                     InfoRow("Razón del reporte", reporteItem.tipoEstado ?: "N/A")
                                     InfoRow("motivo del rechazo", reporteItem.motivo ?: "N/A")
-                                    if (reporteItem.presicion != null && reporteItem.presicion != "0") {
-                                        InfoRow("Presicion", reporteItem.presicion.toString())
+                                    if (reporteItem.presicion != null && reporteItem.presicion != "0" && reporteItem.presicion != "-1") {
+                                        InfoRow("Precisión", reporteItem.presicion.toString())
+                                    }else if (reporteItem.presicion != null && reporteItem.presicion == "-1") {
+                                        InfoRow("Precisión", "Menor que el 60% porciento")
                                     }
                                 }
                             }
