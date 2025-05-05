@@ -139,7 +139,8 @@ fun MensajesScreen(
                     val filteredPeopleToChat = listaPersonasToChat.filter {
                         when (userRole) {
                             "Alumno" -> it.tipo == "Personal Academico"
-                            "Personal Academico" -> it.tipo == "Alumno"
+                            "Personal Academico", "Docente",
+                            "Jefe Departamento", "Presidente Academia" -> it.tipo == "Alumno"
                                     || it.tipo == "Personal Academico"
                             else -> false
                         }

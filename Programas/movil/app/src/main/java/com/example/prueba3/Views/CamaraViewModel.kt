@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-
+import java.io.File
 
 
 class CamaraViewModel : ViewModel() {
@@ -31,34 +31,54 @@ class CamaraViewModel : ViewModel() {
     // Propiedad para la precisión mostrada en InformacionAlumno
     val precision = mutableStateOf<Float?>(null)
 
-    // Propiedad para la precisión dentro de PythonResponse
-    private var responsePrecision: Float? = null
-
     fun setImagen(imagen: Bitmap) {
         imagenBitmap.value = imagen
     }
 
-    fun uploadImage(image: MultipartBody.Part, boleta: RequestBody) {
+    fun uploadImage(imageFile: File, boleta: String) {
         viewModelScope.launch {
             try {
-                val response = RetrofitCamaraInstance.uploadImage(image, boleta)
-                if (response.isSuccessful) {
-                    _pythonResponse.value = response.body()
-                    responsePrecision = response.body()?.precision
-                    Log.d("CamaraViewModel", "Precision del servidor: $responsePrecision")
-                    setPrecision(responsePrecision)
-                } else {
-                    _errorMessage.value = "Error en la comunicación con Python: ${response.errorBody()?.string()}"
-                }
+                RetrofitCamaraInstance.uploadImage(boleta, imageFile)
+                    .onSuccess { pythonResponseData ->
+                        _pythonResponse.value = pythonResponseData
+                        pythonResponseData?.let {
+                            val distance = it.distance.toFloat() // Directly convert Double to Float
+                            val threshold = 0.4f
+
+                            if (distance > threshold) {
+                                setPrecision(-1.0f)
+                                Log.d("CamaraViewModel", "Distancia ($distance) mayor que el umbral ($threshold), precisión establecida en 0.")
+                            } else {
+                                if (distance <= 0.3) {
+                                    // Rango de 0 a 0.3: mapear de 1.0 (100%) a 0.8 (80%)
+                                    val normalizedDistance = distance / 0.3f
+                                    val calculatedPrecision = 1.0f - (0.2f * normalizedDistance)
+                                    setPrecision(calculatedPrecision)
+                                    Log.d("CamaraViewModel", "Distancia: $distance, Precisión calculada: $calculatedPrecision (rango 0-0.3)")
+                                } else { // distance > 0.3 y distance <= 0.4
+                                    // Rango de 0.31 a 0.4: mapear de ~0.799 (cercano a 80%) a 0.6 (60%)
+                                    val normalizedDistance = (distance - 0.31f) / (0.4f - 0.31f) // Normalizar al rango 0-1
+                                    val calculatedPrecision = 0.799f - (0.199f * normalizedDistance)
+                                    setPrecision(calculatedPrecision)
+                                    Log.d("CamaraViewModel", "Distancia: $distance, Precisión calculada: $calculatedPrecision (rango 0.31-0.4)")
+                                }
+                            }
+                        }
+                    }
+                    .onFailure { error ->
+                        _errorMessage.value = error.message
+                        setPrecision(null)
+                    }
             } catch (e: Exception) {
-                _errorMessage.value = "Error de red: ${e.message}"
+                _errorMessage.value = "Error inesperado: ${e.message}"
+                setPrecision(null)
             }
         }
     }
 
-    fun setPrecision(precision: Float?) {
-        Log.d("CamaraViewModel", "Precision establecida: $precision")
-        this.precision.value = precision
+    fun setPrecision(precisionValue: Float?) {
+        Log.d("CamaraViewModel", "Precisión establecida: $precisionValue")
+        this.precision.value = precisionValue
     }
 
     fun updateBoletaAndIdETS(boleta: String?, idETS: String?) {
@@ -72,10 +92,10 @@ class CamaraViewModel : ViewModel() {
 
     fun setPythonResponse(response: PythonResponse?) {
         _pythonResponse.value = response
-        // Eliminar la llamada a setPrecision
+        // La lógica de la precisión ahora está en uploadImage
     }
 
-    fun setErrorMessage(message: String) {
+    fun setErrorMessage(message: String?) {
         _errorMessage.value = message
     }
 }
