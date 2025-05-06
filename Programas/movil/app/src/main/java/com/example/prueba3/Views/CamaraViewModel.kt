@@ -28,7 +28,6 @@ class CamaraViewModel : ViewModel() {
 
     val imagenBitmap = mutableStateOf<Bitmap?>(null)
 
-    // Propiedad para la precisión mostrada en InformacionAlumno
     val precision = mutableStateOf<Float?>(null)
 
     fun setImagen(imagen: Bitmap) {
@@ -42,7 +41,7 @@ class CamaraViewModel : ViewModel() {
                     .onSuccess { pythonResponseData ->
                         _pythonResponse.value = pythonResponseData
                         pythonResponseData?.let {
-                            val distance = it.distance.toFloat() // Directly convert Double to Float
+                            val distance = it.distance.toFloat()
                             val threshold = 0.4f
 
                             if (distance > threshold) {
@@ -50,14 +49,13 @@ class CamaraViewModel : ViewModel() {
                                 Log.d("CamaraViewModel", "Distancia ($distance) mayor que el umbral ($threshold), precisión establecida en 0.")
                             } else {
                                 if (distance <= 0.3) {
-                                    // Rango de 0 a 0.3: mapear de 1.0 (100%) a 0.8 (80%)
                                     val normalizedDistance = distance / 0.3f
                                     val calculatedPrecision = 1.0f - (0.2f * normalizedDistance)
                                     setPrecision(calculatedPrecision)
                                     Log.d("CamaraViewModel", "Distancia: $distance, Precisión calculada: $calculatedPrecision (rango 0-0.3)")
-                                } else { // distance > 0.3 y distance <= 0.4
-                                    // Rango de 0.31 a 0.4: mapear de ~0.799 (cercano a 80%) a 0.6 (60%)
-                                    val normalizedDistance = (distance - 0.31f) / (0.4f - 0.31f) // Normalizar al rango 0-1
+                                } else {
+
+                                    val normalizedDistance = (distance - 0.31f) / (0.4f - 0.31f)
                                     val calculatedPrecision = 0.799f - (0.199f * normalizedDistance)
                                     setPrecision(calculatedPrecision)
                                     Log.d("CamaraViewModel", "Distancia: $distance, Precisión calculada: $calculatedPrecision (rango 0.31-0.4)")

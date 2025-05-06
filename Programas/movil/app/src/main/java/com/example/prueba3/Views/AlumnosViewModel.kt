@@ -158,26 +158,25 @@ class AlumnosViewModel : ViewModel() {
                 _loadingState.value = true
                 val datos = RetrofitInstance.listalumnos.getAlumnoLista()
                 System.out.println("Aqui es datos" + datos)
+                _alumnosListado.value = datos
 
-                // Verificar asistencias para todos los alumnos de una vez
-                val boletas = datos.map { it.boleta }
-                val fechaActual = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-
-                val response = RetrofitInstance.alumnosDetalle.verificarAsistencias(
-                    boletas = boletas,
-                    fecha = fechaActual
-                )
-
-                if (response.isSuccessful) {
-                    response.body()?.let { asistencias ->
-                        _asistenciasHoy.clear()
-                        _asistenciasHoy.putAll(asistencias)
-                    }
-                }
-
-                _alumnosListado.value = datos.map { alumno ->
-                    alumno.copy(asistenciaRegistrada = _asistenciasHoy[alumno.boleta] ?: false)
-                }
+//                // Verificar asistencias para todos los alumnos de una vez
+//                val boletas = datos.map { it.boleta }
+//                val fechaActual = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+//
+//                val response = RetrofitInstance.alumnosDetalle.verificarAsistencias(
+//                    boletas = boletas,
+//                    fecha = fechaActual
+//                )
+//
+//                println("El response de verificarAsistencia es: $response")
+//
+//                if (response.isSuccessful) {
+//                    response.body()?.let { asistencias ->
+//                        _asistenciasHoy.clear()
+//                        _asistenciasHoy.putAll(asistencias)
+//                    }
+//                }
             } catch (e: Exception) {
                 _alumnosListado.value = emptyList()
                 _errorMessage.value = "Error al obtener la lista: ${e.message}"

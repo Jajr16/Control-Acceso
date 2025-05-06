@@ -138,7 +138,7 @@ fun EtsListScreenAlumno(navController: NavController,
                                         ets.unidadAprendizaje.contains(query, ignoreCase = true)
                             },
                             onItemClick = {},
-                            placeholder = "Buscar por nombre o boleta",
+                            placeholder = "Buscar por nombre",
                             itemContent = { ets ->
 
                                 EtsACardButton(

@@ -35,11 +35,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.prueba3.R
@@ -67,11 +70,27 @@ fun ListaAlumnosScreen(
     loginViewModel: LoginViewModel,
     viewModel2: EtsInfoViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp
+
+    val titleFontSizeSp = remember(screenWidthDp) {
+        val baseSizeSp = 24.sp
+        val smallScreenWidthDp = 360
+        val scaleFactor = if (screenWidthDp < smallScreenWidthDp) {
+            screenWidthDp / smallScreenWidthDp.toFloat()
+        } else {
+            1f
+        }
+        (baseSizeSp.value * scaleFactor).sp
+    }
+
+    val scrollState = rememberScrollState()
+
     ValidateSession(navController = navController) {
         val alumnosList by viewModel.alumnosList.collectAsState()
         val isLoading by remember { viewModel.loadingState }.collectAsState()
         val etsDetail by remember { viewModel2.etsDetailState }.collectAsState()
-        val docenteRfc by viewModel2.rfcDocenteState.collectAsState() // Observa el RFC del docente
+        val docenteRfc by viewModel2.rfcDocenteState.collectAsState()
 
         val horaETS = etsDetail?.ets?.hora ?: ""
         val fechaETS = etsDetail?.ets?.fecha ?: ""
@@ -80,20 +99,15 @@ fun ListaAlumnosScreen(
             .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
         val username = sharedPreferences.getString("username", "") ?: ""
 
-        val scrollState = rememberScrollState()
-
         LaunchedEffect(idETS) {
             viewModel.fetchAlumno(idETS)
-
             val idETS2 = idETS.toInt()
             viewModel2.fetchRfcDocente(idETS2)
             viewModel2.fetchEtsDetail(idETS2)
         }
 
-        LaunchedEffect(Unit){
-
+        LaunchedEffect(Unit) {
             viewModel.limpiarInfoFlujo()
-
         }
 
         val currentTime = remember { Calendar.getInstance(TimeZone.getTimeZone("America/Mexico_City")) }
@@ -128,7 +142,7 @@ fun ListaAlumnosScreen(
             }
         }
 
-        val isReportExpired = remember(currentTime.timeInMillis, etsCalendar.timeInMillis) {
+        val isReportExpired by remember(currentTime.timeInMillis, etsCalendar.timeInMillis) {
             derivedStateOf {
                 if (horaETS.isEmpty() || fechaETS.isEmpty() || etsCalendar.timeInMillis == 0L) {
                     false
@@ -137,9 +151,9 @@ fun ListaAlumnosScreen(
                     currentTime.timeInMillis > etsEndTimeMillis
                 }
             }
-        }.value
+        }
 
-        val isButtonEnabled = remember(currentTime.timeInMillis, etsCalendar.timeInMillis) {
+        val isButtonEnabled by remember(currentTime.timeInMillis, etsCalendar.timeInMillis) {
             derivedStateOf {
                 if (horaETS.isEmpty() || fechaETS.isEmpty() || etsCalendar.timeInMillis == 0L) {
                     false
@@ -156,16 +170,14 @@ fun ListaAlumnosScreen(
                             nowMinutes in startTimeRange..endTimeRange
                 }
             }
-        }.value
+        }
 
         val showReportExpiredDialog = remember { mutableStateOf(false) }
         val showReportNotYetDialog = remember { mutableStateOf(false) }
-        val showNotApplicatorDialog = remember { mutableStateOf(false) } // Nuevo diálogo
+        val showNotApplicatorDialog = remember { mutableStateOf(false) }
         val timeLeftMessage = remember { mutableStateOf("") }
-
         val userRole = loginViewModel.getUserRole()
         val snackbarHostState = remember { SnackbarHostState() }
-        val coroutineScope = rememberCoroutineScope()
 
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -184,7 +196,7 @@ fun ListaAlumnosScreen(
                         .fillMaxWidth()
                         .background(BlueBackground)
                         .verticalScroll(scrollState)
-                        .padding(top = 30.dp, start = 16.dp, end = 16.dp, bottom = 16.dp),
+                        .padding(top = 20.dp, start = 16.dp, end = 16.dp, bottom = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
 
                 ) {
@@ -195,10 +207,13 @@ fun ListaAlumnosScreen(
                         } else {
                             "Detalles del ETS"
                         },
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleLarge.copy(fontSize = titleFontSizeSp),
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f)
+                            .clipToBounds()
                     )
                     Text(
                         text = "Lista de alumnos inscritos",
@@ -208,7 +223,13 @@ fun ListaAlumnosScreen(
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(top = 4.dp)
                     )
-                    Divider(color = Color(0xFFFFFFFF), thickness = 5.dp, modifier = Modifier.padding(vertical = 8.dp))
+                    Divider(
+                        color = Color(0xFFFFFFFF),
+                        thickness = 3.dp,
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .width(200.dp)
+                    )
                 }
 
                 if (isLoading) {
@@ -219,14 +240,14 @@ fun ListaAlumnosScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(top = 150.dp),
+                            .padding(top = 130.dp),
                         contentPadding = PaddingValues(16.dp)
                     ) {
                         items(alumnosList) { alumno ->
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(8.dp),
+                                    .padding(vertical = 8.dp),
                                 colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)),
                                 elevation = CardDefaults.cardElevation(4.dp)
                             ) {
@@ -260,14 +281,21 @@ fun ListaAlumnosScreen(
                                         },
                                         modifier = Modifier
                                             .weight(0.8f),
-                                        colors = ButtonDefaults.buttonColors(Color(0xFFFFFFFF))
+                                        colors = ButtonDefaults.buttonColors(Color(0xFFFFFFFF)),
+                                        contentPadding = PaddingValues(8.dp)
                                     ) {
                                         Column {
-                                            Text(text = "Boleta: ${alumno.boleta}", fontSize = 14.sp, color = Color.Black)
+                                            Text(
+                                                text = "Boleta: ${alumno.boleta}",
+                                                fontSize = 14.sp,
+                                                color = Color.Black
+                                            )
                                             Text(
                                                 text = "Nombre: ${alumno.nombreA} ${alumno.apellidoP} ${alumno.apellidoM}",
                                                 fontSize = 14.sp,
-                                                color = Color.Black
+                                                color = Color.Black,
+                                                maxLines = 2,
+                                                overflow = TextOverflow.Ellipsis
                                             )
                                         }
                                     }
@@ -279,8 +307,8 @@ fun ListaAlumnosScreen(
                                             navController.navigate("Reporte/$idETS/${alumno.boleta}/${alumno.aceptado}")
                                         },
                                         modifier = Modifier
-                                            .size(75.dp)
-                                            .padding(8.dp)
+                                            .size(60.dp)
+                                            .padding(4.dp)
                                     ) {
                                         Icon(
                                             painter = painterResource(
@@ -351,7 +379,6 @@ fun ListaAlumnosScreen(
             )
         }
 
-        // Dialog for not the applicator
         if (showNotApplicatorDialog.value) {
             AlertDialog(
                 onDismissRequest = { showNotApplicatorDialog.value = false },

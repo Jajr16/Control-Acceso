@@ -140,7 +140,8 @@ fun Camara(
                 contentAlignment = Alignment.Center
             ) {
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxSize() // Asegura que la Column también ocupe todo el espacio
                 ) {
                     Text(
                         text = "Tome la fotografía",
@@ -154,11 +155,13 @@ fun Camara(
                     )
 
                     if (permissions.allPermissionsGranted) {
-                        CamaraComposable(
-                            camaraController,
-                            lifecycle,
-                            modifier = Modifier.weight(1f)
-                        )
+                        Box(modifier = Modifier.weight(1f)) {
+                            CamaraComposable(
+                                camaraController,
+                                lifecycle,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
                     } else {
                         Text(
                             text = "Permisos denegados",
@@ -344,7 +347,7 @@ fun ResultDialog(exito: Boolean, precision: Float?, onDismiss: () -> Unit, error
             } else if (!exito) {
                 if (precision != null) {
                     val precisionPorcentaje = precision * 100
-                if (precision < 0.6) {
+                if (precision < 0.6 || precision == null) {
                     Text("El casi seguro que el alumno no es quien dice ser. \nPrecisión del reconocimiento facial: menor al 60% porciento%")
 
                 }

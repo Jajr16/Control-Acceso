@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -51,22 +52,24 @@ fun MenuBottomBar(navController: NavController, userRole: String?) {
             }
         )
     }
-    // Barra superior con color blanco en el fondo
-    BottomAppBar (
+    // Barra inferior
+    BottomAppBar(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(20.dp)
+            .fillMaxHeight(0.1f) // El recuadro ocupa el 10% de la altura
+            .padding(horizontal = 8.dp)
             .clip(RoundedCornerShape(16.dp)),
         actions = {
-            Box (
-                modifier = Modifier
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center // Centra horizontalmente el Row dentro del Box
             ) {
-                Row (
-                    modifier = Modifier.align(Alignment.Center),
-                    horizontalArrangement = Arrangement.spacedBy(32.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(), // El Row ocupa toda la altura del Box (BottomAppBar.actions)
+                    horizontalArrangement = Arrangement.SpaceEvenly, // Distribución equitativa horizontal
+                    verticalAlignment = Alignment.CenterVertically // Centrado vertical de los íconos
                 ) {
                     IconButton(onClick = {
                         val destination = if (userRole == "Alumno") "Menu Alumno" else if (userRole == "Personal Academico" || userRole == "Docente") "Menu Docente" else "Menu"
@@ -76,18 +79,16 @@ fun MenuBottomBar(navController: NavController, userRole: String?) {
                             imageVector = Icons.Filled.Home,
                             contentDescription = "Inicio",
                             tint = BlueBackground,
-                            modifier = Modifier
-                                .size(60.dp)
+                            modifier = Modifier.size(36.dp)
                         )
                     }
 
-                    IconButton(onClick = {showDialog = true}) {
+                    IconButton(onClick = { showDialog = true }) {
                         Icon(
                             imageVector = Icons.Filled.Notifications,
                             contentDescription = "Notificaciones",
                             tint = BlueBackground,
-                            modifier = Modifier
-                                .size(60.dp)
+                            modifier = Modifier.size(36.dp)
                         )
                     }
 
@@ -98,8 +99,7 @@ fun MenuBottomBar(navController: NavController, userRole: String?) {
                             imageVector = Icons.Filled.DateRange,
                             contentDescription = "Calendario",
                             tint = BlueBackground,
-                            modifier = Modifier
-                                .size(60.dp)
+                            modifier = Modifier.size(36.dp)
                         )
                     }
 
@@ -111,8 +111,7 @@ fun MenuBottomBar(navController: NavController, userRole: String?) {
                             imageVector = Icons.Default.ExitToApp,
                             contentDescription = "Cerrar sesión",
                             tint = BlueBackground,
-                            modifier = Modifier
-                                .size(60.dp)
+                            modifier = Modifier.size(36.dp)
                         )
                     }
                 }
