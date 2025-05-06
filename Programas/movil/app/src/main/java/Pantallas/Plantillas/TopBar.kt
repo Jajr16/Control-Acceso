@@ -27,89 +27,119 @@ import com.example.prueba3.R
 import com.example.prueba3.Views.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
+
 fun MenuTopBar(
+
     showBackButton: Boolean,
+
     showMsgButton: Boolean,
+
     loginViewModel: LoginViewModel,
+
     navController: NavController,
+
     Component: @Composable (() -> Unit)? = null
+
 ) {
+
     val username = loginViewModel.getUserName()
 
+
     TopAppBar(
+
         modifier = Modifier
+
             .fillMaxWidth()
-            .padding(horizontal = 10.dp)
-            .height(48.dp), // Establecemos una altura más pequeña
-        title = {
-            if (Component != null) {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Component()
-                }
-            }
-        },
+
+            .padding(top = 27.dp, start = 10.dp, end = 10.dp)
+
+            .height(if (Component != null) 60.dp else 40.dp),
+
+        title = {},
+
         navigationIcon = {
+
             if (showBackButton) {
-                IconButton(
-                    onClick = { navController.navigateUp() },
-                    modifier = Modifier.size(36.dp)
-                        .padding(start = 4.dp)
-                ) {
+
+                IconButton(onClick = { navController.navigateUp() },
+
+                    modifier = Modifier.size(60.dp)) {
+
                     Icon(
+
                         imageVector = Icons.Default.ArrowBack,
+
                         contentDescription = "Regresar",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
+
+                        tint = Color.White
+
                     )
+
                 }
+
             }
+
         },
+
         actions = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                if (showBackButton) {
-                    Spacer(modifier = Modifier.width(0.dp))
-                } else {
-                    Spacer(modifier = Modifier.weight(1f))
+
+            if (showMsgButton && (loginViewModel.getUserRole() == "Alumno"
+
+                        || loginViewModel.getUserRole() == "Docente")) {
+
+                IconButton(onClick = { navController.navigate("Mensajes/${username}") }) {
+
+                    Icon(
+
+                        painter = painterResource(id = R.drawable.chat),
+
+                        contentDescription = "Mensajes",
+
+                        modifier = Modifier.size(24.dp),
+
+                        tint = Color.White
+
+                    )
+
                 }
 
-
-                if (Component != null) {
-                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                        Component()
-                    }
-                } else {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-
-
-                if (showMsgButton && (loginViewModel.getUserRole() == "Alumno"
-                            || loginViewModel.getUserRole() == "Docente")) {
-                    IconButton(onClick = { navController.navigate("Mensajes/${username}") }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.chat),
-                            contentDescription = "Mensajes",
-                            modifier = Modifier.size(24.dp),
-                            tint = Color.White
-                        )
-                    }
-                } else {
-                    Spacer(modifier = Modifier.width(0.dp))
-                }
             }
+
+            if (Component != null) {
+
+                Box(
+
+                    modifier = Modifier
+
+                        .fillMaxWidth()
+
+                        .padding(start = if (showBackButton) 56.dp else 0.dp),
+
+                    contentAlignment = Alignment.Center
+
+                ) {
+
+                    Component()
+
+                }
+
+            }
+
         },
+
         colors = TopAppBarDefaults.topAppBarColors(
+
             containerColor = Color.Transparent,
+
             navigationIconContentColor = Color.White,
+
             actionIconContentColor = Color.White
+
         )
+
     )
+
 }
 
