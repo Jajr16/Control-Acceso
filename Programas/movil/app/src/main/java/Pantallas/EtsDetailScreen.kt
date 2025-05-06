@@ -44,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -63,6 +64,19 @@ fun EtsDetailScreen(
     loginViewModel: LoginViewModel
 ) {
     val userRole = loginViewModel.getUserRole()
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp
+
+    val titleFontSizeSp = remember(screenWidthDp) {
+        val baseSizeSp = 24.sp
+        val smallScreenWidthDp = 360
+        val scaleFactor = if (screenWidthDp < smallScreenWidthDp) {
+            screenWidthDp / smallScreenWidthDp.toFloat()
+        } else {
+            1f
+        }
+        (baseSizeSp.value * scaleFactor).sp
+    }
 
     val sharedPreferences = navController.context
         .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
@@ -71,7 +85,6 @@ fun EtsDetailScreen(
     val docenteRfc by viewModel.rfcDocenteState.collectAsState()
 
     LaunchedEffect(idETS) {
-        //val idETS2 = idETS.toInt()
         viewModel.fetchRfcDocente(idETS)
         viewModel.fetchEtsDetail(idETS)
     }
@@ -81,12 +94,6 @@ fun EtsDetailScreen(
         val salonState by remember { viewModel.salonDetailState }.collectAsState()
         val isLoading by remember { viewModel.loadingState }.collectAsState()
 
-
-
-        LaunchedEffect(idETS) {
-            viewModel.fetchEtsDetail(idETS)
-        }
-
         var savedRole by remember { mutableStateOf<String?>(null) }
 
         LaunchedEffect(Unit) {
@@ -94,29 +101,20 @@ fun EtsDetailScreen(
         }
 
         Scaffold(
-            topBar = {
-                MenuTopBar(
-                    true, true, loginViewModel,
-                    navController
-                )
-            },
-            bottomBar = {
-                MenuBottomBar(navController = navController, userRole)
-            }
+            topBar = { MenuTopBar(true, true, loginViewModel, navController) },
+            bottomBar = { MenuBottomBar(navController = navController, userRole) }
         ) { padding ->
-            Box(
+            Column( // Contenedor principal
                 modifier = Modifier
                     .fillMaxSize()
                     .background(BlueBackground)
                     .padding(padding)
             ) {
-                // Contenido principal desplazable
-                val scrollState = rememberScrollState()
-                Column(
+                Column( // Contenido principal desplazable
                     modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState)
-                        .padding(bottom = 80.dp)
+                        .fillMaxWidth()
+                        .weight(1f) // Ocupa la mayor parte del espacio vertical
+                        .verticalScroll(rememberScrollState())
                 ) {
                     // Encabezado
                     Text(
@@ -125,9 +123,9 @@ fun EtsDetailScreen(
                         } else {
                             "Detalles del ETS"
                         },
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleLarge.copy(fontSize = titleFontSizeSp),
                         modifier = Modifier
-                            .padding(top = 20.dp)
+                            .padding(top = 20.dp, start = 16.dp, end = 16.dp)
                             .fillMaxWidth(),
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
@@ -175,7 +173,7 @@ fun EtsDetailScreen(
                             hora = etsDetail!!.ets.hora,
                             userRole = savedRole,
                             username = username,
-                            docenteRfc= docenteRfc!!,
+                            docenteRfc = docenteRfc!!,
                             onRequestReplacement = {
                                 if (savedRole == "Personal Academico" || savedRole == "Docente") {
                                     navController.navigate("solicitarReemplazo/${etsDetail!!.ets.idETS}/${etsDetail!!.ets.unidadAprendizaje}")
@@ -196,29 +194,32 @@ fun EtsDetailScreen(
                             )
                         }
                     }
+                    Spacer(modifier = Modifier.height(8.dp)) // Espacio al final del contenido
                 }
 
-                // Botón fijo en la parte inferior, sin afectar el BottomBar
+                // Espacio para el botón inferior
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Botón fijo en la parte inferior
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 16.dp),
+                        .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     if (savedRole == "Personal Academico" || savedRole == "Docente") {
                         Button(
-                            onClick = {
-                                navController.navigate("listaAlumnos/$idETS")
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6c1d45))
+                            onClick = { navController.navigate("listaAlumnos/$idETS") },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6c1d45)),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(text = "Ir a la lista de alumnos", color = Color.White)
                         }
                     } else if (savedRole == "Personal Seguridad") {
                         Button(
                             onClick = { navController.navigate("ListaAlumnos/$idETS") },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6c1d45))
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6c1d45)),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(text = "Ale pon tu boton XD", color = Color.White)
                         }

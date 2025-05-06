@@ -140,7 +140,8 @@ fun Camara(
                 contentAlignment = Alignment.Center
             ) {
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxSize() // Asegura que la Column también ocupe todo el espacio
                 ) {
                     Text(
                         text = "Tome la fotografía",
@@ -154,11 +155,13 @@ fun Camara(
                     )
 
                     if (permissions.allPermissionsGranted) {
-                        CamaraComposable(
-                            camaraController,
-                            lifecycle,
-                            modifier = Modifier.weight(1f)
-                        )
+                        Box(modifier = Modifier.weight(1f)) { // Contenedor para la cámara con peso
+                            CamaraComposable(
+                                camaraController,
+                                lifecycle,
+                                modifier = Modifier.fillMaxSize() // La cámara llena el contenedor con peso
+                            )
+                        }
                     } else {
                         Text(
                             text = "Permisos denegados",

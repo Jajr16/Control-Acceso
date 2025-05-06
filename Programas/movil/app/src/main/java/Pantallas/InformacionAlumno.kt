@@ -166,19 +166,6 @@ fun InformacionAlumno(
             mostrarDialogoErrorEliminacion = true
         }
     }
-
-
-//    // Diálogo de error de eliminación
-//    val mensajeEliminacion by viewModel.mensajeEliminacion.collectAsState()
-//    var mostrarDialogoErrorEliminacion by remember { mutableStateOf(false) }
-//
-//    LaunchedEffect(mensajeEliminacion) {
-//        if (!mensajeEliminacion.isNullOrEmpty()) {
-//            mostrarDialogoErrorEliminacion = true
-//        }
-//    }
-
-
     // Estado para controlar la visibilidad del botón de eliminación
     var showDeleteButton by remember { mutableStateOf(false) }
 
@@ -357,18 +344,7 @@ fun InformacionAlumno(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-//                            // Foto del alumno (más grande)
-//                            if (bitmap != null) {
-//                                //Log.d("InformacionAlumno", "Bitmap is not null, showing image")
-//                                Image(
-//                                    bitmap = bitmap.asImageBitmap(),
-//                                    contentDescription = "Foto del alumno",
-//                                    modifier = Modifier
-//                                        .size(150.dp)
-//                                        .clip(CircleShape)
-//                                        .border(2.dp, Color.Gray, CircleShape),
-//                                    contentScale = ContentScale.Crop
-//                                )
+
                                 if (fotoAlumno != null) {
                                     val bitmap = BitmapFactory.decodeByteArray(
                                         fotoAlumno,
