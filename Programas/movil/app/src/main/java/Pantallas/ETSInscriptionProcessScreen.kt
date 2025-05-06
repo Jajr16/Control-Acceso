@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.prueba3.Views.LoginViewModel
@@ -47,27 +48,27 @@ fun ETSInscriptionProcessScreen(navController: NavController, loginViewModel: Lo
         },
         bottomBar = { MenuBottomBar(navController = navController, userRole) }
     ) { padding ->
-        Column (
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(BlueBackground)
-                .padding(padding)
+                .padding(padding),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 30.dp)
+
+                    .padding(top = 30.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "Guía de Inscripción al ETS",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
-                        .padding(bottom = 8.dp)
-                        .align(Alignment.CenterHorizontally),
-                    color = Color.White
+                        .padding(bottom = 8.dp),
+                    color = Color.White,
+                    textAlign = TextAlign.Center
                 )
 
                 Divider(
@@ -81,17 +82,15 @@ fun ETSInscriptionProcessScreen(navController: NavController, loginViewModel: Lo
 
             Spacer(modifier = Modifier.height(20.dp))
 
-
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(end = 20.dp, start = 20.dp)
+                    .fillMaxWidth()
+                    .padding(end = 20.dp, start = 20.dp),
+                contentAlignment = Alignment.Center
             ) {
-
-
                 LazyColumn(
                     modifier = Modifier
-                        .fillMaxSize(),
+                        .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {

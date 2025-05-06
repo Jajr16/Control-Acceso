@@ -67,67 +67,132 @@ fun QRScannerScreen(navController: NavController, loginViewModel: LoginViewModel
             .build()
         val qrScanner = BarcodeScanning.getClient(qrScannerOptions)
 
+
         LaunchedEffect(Unit) {
             permissions.launchMultiplePermissionRequest()
         }
 
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            topBar = {
-                MenuTopBar(
-                    true, true, loginViewModel,
-                    navController
-                )
-            },
-            bottomBar = { MenuBottomBar(navController = navController, userRole) }
-        ) { padding ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                if (permissions.allPermissionsGranted) {
-                    QRScannerComposable(
-                        cameraController = cameraController,
-                        lifecycleOwner = lifecycleOwner,
-                        qrScanner = qrScanner,
-                        onQrCodeDetected = { result ->
-                            qrCodeResult = result.displayValue
-                            result.displayValue?.let { qrCode ->
-                                if (qrCode.isNotEmpty()) {
-                                    println("Código QR escaneado: $qrCode")
-                                    val url = qrCode.substringAfter("url=")
-                                    if (url.isNotEmpty()) {
-                                        val encodedUrl = Uri.encode(url)
-                                        val route = "CredencialDAE?url=$encodedUrl"
-                                        navController.navigate(route)
+        if (userRole == "Personal Academico" || userRole == "Docente"){
+
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+
+                topBar = {
+                    MenuTopBar(
+                        true, true, loginViewModel,
+                        navController
+                    )
+                },
+                bottomBar = { MenuBottomBar(navController = navController, userRole) }
+            ) { padding ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (permissions.allPermissionsGranted) {
+                        QRScannerComposable(
+                            cameraController = cameraController,
+                            lifecycleOwner = lifecycleOwner,
+                            qrScanner = qrScanner,
+                            onQrCodeDetected = { result ->
+                                qrCodeResult = result.displayValue
+                                result.displayValue?.let { qrCode ->
+                                    if (qrCode.isNotEmpty()) {
+                                        println("Código QR escaneado: $qrCode")
+                                        val url = qrCode.substringAfter("url=")
+                                        if (url.isNotEmpty()) {
+                                            val encodedUrl = Uri.encode(url)
+                                            val route = "CredencialDAE?url=$encodedUrl"
+                                            navController.navigate(route)
+                                        } else {
+                                            Toast.makeText(context, "Código QR no válido", Toast.LENGTH_SHORT).show()
+                                        }
                                     } else {
-                                        Toast.makeText(context, "Código QR no válido", Toast.LENGTH_SHORT).show()
+                                        println("El código QR está vacío.")
+                                        Toast.makeText(context, "Código QR vacío", Toast.LENGTH_SHORT).show()
                                     }
-                                } else {
-                                    println("El código QR está vacío.")
-                                    Toast.makeText(context, "Código QR vacío", Toast.LENGTH_SHORT).show()
                                 }
                             }
-                        }
-                    )
+                        )
 
-                    // Cuadro en el centro para marcar el área de escaneo
-                    Box(
-                        modifier = Modifier
-                            .size(200.dp)
-                            .border(
-                                width = 2.dp,
-                                color = Color(0xFF800040), // Color del borde (personalizable)
-                                shape = RoundedCornerShape(8.dp) // Bordes redondeados
-                            )
-                    )
-                } else {
-                    Text(text = "Permisos de cámara requeridos")
+                        // Cuadro en el centro para marcar el área de escaneo
+                        Box(
+                            modifier = Modifier
+                                .size(200.dp)
+                                .border(
+                                    width = 2.dp,
+                                    color = Color(0xFF800040), // Color del borde (personalizable)
+                                    shape = RoundedCornerShape(8.dp) // Bordes redondeados
+                                )
+                        )
+                    } else {
+                        Text(text = "Permisos de cámara requeridos")
+                    }
                 }
             }
+
+        }else{
+
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                bottomBar = { MenuBottomBar(navController = navController, userRole) }
+            ) { padding ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (permissions.allPermissionsGranted) {
+                        QRScannerComposable(
+                            cameraController = cameraController,
+                            lifecycleOwner = lifecycleOwner,
+                            qrScanner = qrScanner,
+                            onQrCodeDetected = { result ->
+                                qrCodeResult = result.displayValue
+                                result.displayValue?.let { qrCode ->
+                                    if (qrCode.isNotEmpty()) {
+                                        println("Código QR escaneado: $qrCode")
+                                        val url = qrCode.substringAfter("url=")
+                                        if (url.isNotEmpty()) {
+                                            val encodedUrl = Uri.encode(url)
+                                            val route = "CredencialDAE?url=$encodedUrl"
+                                            navController.navigate(route)
+                                        } else {
+                                            Toast.makeText(context, "Código QR no válido", Toast.LENGTH_SHORT).show()
+                                        }
+                                    } else {
+                                        println("El código QR está vacío.")
+                                        Toast.makeText(context, "Código QR vacío", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                        )
+
+                        // Cuadro en el centro para marcar el área de escaneo
+                        Box(
+                            modifier = Modifier
+                                .size(200.dp)
+                                .border(
+                                    width = 2.dp,
+                                    color = Color(0xFF800040), // Color del borde (personalizable)
+                                    shape = RoundedCornerShape(8.dp) // Bordes redondeados
+                                )
+                        )
+                    } else {
+                        Text(text = "Permisos de cámara requeridos")
+                    }
+                }
+            }
+
         }
+
+
+
+
+
     }
 }
 

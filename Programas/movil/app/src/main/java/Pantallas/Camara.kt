@@ -140,7 +140,8 @@ fun Camara(
                 contentAlignment = Alignment.Center
             ) {
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxSize() // Asegura que la Column también ocupe todo el espacio
                 ) {
                     Text(
                         text = "Tome la fotografía",
@@ -154,11 +155,13 @@ fun Camara(
                     )
 
                     if (permissions.allPermissionsGranted) {
-                        CamaraComposable(
-                            camaraController,
-                            lifecycle,
-                            modifier = Modifier.weight(1f)
-                        )
+                        Box(modifier = Modifier.weight(1f)) {
+                            CamaraComposable(
+                                camaraController,
+                                lifecycle,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
                     } else {
                         Text(
                             text = "Permisos denegados",
@@ -275,7 +278,7 @@ fun CamaraComposable(
     lifecycle: LifecycleOwner,
     modifier: Modifier = Modifier
 ) {
-    camaraController.cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+    camaraController.cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
     camaraController.bindToLifecycle(lifecycle)
     AndroidView(
         modifier = modifier.fillMaxSize(),
