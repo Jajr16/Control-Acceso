@@ -28,6 +28,7 @@ import okhttp3.ResponseBody
 import java.text.SimpleDateFormat
 import java.util.Date
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateMapOf
 import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -146,15 +147,40 @@ class AlumnosViewModel : ViewModel() {
         }
     }
 
+    // Agregar esta propiedad
+    private val _asistenciasHoy = mutableStateMapOf<String, Boolean>()
+    val asistenciasHoy: Map<String, Boolean> get() = _asistenciasHoy
+
+    // Modificar fetchListalumnos
     fun fetchListalumnos() {
         viewModelScope.launch {
             try {
                 _loadingState.value = true
                 val datos = RetrofitInstance.listalumnos.getAlumnoLista()
-                System.out.println("Aqui es datos" + datos);
-                _alumnosListado.value = datos
+                System.out.println("Aqui es datos" + datos)
+
+                // Verificar asistencias para todos los alumnos de una vez
+                val boletas = datos.map { it.boleta }
+                val fechaActual = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
+                val response = RetrofitInstance.alumnosDetalle.verificarAsistencias(
+                    boletas = boletas,
+                    fecha = fechaActual
+                )
+
+                if (response.isSuccessful) {
+                    response.body()?.let { asistencias ->
+                        _asistenciasHoy.clear()
+                        _asistenciasHoy.putAll(asistencias)
+                    }
+                }
+
+                _alumnosListado.value = datos.map { alumno ->
+                    alumno.copy(asistenciaRegistrada = _asistenciasHoy[alumno.boleta] ?: false)
+                }
             } catch (e: Exception) {
                 _alumnosListado.value = emptyList()
+                _errorMessage.value = "Error al obtener la lista: ${e.message}"
             } finally {
                 _loadingState.value = false
             }
@@ -168,8 +194,13 @@ class AlumnosViewModel : ViewModel() {
                 _loadingState.value = true
                 val alumnoState = RetrofitInstance.alumnosDetalle.getalumnosDetalle(boleta)
                 _alumnosDetalle.value = alumnoState
+
+                // Log para depuración
+                Log.d("AlumnosViewModel", "Detalles del alumno recibidos: $alumnoState")
+
             } catch (e: Exception) {
                 _alumnosDetalle.value = emptyList()
+                Log.e("AlumnosViewModel", "Error al obtener detalles", e)
             } finally {
                 _loadingState.value = false
             }
@@ -202,6 +233,12 @@ class AlumnosViewModel : ViewModel() {
     val alumnoRegistro: StateFlow<List<regitrarAsistencia>> = _alumnoRegistro.asStateFlow()
 
     fun gestionarAsistencia(boleta: String, idETS: Int, registrar: Boolean = false) {
+
+        if (boleta.isBlank()) {
+            _errorMessage.value = "El número de boleta no puede estar vacío"
+            return
+        }
+
         viewModelScope.launch {
             try {
                 _loadingState.value = true
@@ -218,10 +255,17 @@ class AlumnosViewModel : ViewModel() {
                     idETS = idETS
                 )
 
-                _alumnoRegistro.value = response
-                _registroSuccess.value = true
-                _asistenciaYaRegistrada.value = true
-
+                if (response.isSuccessful) {
+                    response.body()?.let { registros ->
+                        _registroSuccess.value = true
+                        _asistenciaYaRegistrada.value = true
+                    }
+                } else {
+                    handleAsistenciaError(
+                        HttpException(response),
+                        registrar
+                    )
+                }
             } catch (e: Exception) {
                 handleAsistenciaError(e, registrar)
             } finally {
@@ -265,7 +309,21 @@ class AlumnosViewModel : ViewModel() {
     }
 
     fun verificarAsistencia(boleta: String, idETS: Int) {
-        gestionarAsistencia(boleta, idETS, registrar = false)
+        viewModelScope.launch {
+            try {
+                _loadingState.value = true
+                val fecha = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                val response = RetrofitInstance.alumnosDetalle.verificarAsistencias(
+                    listOf(boleta),
+                    fecha
+                )
+                _asistenciaYaRegistrada.value = response.body()?.get(boleta) ?: false
+            } catch (e: Exception) {
+                handleAsistenciaError(e, false)
+            } finally {
+                _loadingState.value = false
+            }
+        }
     }
 
 

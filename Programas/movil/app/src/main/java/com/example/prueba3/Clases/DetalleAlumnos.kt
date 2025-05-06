@@ -53,7 +53,7 @@ data class regitrarAsistencia (
     val nombre: String,
     val apellidoP: String,
     val apellidoM: String,
-    val idETS: String,
+    val idETS: Integer,
     val fecha: String,
     val horaIngreso: String
 )

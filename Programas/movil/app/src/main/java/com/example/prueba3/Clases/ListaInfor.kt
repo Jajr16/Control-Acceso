@@ -7,4 +7,5 @@ data class ListaInfor(
     val apellidoM: String,
     val turno: String,
     val error: Int,
+    val asistenciaRegistrada: Boolean = false
 )

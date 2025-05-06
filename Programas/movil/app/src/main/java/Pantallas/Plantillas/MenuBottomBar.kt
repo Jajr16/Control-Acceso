@@ -13,17 +13,23 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.prueba3.ui.theme.BlueBackground
+import androidx.compose.runtime.*
 import java.io.File
 
 
@@ -31,6 +37,20 @@ import java.io.File
 @Composable
 fun MenuBottomBar(navController: NavController, userRole: String?) {
 
+    var showDialog by remember { mutableStateOf(false) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("En construcción") },
+            text = { Text("Esta sección de notificaciones estará disponible próximamente.") },
+            confirmButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("Aceptar")
+                }
+            }
+        )
+    }
     // Barra superior con color blanco en el fondo
     BottomAppBar (
         modifier = Modifier
@@ -61,7 +81,7 @@ fun MenuBottomBar(navController: NavController, userRole: String?) {
                         )
                     }
 
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = {showDialog = true}) {
                         Icon(
                             imageVector = Icons.Filled.Notifications,
                             contentDescription = "Notificaciones",
