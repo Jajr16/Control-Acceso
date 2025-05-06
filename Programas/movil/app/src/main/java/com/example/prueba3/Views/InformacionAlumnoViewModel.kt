@@ -43,13 +43,13 @@ class InformacionAlumnoViewModel : ViewModel() {
         hora: String,
         imagenBitmap: Bitmap?,
         context: Context,
-        onComplete: () -> Unit, // <---- AÑADE ESTE PARÁMETRO
-        onError: (String) -> Unit // <---- AÑADE ESTE PARÁMETRO
+        onComplete: () -> Unit,
+        onError: (String) -> Unit
     ) {
         viewModelScope.launch {
             _cargando.value = true
-            _envioExitoso.value = null // Reiniciar el estado de éxito
-            _errorEnvio.value = null   // Reiniciar el estado de error
+            _envioExitoso.value = null
+            _errorEnvio.value = null
             try {
                 Log.d("RetrofitResponse", "Mande razón: $razon")
 

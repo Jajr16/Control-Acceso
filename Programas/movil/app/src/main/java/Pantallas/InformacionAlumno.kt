@@ -4,6 +4,7 @@ import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.util.Log
 import android.widget.Toast
@@ -70,6 +71,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.CamaraViewModel
 import com.example.prueba3.Views.InformacionAlumnoViewModel
+import com.example.prueba3.Views.PersonaViewModel
 import java.net.ConnectException
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -85,9 +87,18 @@ fun InformacionAlumno(
     loginViewModel: LoginViewModel,
     viewModel: AlumnosViewModel,
     camaraViewModel: CamaraViewModel,
-    informacionAlumnoViewModel: InformacionAlumnoViewModel
+    informacionAlumnoViewModel: InformacionAlumnoViewModel,
+    viewModel2: PersonaViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 
 ) {
+
+    val sharedPreferences = navController.context
+        .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+    val username = sharedPreferences.getString("username", "") ?: ""
+
+    LaunchedEffect(username) {
+        viewModel2.obtenerDatos(username)
+    }
 
     val bitmap = camaraViewModel.imagenBitmap.value
     val precision = camaraViewModel.precision.value
@@ -116,6 +127,7 @@ fun InformacionAlumno(
     val alumnoEspecifico by viewModel.alumnoEspecifico.collectAsState()
     val ingresoResultado by viewModel.ingresoResultado.collectAsState()
     val loadingFotoAlumno = remember { mutableStateOf(false) }
+
 
 
     LaunchedEffect(Unit) {
@@ -600,16 +612,28 @@ fun InformacionAlumno(
                                 bitmap = bitmap.asImageBitmap(),
                                 contentDescription = "Imagen verificada por IA",
                                 modifier = Modifier
-                                    .size(200.dp) // Ajusta el tamaño según necesites
-                                    .clip(RoundedCornerShape(8.dp)), // Opcional: añadir esquinas redondeadas
-                                contentScale = ContentScale.Fit // Ajustar la imagen dentro del tamaño
+                                    .size(200.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Fit
                             )
+                            if (precision.toInt() == -1){
                             Text(
-                                text = "Similitud: ${String.format("%.2f", precision * 100)}%",
+
+                                text = "Similitud: mennor al 60%",
                                 color = Color.White,
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.padding(top = 8.dp)
                             )
+                            }else {
+                                Text(
+
+                                    text = "Similitud: ${String.format("%.2f", precision * 100)}%",
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.padding(top = 8.dp)
+
+                                )
+                            }
                         }
                     }
 

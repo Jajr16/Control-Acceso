@@ -3,6 +3,7 @@ package Pantallas
 import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.text.Layout
 import android.util.Log
@@ -59,13 +60,12 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.EtsInfoViewModel
+import com.example.prueba3.Views.PersonaViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
-
-//painter = painterResource(id = R.drawable.info),
 
 @Composable
 fun Reporte(
@@ -75,8 +75,11 @@ fun Reporte(
     loginViewModel: LoginViewModel,
     viewModel: AlumnosViewModel,
     aceptadoInicial: Int,
-    viewModel2: EtsInfoViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    viewModel2: EtsInfoViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    viewModel3: PersonaViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
+
+
     ValidateSession(navController = navController) {
         val userRole = loginViewModel.getUserRole()
         val reporteList by viewModel.reporte.collectAsState()
@@ -92,7 +95,7 @@ fun Reporte(
             viewModel.fetchReporte(idETS.toInt(), boleta)
             viewModel.verificarIngresoSalon(idETS.toInt(), boleta)
 
-// Iniciar la carga de la foto del alumno
+            // Iniciar la carga de la foto del alumno
             loadingFotoAlumno.value = true
             viewModel.fetchFotoAlumno(boleta) { loadingFotoAlumno.value = false }
 
@@ -105,13 +108,15 @@ fun Reporte(
             viewModel2.fetchEtsDetail(idETS.toInt())
         }
 
-// ... dentro de tu composable Reporte, observa el StateFlow _fotoAlumno
+        // ... dentro de tu composable Reporte, observa el StateFlow _fotoAlumno
         val fotoAlumno by viewModel.fotoAlumno.collectAsState()
 
         val imagenBytes by viewModel.imagenBytes.collectAsState()
         //val fotoAlumno by viewModel.fotoAlumno.collectAsState()
 
         val scrollState = rememberScrollState()
+
+
 
         // Calcular si el tiempo del ETS ya pasó (sin cambios)
         val horaETS = etsDetail?.ets?.hora ?: ""
@@ -332,7 +337,24 @@ fun Reporte(
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                         ) {
                             items(reporteList) { reporteItem ->
-                                // ... (resto del contenido del reporte - sin cambios)
+
+                                val username = reporteItem.nombreDocente
+
+                                LaunchedEffect(username) {
+                                    viewModel3.obtenerDatos(username!!)
+                                }
+
+                                val datos by viewModel3.datosPersona.collectAsState()
+
+                                // Obtener el nombre del primer elemento si hay datos
+                                val nombreUsuario = datos.firstOrNull()?.nombre ?: ""
+
+                                val appellidoP = datos.firstOrNull()?.apellidoP ?: ""
+
+                                val appellidoM = datos.firstOrNull()?.apellidoM ?: ""
+
+                                val docente = "${appellidoP.trim()} ${appellidoM.trim()} ${nombreUsuario.trim()}".trim()
+
                                 Column {
                                     InfoRow("Boleta", boleta)
                                     InfoRow(
@@ -355,9 +377,14 @@ fun Reporte(
                                     InfoRow("Tipo de examen", tipoText)
                                     InfoRow("Fecha del ingreso", reporteItem.fechaIngreso ?: "N/A")
                                     InfoRow("Hora del ingreso", reporteItem.horaIngreso ?: "N/A")
-                                    InfoRow("Nombre del docente", reporteItem.nombreDocente ?: "N/A")
+                                    InfoRow("Nombre del docente", docente ?: "N/A")
                                     InfoRow("Razón del reporte", reporteItem.tipoEstado ?: "N/A")
-                                    InfoRow("motivo del rechazo", reporteItem.motivo ?: "N/A")
+
+                                    if (reporteItem.motivo == "No Motivo"){
+
+                                        InfoRow("motivo del rechazo", reporteItem.motivo ?: "N/A")
+
+                                    }
                                     if (reporteItem.presicion != null && reporteItem.presicion != "0" && reporteItem.presicion != "-1") {
                                         InfoRow("Precisión", reporteItem.presicion.toString())
                                     }else if (reporteItem.presicion != null && reporteItem.presicion == "-1") {

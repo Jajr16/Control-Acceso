@@ -275,7 +275,7 @@ fun CamaraComposable(
     lifecycle: LifecycleOwner,
     modifier: Modifier = Modifier
 ) {
-    camaraController.cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+    camaraController.cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
     camaraController.bindToLifecycle(lifecycle)
     AndroidView(
         modifier = modifier.fillMaxSize(),
@@ -344,7 +344,7 @@ fun ResultDialog(exito: Boolean, precision: Float?, onDismiss: () -> Unit, error
             } else if (!exito) {
                 if (precision != null) {
                     val precisionPorcentaje = precision * 100
-                if (precision < 0.6) {
+                if (precision < 0.6 || precision == null) {
                     Text("El casi seguro que el alumno no es quien dice ser. \nPrecisión del reconocimiento facial: menor al 60% porciento%")
 
                 }

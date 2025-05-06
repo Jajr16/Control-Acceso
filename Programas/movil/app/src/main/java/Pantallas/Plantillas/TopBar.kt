@@ -1,11 +1,14 @@
 package Pantallas.Plantillas
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,48 +33,75 @@ fun MenuTopBar(
     showMsgButton: Boolean,
     loginViewModel: LoginViewModel,
     navController: NavController,
-    Component: @Composable (() -> Unit)? = null // Pasamos el SearchBar como parámetro
+    Component: @Composable (() -> Unit)? = null
 ) {
     val username = loginViewModel.getUserName()
 
     TopAppBar(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 27.dp, start = 10.dp, end = 10.dp)
-            .height(if (Component != null) 60.dp else 40.dp),
-        title = {},
+            .padding(horizontal = 10.dp)
+            .height(48.dp), // Establecemos una altura más pequeña
+        title = {
+            if (Component != null) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Component()
+                }
+            }
+        },
         navigationIcon = {
             if (showBackButton) {
-                IconButton(onClick = { navController.navigateUp() },
-                    modifier = Modifier.size(60.dp)) {
+                IconButton(
+                    onClick = { navController.navigateUp() },
+                    modifier = Modifier.size(36.dp)
+                        .padding(start = 4.dp)
+                ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Regresar",
-                        tint = Color.White
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
         },
         actions = {
-            if (showMsgButton && (loginViewModel.getUserRole() == "Alumno"
-                        || loginViewModel.getUserRole() == "Docente")) {
-                IconButton(onClick = { navController.navigate("Mensajes/${username}") }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.chat),
-                        contentDescription = "Mensajes",
-                        modifier = Modifier.size(24.dp),
-                        tint = Color.White
-                    )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                if (showBackButton) {
+                    Spacer(modifier = Modifier.width(0.dp))
+                } else {
+                    Spacer(modifier = Modifier.weight(1f))
                 }
-            }
-            if (Component != null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = if (showBackButton) 56.dp else 0.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Component()
+
+
+                if (Component != null) {
+                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                        Component()
+                    }
+                } else {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+
+
+                if (showMsgButton && (loginViewModel.getUserRole() == "Alumno"
+                            || loginViewModel.getUserRole() == "Docente")) {
+                    IconButton(onClick = { navController.navigate("Mensajes/${username}") }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.chat),
+                            contentDescription = "Mensajes",
+                            modifier = Modifier.size(24.dp),
+                            tint = Color.White
+                        )
+                    }
+                } else {
+                    Spacer(modifier = Modifier.width(0.dp))
                 }
             }
         },
