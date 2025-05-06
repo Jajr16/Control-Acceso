@@ -35,17 +35,6 @@ fun ConsultarScreen(
         // ============= FILTRO DE TURNO =============
         var selectedTurno by remember { mutableStateOf("Matutino") }
 
-        val filteredList = alumnosListado
-            .filter { alumno ->
-                alumno.boleta.contains(searchQuery, ignoreCase = true) ||
-                        alumno.nombre.contains(searchQuery, ignoreCase = true) ||
-                        alumno.apellidoP.contains(searchQuery, ignoreCase = true) ||
-                        alumno.apellidoM.contains(searchQuery, ignoreCase = true)
-            }
-            .filter { alumno ->
-                alumno.turno == selectedTurno
-            }
-
         LaunchedEffect(Unit) {
             viewModel.fetchListalumnos()
         }
@@ -64,6 +53,21 @@ fun ConsultarScreen(
                     .background(BlueBackground)
                     .padding(start = 16.dp, top = 0.dp, end = 16.dp, bottom = 0.dp)
             ) {
+
+                val filteredList = alumnosListado
+                    .filter { alumno ->
+                        alumno.boleta.contains(searchQuery, ignoreCase = true) ||
+                                alumno.nombre.contains(searchQuery, ignoreCase = true) ||
+                                alumno.apellidoP.contains(searchQuery, ignoreCase = true) ||
+                                alumno.apellidoM.contains(searchQuery, ignoreCase = true)
+                    }
+                    .filter { alumno ->
+                        alumno.turno == selectedTurno
+                    }
+
+                println("La lista filtrada es: $filteredList")
+                println("Los alumnos que jala esto es: $alumnosListado")
+
                 // Título
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -144,7 +148,9 @@ fun ConsultarScreen(
                                         contentAlignment = Alignment.Center,
                                         modifier = Modifier
                                             .background(
-                                                if (selectedTurno == "Matutino") Color.Gray else Color(0xFFF5F5F5)
+                                                if (selectedTurno == "Matutino") Color.Gray else Color(
+                                                    0xFFF5F5F5
+                                                )
                                             )
                                             .clickable(onClick = { selectedTurno = "Matutino" })
                                             .weight(1f)
@@ -164,7 +170,9 @@ fun ConsultarScreen(
                                         contentAlignment = Alignment.Center,
                                         modifier = Modifier
                                             .background(
-                                                if (selectedTurno == "Vespertino") Color.Gray else Color(0xFFF5F5F5)
+                                                if (selectedTurno == "Vespertino") Color.Gray else Color(
+                                                    0xFFF5F5F5
+                                                )
                                             )
                                             .clickable(onClick = { selectedTurno = "Vespertino" })
                                             .weight(1f)
