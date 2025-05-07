@@ -350,6 +350,10 @@ fun ResultDialog(exito: Boolean, precision: Float?, onDismiss: () -> Unit, error
                 if (precision < 0.6 || precision == null) {
                     Text("El casi seguro que el alumno no es quien dice ser. \nPrecisión del reconocimiento facial: menor al 60% porciento%")
 
+                }else if(precision?.toInt() == 999){
+
+                    Text("No se detecta un rostro en la fotografia")
+
                 }
                 }
             }else {
