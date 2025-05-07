@@ -1,6 +1,5 @@
 package Pantallas
 
-import Pantallas.components.BuscadorConLista
 import Pantallas.Reutilizables.EtsACardButton
 import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.Plantillas.MenuTopBar
