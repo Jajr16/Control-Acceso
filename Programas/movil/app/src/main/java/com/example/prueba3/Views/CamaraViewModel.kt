@@ -14,7 +14,6 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.File
 
-
 class CamaraViewModel : ViewModel() {
 
     private var currentBoleta: String? = null
@@ -45,8 +44,19 @@ class CamaraViewModel : ViewModel() {
                             val threshold = 0.4f
 
                             if (distance > threshold) {
-                                setPrecision(-1.0f)
-                                Log.d("CamaraViewModel", "Distancia ($distance) mayor que el umbral ($threshold), precisión establecida en 0.")
+                                if(distance.toInt() == 999) {
+                                    setPrecision(-1f)
+                                    Log.d(
+                                        "CamaraViewModel",
+                                        "Distancia ($distance) por lo que no es una cara, precisión establecida en -1."
+                                    )
+                                }else{
+                                    setPrecision(0f)
+                                    Log.d(
+                                        "CamaraViewModel",
+                                        "Distancia ($distance) mayor que el umbral ($threshold), precisión establecida en 0."
+                                    )
+                                }
                             } else {
                                 if (distance <= 0.3) {
                                     val normalizedDistance = distance / 0.3f
@@ -88,6 +98,13 @@ class CamaraViewModel : ViewModel() {
         }
     }
 
+    fun noHayCara(){
+
+        imagenBitmap.value = null
+        precision.value = null
+
+    }
+
     fun setPythonResponse(response: PythonResponse?) {
         _pythonResponse.value = response
         // La lógica de la precisión ahora está en uploadImage
@@ -97,3 +114,4 @@ class CamaraViewModel : ViewModel() {
         _errorMessage.value = message
     }
 }
+
