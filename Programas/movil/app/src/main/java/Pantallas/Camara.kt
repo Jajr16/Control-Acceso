@@ -4,6 +4,7 @@ import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
 import android.Manifest
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.util.Log
@@ -16,6 +17,9 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,9 +46,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -62,10 +70,10 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.Executor
-
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -79,6 +87,8 @@ fun Camara(
 
     val context = LocalContext.current
     val userRole = loginViewModel.getUserRole()
+
+    var showInstructionsDialog by remember { mutableStateOf(true) }
 
     ValidateSession(navController = navController) {
         val permissions = rememberMultiplePermissionsState(
@@ -104,25 +114,44 @@ fun Camara(
         var reconocimientoExitoso by remember { mutableStateOf(false) }
         var isLoading by remember { mutableStateOf(false) }
         var showConnectionErrorDialog by remember { mutableStateOf(false) }
+        var specificErrorMessage by remember { mutableStateOf<String?>(null) }
+
+        val interactionSource = remember { MutableInteractionSource() }
+        val isPressed by interactionSource.collectIsPressedAsState()
+        val alpha = if (isLoading) 0.5f else 1.0f
 
         LaunchedEffect(key1 = Unit) {
             permissions.launchMultiplePermissionRequest()
         }
 
         LaunchedEffect(key1 = pythonResponse) {
-            isLoading = false
-            pythonResponse?.let {
-                reconocimientoExitoso = it.verified
+            if (pythonResponse != null) {
+                isLoading = false
+                if (!pythonResponse.verified && pythonResponse.distance.toInt() == 999) {
+                    specificErrorMessage = "No se detecta un rostro en la fotografía."
+                    reconocimientoExitoso = false
+                } else {
+                    reconocimientoExitoso = pythonResponse.verified
+                    specificErrorMessage = null
+                }
                 showResultDialog = true
+                cameraViewModel.setPythonResponse(null)
             }
         }
 
         LaunchedEffect(errorMessage) {
-            isLoading = false
             if (errorMessage != null) {
-                if (errorMessage.contains("Error de red", ignoreCase = true)) {
-                    showConnectionErrorDialog = true
+                isLoading = false
+                if (errorMessage.contains("502", ignoreCase = true) && errorMessage.contains("gateway", ignoreCase = true)) {
+                    specificErrorMessage = "Error con el servidor."
+                } else if (errorMessage.contains("timeout", ignoreCase = true) || errorMessage.contains("red", ignoreCase = true)) {
+                    specificErrorMessage = "Error de red."
+                } else {
+                    specificErrorMessage = errorMessage
                 }
+                reconocimientoExitoso = false
+                showResultDialog = true
+                cameraViewModel.setErrorMessage(null)
             }
         }
 
@@ -141,7 +170,7 @@ fun Camara(
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxSize() // Asegura que la Column también ocupe todo el espacio
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     Text(
                         text = "Tome la fotografía",
@@ -181,21 +210,46 @@ fun Camara(
                     ) {
                         FloatingActionButton(
                             onClick = {
-                                isLoading = true
-                                cameraViewModel.setErrorMessage(null) // Limpiar errores previos
-                                cameraViewModel.setPythonResponse(null) // Limpiar respuesta previa
-                                val executor = ContextCompat.getMainExecutor(context)
-                                tomarFoto(camaraController, executor, cameraViewModel) { bytes ->
-                                    val tempFile = File.createTempFile("captured_image", ".jpg", context.cacheDir).apply {
-                                        FileOutputStream(this).use { it.write(bytes) }
+                                if (!isLoading) {
+                                    isLoading = true
+                                    cameraViewModel.setErrorMessage(null)
+                                    cameraViewModel.setPythonResponse(null)
+                                    specificErrorMessage = null
+                                    val executor = ContextCompat.getMainExecutor(context)
+                                    tomarFoto(camaraController, executor, cameraViewModel) { bytes ->
+                                        val tempFile = File.createTempFile("captured_image", ".jpg", context.cacheDir).apply {
+                                            FileOutputStream(this).use { it.write(bytes) }
+                                        }
+                                        cameraViewModel.uploadImage(tempFile, boleta)
                                     }
-                                    cameraViewModel.uploadImage(tempFile, boleta)
                                 }
-                            }
+                            },
+                            interactionSource = interactionSource,
+                            modifier = Modifier
+                                .semantics { role = Role.Button }
+                                .clickable(
+                                    enabled = !isLoading,
+                                    onClick = {
+                                        if (!isLoading) {
+                                            isLoading = true
+                                            cameraViewModel.setErrorMessage(null)
+                                            cameraViewModel.setPythonResponse(null)
+                                            specificErrorMessage = null
+                                            val executor = ContextCompat.getMainExecutor(context)
+                                            tomarFoto(camaraController, executor, cameraViewModel) { bytes ->
+                                                val tempFile = File.createTempFile("captured_image", ".jpg", context.cacheDir).apply {
+                                                    FileOutputStream(this).use { it.write(bytes) }
+                                                }
+                                                cameraViewModel.uploadImage(tempFile, boleta)
+                                            }
+                                        }
+                                    }
+                                )
+                                .alpha(alpha)
                         ) {
                             Icon(
                                 painterResource(id = R.drawable.icon_camara),
-                                tint = Color.White,
+                                tint = Color.White.copy(alpha = alpha),
                                 contentDescription = ""
                             )
                         }
@@ -209,31 +263,21 @@ fun Camara(
         }
 
         if (showResultDialog) {
-            ResultDialog(
-                exito = reconocimientoExitoso,
-                precision = precision,
-                errorMessage = errorMessage, // Pasa el errorMessage
-                onDismiss = {
-                    showResultDialog = false
-                    if (reconocimientoExitoso) {
-                        if (userRole == "Docente")
-                            navController.navigate("InfoA/$idETS/$boleta")
-                        else {
-                            navController.navigate("Menu Alumno")
-                        }
-                    }
-
-                    if (!reconocimientoExitoso) {
-                        if (userRole == "Docente")
-                            navController.navigate("InfoA/$idETS/$boleta")
-                        else {
-                            navController.navigate("Menu Alumno")
-                        }
-                    }
-
-
-                }
-            )
+            if (userRole != null) {
+                ResultDialog(
+                    exito = reconocimientoExitoso,
+                    precision = precision,
+                    errorMessage = specificErrorMessage,
+                    onDismiss = {
+                        showResultDialog = false
+                    },
+                    navController = navController,
+                    userRole = userRole,
+                    idETS = idETS,
+                    boleta = boleta,
+                    cameraViewModel
+                )
+            }
         }
 
         if (showConnectionErrorDialog) {
@@ -249,6 +293,23 @@ fun Camara(
             )
         }
 
+        // Diálogo de instrucciones al entrar a la pantalla
+        if (showInstructionsDialog) {
+            AlertDialog(
+                onDismissRequest = {},
+                title = { Text("Instrucciones") },
+                text = {
+                    Text(
+                        "Para asegurar un reconocimiento facial exitoso, recuerda solicitar al alumno que se retire cualquier elemento que pueda obstruir su rostro. Algunos ejemplos incluyen gorras, cubrebocas y lentes. Asimismo, es importante que el entorno esté bien iluminado."
+                    )
+                },
+                confirmButton = {
+                    Button(onClick = { showInstructionsDialog = false }) {
+                        Text("Entendido")
+                    }
+                }
+            )
+        }
 
     }
 }
@@ -260,8 +321,8 @@ fun LoadingDialog() {
         text = {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center, // Centrar verticalmente el contenido
-                modifier = Modifier.fillMaxWidth() // Ocupar todo el ancho disponible
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 CircularProgressIndicator()
                 Spacer(modifier = Modifier.height(16.dp))
@@ -278,7 +339,7 @@ fun CamaraComposable(
     lifecycle: LifecycleOwner,
     modifier: Modifier = Modifier
 ) {
-    camaraController.cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+    camaraController.cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
     camaraController.bindToLifecycle(lifecycle)
     AndroidView(
         modifier = modifier.fillMaxSize(),
@@ -310,12 +371,23 @@ private fun tomarFoto(
                 buffer.get(bytes)
                 image.close()
 
-                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                cameraViewModel.setImagen(bitmap) // Actualiza imagenBitmap directamente
+                val originalBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 
-                Log.d("Camara", "ViewModel Bitmap: ${cameraViewModel.imagenBitmap.value}")
+                // Define las dimensiones deseadas (ajusta según tus necesidades)
+                val targetWidth = 600 // Ejemplo
+                val targetHeight = 800 // Ejemplo
 
-                enviarFotoAlServidor(bytes)
+                val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, targetWidth, targetHeight, true)
+
+                cameraViewModel.setImagen(scaledBitmap) // Llamada faltante para actualizar el ViewModel
+
+                val outputStream = ByteArrayOutputStream()
+                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+                val resizedBytes = outputStream.toByteArray()
+                outputStream.close()
+
+                Log.d("Camara", "Tamaño de la imagen redimensionada: ${resizedBytes.size / 1024} KB (${scaledBitmap.width}x${scaledBitmap.height})")
+                enviarFotoAlServidor(resizedBytes)
             }
 
             override fun onError(exception: ImageCaptureException) {
@@ -326,47 +398,79 @@ private fun tomarFoto(
 }
 
 @Composable
-fun ResultDialog(exito: Boolean, precision: Float?, onDismiss: () -> Unit, errorMessage: String?) {
+fun ResultDialog(
+    exito: Boolean,
+    precision: Float?,
+    errorMessage: String?,
+    onDismiss: () -> Unit,
+    navController: NavController,
+    userRole: String,
+    idETS: String,
+    boleta: String,
+    cameraViewModel: CamaraViewModel
+) {
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {
+            onDismiss() // Llama a la función para ocultar el diálogo
+            // Redirigir al cerrar el diálogo (excepto si no se detectó rostro)
+            if (errorMessage == null || !errorMessage.contains("No se detecta un rostro")) {
+                if (userRole == "Personal Academico" || userRole == "Docente") {
+                    navController.navigate("InfoA/$idETS/$boleta")
+                } else {
+                    navController.navigate("Menu Alumno")
+                }
+            }
+        },
         title = { Text(if (exito) "Reconocimiento Facial Exitoso" else "Reconocimiento Facial Fallido") },
         text = {
-            if (exito) {
-                if (precision != null) {
-                    val precisionPorcentaje = precision * 100
-                    if (precision >= 0.8) {
-                        Text("Es casi seguro que el alumno es quien dice ser. \nPrecisión del reconocimiento facial: ${precisionPorcentaje}%")
-
+            errorMessage?.let {
+                Text(it)
+            } ?: run {
+                if (exito) {
+                    if (precision != null) {
+                        val precisionPorcentaje = precision * 100
+                        if (precision >= 0.8) {
+                            Text("Es casi seguro que el alumno es quien dice ser. \nPrecisión del reconocimiento facial: ${String.format("%.2f", precisionPorcentaje)}%")
+                        }
+                        if (precision >= 0.6 && precision < 0.8) {
+                            Text("Es dudosa la identidad del alumno. \nPrecisión del reconocimiento facial: ${String.format("%.2f", precisionPorcentaje)}%")
+                        }
                     }
-                    if (precision >= 0.6 && precision < 0.8){
-                        Text("Es dudosa la identidad del alumno. \nPrecisión del reconocimiento facial: ${precisionPorcentaje}%")
-
-                    }
-
-                }
-            } else if (!exito) {
-                if (precision != null) {
-                    val precisionPorcentaje = precision * 100
-                if (precision < 0.6 || precision == null) {
-                    Text("El casi seguro que el alumno no es quien dice ser. \nPrecisión del reconocimiento facial: menor al 60% porciento%")
-
-                }
-                }
-            }else {
-                if (errorMessage != null && errorMessage.isNotEmpty()) {
-                    Text("Error al realizar el reconocimiento facial: $errorMessage")
                 } else {
-                    Text("No se pudo realizar el reconocimiento facial.")
+                    if (precision != null) {
+                        if (precision < 0.6 && precision != -1.0f) {
+                            Text("Es casi seguro que el alumno no es quien dice ser. \nPrecisión del reconocimiento facial: menor al 60%.")
+                        } else if (precision?.toInt() == -1) {
+                            Text("No se detecta un rostro en la fotografía.")
+                        }
+                    } else {
+                        Text("No se pudo realizar el reconocimiento facial.")
+                    }
                 }
             }
         },
         confirmButton = {
-            Button(onClick = onDismiss) {
+            Button(onClick = {
+                onDismiss()
+
+                if (errorMessage == null || !errorMessage.contains("No se detecta un rostro")) {
+                    if (userRole == "Personal Academico" || userRole == "Docente") {
+                        navController.navigate("InfoA/$idETS/$boleta")
+                    } else {
+                        navController.navigate("Menu Alumno")
+                    }
+                }else{
+
+                    cameraViewModel.noHayCara()
+
+                }
+            }) {
                 Text("OK")
             }
         }
     )
 }
+
 
 
 

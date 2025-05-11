@@ -592,10 +592,10 @@ fun InformacionAlumno(
                                     .clip(RoundedCornerShape(8.dp)),
                                 contentScale = ContentScale.Fit
                             )
-                            if (precision.toInt() == -1){
+                            if (precision.toFloat() == -1f || precision.toFloat() == 0f){
                             Text(
 
-                                text = "Similitud: mennor al 60%",
+                                text = "Similitud: menor al 60%",
                                 color = Color.White,
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.padding(top = 8.dp)
