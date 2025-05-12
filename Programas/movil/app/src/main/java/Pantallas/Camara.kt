@@ -85,6 +85,8 @@ fun Camara(
     cameraViewModel: CamaraViewModel,
 ) {
 
+
+
     val context = LocalContext.current
     val userRole = loginViewModel.getUserRole()
 
@@ -372,10 +374,9 @@ private fun tomarFoto(
                 image.close()
 
                 val originalBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-
-                // Define las dimensiones deseadas (ajusta según tus necesidades)
-                val targetWidth = 600 // Ejemplo
-                val targetHeight = 800 // Ejemplo
+                
+                val targetWidth = 600
+                val targetHeight = 800
 
                 val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, targetWidth, targetHeight, true)
 
@@ -409,11 +410,13 @@ fun ResultDialog(
     boleta: String,
     cameraViewModel: CamaraViewModel
 ) {
+
+    val isStudentNotFound = errorMessage?.contains("Student ID not found", ignoreCase = true) == true
+
     AlertDialog(
         onDismissRequest = {
-            onDismiss() // Llama a la función para ocultar el diálogo
-            // Redirigir al cerrar el diálogo (excepto si no se detectó rostro)
-            if (errorMessage == null || !errorMessage.contains("No se detecta un rostro")) {
+            onDismiss()
+            if (!isStudentNotFound && (errorMessage == null || !errorMessage.contains("No se detecta un rostro"))) {
                 if (userRole == "Personal Academico" || userRole == "Docente") {
                     navController.navigate("InfoA/$idETS/$boleta")
                 } else {
@@ -421,30 +424,42 @@ fun ResultDialog(
                 }
             }
         },
-        title = { Text(if (exito) "Reconocimiento Facial Exitoso" else "Reconocimiento Facial Fallido") },
-        text = {
-            errorMessage?.let {
-                Text(it)
-            } ?: run {
-                if (exito) {
-                    if (precision != null) {
-                        val precisionPorcentaje = precision * 100
-                        if (precision >= 0.8) {
-                            Text("Es casi seguro que el alumno es quien dice ser. \nPrecisión del reconocimiento facial: ${String.format("%.2f", precisionPorcentaje)}%")
-                        }
-                        if (precision >= 0.6 && precision < 0.8) {
-                            Text("Es dudosa la identidad del alumno. \nPrecisión del reconocimiento facial: ${String.format("%.2f", precisionPorcentaje)}%")
-                        }
-                    }
+        title = {
+            Text(
+                if (isStudentNotFound) {
+                    "Reconocimiento Facial Fallido"
                 } else {
-                    if (precision != null) {
-                        if (precision < 0.6 && precision != -1.0f) {
-                            Text("Es casi seguro que el alumno no es quien dice ser. \nPrecisión del reconocimiento facial: menor al 60%.")
-                        } else if (precision?.toInt() == -1) {
-                            Text("No se detecta un rostro en la fotografía.")
+                    if (exito) "Reconocimiento Facial Exitoso" else "Reconocimiento Facial Fallido"
+                }
+            )
+        },
+        text = {
+            if (isStudentNotFound) {
+                Text("El alumno todavía no está registrado en la red neuronal.")
+            } else {
+                errorMessage?.let {
+                    Text(it)
+                } ?: run {
+                    if (exito) {
+                        if (precision != null) {
+                            val precisionPorcentaje = precision * 100
+                            if (precision >= 0.8) {
+                                Text("Es casi seguro que el alumno es quien dice ser. \nPrecisión del reconocimiento facial: ${String.format("%.2f", precisionPorcentaje)}%")
+                            }
+                            if (precision >= 0.6 && precision < 0.8) {
+                                Text("Es dudosa la identidad del alumno. \nPrecisión del reconocimiento facial: ${String.format("%.2f", precisionPorcentaje)}%")
+                            }
                         }
                     } else {
-                        Text("No se pudo realizar el reconocimiento facial.")
+                        if (precision != null) {
+                            if (precision < 0.6 && precision != -1.0f) {
+                                Text("Es casi seguro que el alumno no es quien dice ser. \nPrecisión del reconocimiento facial: menor al 60%.")
+                            } else if (precision?.toInt() == -1) {
+                                Text("No se detecta un rostro en la fotografía.")
+                            }
+                        } else {
+                            Text("No se pudo realizar el reconocimiento facial.")
+                        }
                     }
                 }
             }
@@ -452,17 +467,12 @@ fun ResultDialog(
         confirmButton = {
             Button(onClick = {
                 onDismiss()
-
-                if (errorMessage == null || !errorMessage.contains("No se detecta un rostro")) {
+                if (!isStudentNotFound && (errorMessage == null || !errorMessage.contains("No se detecta un rostro"))) {
                     if (userRole == "Personal Academico" || userRole == "Docente") {
                         navController.navigate("InfoA/$idETS/$boleta")
                     } else {
                         navController.navigate("Menu Alumno")
                     }
-                }else{
-
-                    cameraViewModel.noHayCara()
-
                 }
             }) {
                 Text("OK")
@@ -470,13 +480,3 @@ fun ResultDialog(
         }
     )
 }
-
-
-
-
-
-
-
-
-
-
