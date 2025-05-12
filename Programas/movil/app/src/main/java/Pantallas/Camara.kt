@@ -384,8 +384,8 @@ private fun tomarFoto(
 
                 val originalBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                 
-                val targetWidth = 600
-                val targetHeight = 800
+                val targetWidth = 1920
+                val targetHeight = 1080
 
                 val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, targetWidth, targetHeight, true)
 
