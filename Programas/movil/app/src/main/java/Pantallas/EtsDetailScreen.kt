@@ -284,7 +284,14 @@ fun SingleStyledCard(
                     if (!salonState) {
                         append("Salones asignados:  \n")
                         salon.take(3).forEach { salon ->
+                            if (salon.numSalon != null ){
                             append("• Salón ${salon.numSalon} (${salon.tipoSalon})\n\n")
+                                }else{
+
+                                append("Asignación de salones:\n")
+                                append("• Pendiente\n")
+
+                            }
                         }
                     } else {
                         append("Asignación de salones:\n")
