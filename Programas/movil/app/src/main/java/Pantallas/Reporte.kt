@@ -390,7 +390,9 @@ fun Reporte(
 
                                     }
                                     if (reporteItem.presicion != null && reporteItem.presicion != "0" && reporteItem.presicion != "-1") {
-                                        InfoRow("Precisión", reporteItem.presicion.toString()+"%")
+                                        val numero = reporteItem.presicion.toFloat()
+                                        val porcentaje = numero + 100
+                                        InfoRow("Precisión", porcentaje.toString()+"%")
                                     }else if (reporteItem.presicion != null && reporteItem.presicion == "0") {
                                         InfoRow("Precisión", "Menor que el 60% porciento")
                                     }

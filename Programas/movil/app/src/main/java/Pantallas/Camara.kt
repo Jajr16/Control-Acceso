@@ -187,11 +187,14 @@ fun Camara(
 
                     if (permissions.allPermissionsGranted) {
                         Box(modifier = Modifier.weight(1f)) {
-                            CamaraComposable(
-                                camaraController,
-                                lifecycle,
-                                modifier = Modifier.fillMaxSize()
-                            )
+                            if (userRole != null) {
+                                CamaraComposable(
+                                    camaraController,
+                                    lifecycle,
+                                    modifier = Modifier.fillMaxSize(),
+                                    userRole
+                                )
+                            }
                         }
                     } else {
                         Text(
@@ -339,9 +342,15 @@ fun LoadingDialog() {
 fun CamaraComposable(
     camaraController: LifecycleCameraController,
     lifecycle: LifecycleOwner,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    userRole: String
 ) {
-    camaraController.cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+
+    if (userRole == "Personal Academico" || userRole == "Docente") {
+        camaraController.cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+    }else{
+        camaraController.cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+    }
     camaraController.bindToLifecycle(lifecycle)
     AndroidView(
         modifier = modifier.fillMaxSize(),
