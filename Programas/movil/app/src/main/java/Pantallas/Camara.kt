@@ -98,7 +98,7 @@ fun Camara(
     ValidateSession(navController = navController) {
         val permissions = rememberMultiplePermissionsState(
             permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                listOf(Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES)
+                listOf(Manifest.permission.CAMERA)
             } else {
                 listOf(
                     Manifest.permission.CAMERA,
