@@ -362,6 +362,8 @@ fun CamaraComposable(
                 )
                 controller = camaraController
                 setBackgroundColor(android.graphics.Color.TRANSPARENT)
+
+                scaleType = PreviewView.ScaleType.FILL_CENTER
             }
         }
     )
@@ -383,16 +385,16 @@ private fun tomarFoto(
                 image.close()
 
                 val originalBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                
-                val targetWidth = 1920
-                val targetHeight = 1080
+
+                val targetWidth = 480
+                val targetHeight = 640
 
                 val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, targetWidth, targetHeight, true)
 
-                cameraViewModel.setImagen(scaledBitmap) // Llamada faltante para actualizar el ViewModel
+                cameraViewModel.setImagen(scaledBitmap)
 
                 val outputStream = ByteArrayOutputStream()
-                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
                 val resizedBytes = outputStream.toByteArray()
                 outputStream.close()
 
