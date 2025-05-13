@@ -6,6 +6,8 @@ import Pantallas.components.ValidateSession
 import android.Manifest
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.os.Build
 import android.util.Log
 import android.view.ViewGroup
@@ -70,6 +72,7 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -384,12 +387,63 @@ private fun tomarFoto(
                 buffer.get(bytes)
                 image.close()
 
+                val inputStream = ByteArrayInputStream(bytes)
+                val exifInterface = ExifInterface(inputStream)
+                val orientation = exifInterface.getAttributeInt(
+                    ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_NORMAL
+                )
+                inputStream.close()
+
                 val originalBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                var rotatedBitmap = originalBitmap
 
-                val targetWidth = 480
-                val targetHeight = 640
+                when (orientation) {
+                    ExifInterface.ORIENTATION_ROTATE_90 -> {
+                        val matrix = Matrix()
+                        matrix.postRotate(90f)
+                        rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
+                    }
+                    ExifInterface.ORIENTATION_ROTATE_180 -> {
+                        val matrix = Matrix()
+                        matrix.postRotate(180f)
+                        rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
+                    }
+                    ExifInterface.ORIENTATION_ROTATE_270 -> {
+                        val matrix = Matrix()
+                        matrix.postRotate(270f)
+                        rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
+                    }
+                    ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> {
+                        val matrix = Matrix()
+                        matrix.postScale(-1f, 1f)
+                        rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
+                    }
+                    ExifInterface.ORIENTATION_FLIP_VERTICAL -> {
+                        val matrix = Matrix()
+                        matrix.postScale(1f, -1f)
+                        rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
+                    }
+                    ExifInterface.ORIENTATION_TRANSPOSE -> {
+                        val matrix = Matrix()
+                        matrix.postRotate(90f)
+                        matrix.postScale(-1f, 1f)
+                        rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
+                    }
+                    ExifInterface.ORIENTATION_TRANSVERSE -> {
+                        val matrix = Matrix()
+                        matrix.postRotate(-90f)
+                        matrix.postScale(-1f, 1f)
+                        rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
+                    }
+                }
 
-                val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, targetWidth, targetHeight, true)
+                // Ahora 'rotatedBitmap' debería estar en la orientación correcta (probablemente vertical si el usuario la tomó así)
+
+                val targetWidth = 640
+                val targetHeight = 480
+
+                val scaledBitmap = Bitmap.createScaledBitmap(rotatedBitmap, targetWidth, targetHeight, true)
 
                 cameraViewModel.setImagen(scaledBitmap)
 
@@ -398,7 +452,7 @@ private fun tomarFoto(
                 val resizedBytes = outputStream.toByteArray()
                 outputStream.close()
 
-                Log.d("Camara", "Tamaño de la imagen redimensionada: ${resizedBytes.size / 1024} KB (${scaledBitmap.width}x${scaledBitmap.height})")
+                Log.d("Camara", "Tamaño de la imagen redimensionada: ${resizedBytes.size / 1024} KB (${scaledBitmap.width}x${scaledBitmap.height}), Orientación EXIF: $orientation")
                 enviarFotoAlServidor(resizedBytes)
             }
 
