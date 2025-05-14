@@ -116,7 +116,6 @@ fun CredencialDaeScreen(
     val boletaFinal by viewModel.boletaFlujo.collectAsState()
     val alumnoEspecifico by viewModel.alumnoEspecifico.collectAsState()
 
-    // Efecto 1: Cuando se obtiene alumnoInfo, cargar detalles
     LaunchedEffect(alumnoInfo) {
         if (userRole == "Personal Seguridad") {
             alumnoInfo?.let { info ->
@@ -131,7 +130,6 @@ fun CredencialDaeScreen(
         }
     }
 
-    // Efecto 2: Cuando se actualizan alumnosDetalle, hacer comparación
     LaunchedEffect(alumnosDetalle) {
         if (userRole == "Personal Seguridad" && alumnosDetalle.isNotEmpty() && alumnoInfo != null) {
             val info = alumnoInfo!!
@@ -146,7 +144,6 @@ fun CredencialDaeScreen(
         }
     }
 
-    // Efecto para mostrar mensaje de éxito en registro
     LaunchedEffect(registroSuccess) {
         if (registroSuccess) {
             showMensajeAsistencia = true
@@ -157,7 +154,6 @@ fun CredencialDaeScreen(
         }
     }
 
-    // Efecto para mostrar errores del ViewModel
     LaunchedEffect(errorMessageVM) {
         errorMessageVM?.let { message ->
             scope.launch {
@@ -785,6 +781,7 @@ fun CredencialDaeScreen(
         if (url != null) {
             scope.launch {
                 try {
+
                     val response = RetrofitInstance.alumnosDetalle.getCredencial(url)
 
                     if (response.isSuccessful && response.body() != null) {

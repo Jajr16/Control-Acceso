@@ -20,7 +20,7 @@ data class DetalleAlumnos(
 )
 
 data class CredencialAlumnos(
-    val ImagenCredencial: String,
+    val imagenCredencial: String,
     val nombre: String,
     val apellidoP: String,
     val apellidoM: String,

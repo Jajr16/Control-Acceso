@@ -3,7 +3,6 @@ package Pantallas
 import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -45,7 +44,6 @@ fun DetalleAlumnosScreen(
     ValidateSession(navController = navController) {
         val alumnosDetalle by viewModel.alumnosDetalle.collectAsState(initial = emptyList())
         val alumno = alumnosDetalle.firstOrNull()
-        val isLoading by viewModel.loadingState.collectAsState(initial = false)
         val registroSuccess by viewModel.registroSuccess.collectAsState()
         val asistenciaYaRegistrada by viewModel.asistenciaYaRegistrada.collectAsState()
         val fotoAlumno by viewModel.fotoAlumno.collectAsState()
@@ -53,31 +51,34 @@ fun DetalleAlumnosScreen(
         var showAsistenciaDialog by remember { mutableStateOf(false) }
         var showMensajeAsistencia by remember { mutableStateOf(false) }
         var showMensajeAsistenciaExistente by remember { mutableStateOf(false) }
+        var showDeserializationError by remember { mutableStateOf(false) }
         var fechaHoraRegistro by remember { mutableStateOf("") }
+        var isProcessingRegistration by remember { mutableStateOf(false) }
 
         val errorMessage by viewModel.errorMessage.collectAsState()
 
         // Cargar datos del alumno al entrar
         LaunchedEffect(boleta) {
+            viewModel.resetAsistenciaFlags()
             viewModel.fetchDetalleAlumnos(boleta)
-            alumno?.idETS?.let { idETS ->
-                viewModel.verificarAsistencia(boleta, idETS)
-            }
-        }
-
-        // Mostrar mensaje de asistencia existente si corresponde
-        LaunchedEffect(asistenciaYaRegistrada) {
-            if (asistenciaYaRegistrada && !showAsistenciaDialog) {
-                showMensajeAsistenciaExistente = true
-            }
+            viewModel.fetchFotoAlumno(boleta) {}
         }
 
         // Manejar mensajes de error
         LaunchedEffect(errorMessage) {
             errorMessage?.let { message ->
-                if (message.contains("La asistencia ya fue registrada") ||
-                    message.contains("ya fue registrada", ignoreCase = true)) {
-                    showMensajeAsistenciaExistente = true
+                println("Error detectado: $message")
+
+                when {
+                    message.contains("Expected BEGIN_ARRAY but was BEGIN_OBJECT") -> {
+                        showDeserializationError = true
+                        isProcessingRegistration = false
+                        viewModel.clearErrorMessage()
+                    }
+                    else -> {
+                        // Otros errores
+                        isProcessingRegistration = false
+                    }
                 }
             }
         }
@@ -85,11 +86,14 @@ fun DetalleAlumnosScreen(
         // Manejar éxito del registro
         LaunchedEffect(registroSuccess) {
             if (registroSuccess) {
-                showMensajeAsistencia = true
-                fechaHoraRegistro = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(Date())
-                delay(2000) // Mostrar mensaje por 2 segundos
-                showMensajeAsistencia = false
-                navController.popBackStack() // Regresar a la pantalla anterior
+                if (!showDeserializationError) {
+                    showMensajeAsistencia = true
+                    fechaHoraRegistro = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(Date())
+                    isProcessingRegistration = false
+                    delay(2000)
+                    showMensajeAsistencia = false
+                    navController.popBackStack()
+                }
             }
         }
 
@@ -112,7 +116,7 @@ fun DetalleAlumnosScreen(
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Creación del reporte",
+                    text = "Detalle del alumno",
                     fontSize = 30.sp,
                     fontWeight = FontWeight.Normal,
                     color = Color.White
@@ -127,38 +131,31 @@ fun DetalleAlumnosScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Foto del alumno
-                Box(
-                    modifier = Modifier
-                        .size(150.dp)
-                        .clip(CircleShape)
-                        .border(2.dp, Color.Gray, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    when {
-                        fotoAlumno != null -> {
-                            val bitmap = BitmapFactory.decodeByteArray(fotoAlumno, 0, fotoAlumno!!.size)
-                            Image(
-                                bitmap = bitmap.asImageBitmap(),
-                                contentDescription = "Foto del alumno",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-                        isLoading -> {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(50.dp),
-                                color = Color.White
-                            )
-                        }
-                        else -> {
-                            Image(
-                                painter = painterResource(id = R.drawable.icon_camara),
-                                contentDescription = "Foto no disponible",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-                    }
+                if (fotoAlumno != null) {
+                    val bitmap = BitmapFactory.decodeByteArray(
+                        fotoAlumno,
+                        0,
+                        fotoAlumno!!.size
+                    )
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = "Foto de perfil",
+                        modifier = Modifier
+                            .size(150.dp)
+                            .clip(CircleShape)
+                            .border(2.dp, Color.Gray, CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.icon_camara),
+                        contentDescription = "Foto de perfil",
+                        modifier = Modifier
+                            .size(150.dp)
+                            .clip(CircleShape)
+                            .border(2.dp, Color.Gray, CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -168,7 +165,7 @@ fun DetalleAlumnosScreen(
                 InfoCard("Boleta", alumno?.boleta ?: "No disponible")
                 InfoCard("ETS inscrito", alumno?.nombreETS ?: "No disponible")
                 InfoCard("Docente", "${alumno?.nombreDocente ?: "El ETS aún no tiene un docente asignado."} ${alumno?.apellidoPDocente ?: ""} ${alumno?.apellidoMDocente ?: ""}")
-                InfoCard("Salón", alumno?.salon?.toString() ?: "No disponible")
+                InfoCard("Salón", alumno?.salon?.toString() ?: "El salon no ha sido asignado")
                 InfoCard("Turno", alumno?.nombreTurno ?: "No disponible")
                 InfoCard("Fecha", alumno?.fecha ?: "No disponible")
 
@@ -217,7 +214,7 @@ fun DetalleAlumnosScreen(
                                 }
                             )
                         }
-                        asistenciaYaRegistrada -> {
+                        asistenciaYaRegistrada && !isProcessingRegistration -> {
                             AlertDialog(
                                 onDismissRequest = {
                                     showAsistenciaDialog = false
@@ -226,9 +223,8 @@ fun DetalleAlumnosScreen(
                                 text = {
                                     Column {
                                         Text("El alumno ya tiene registrada su asistencia el día de hoy.")
-                                        errorMessage?.let {
-                                            Text(it, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
-                                        }
+                                        Text("Boleta: $boleta", fontWeight = FontWeight.Bold)
+                                        Text("ETS: ${alumno?.nombreETS ?: "N/A"}", fontWeight = FontWeight.Bold)
                                     }
                                 },
                                 confirmButton = {
@@ -282,6 +278,7 @@ fun DetalleAlumnosScreen(
                                 confirmButton = {
                                     Button(
                                         onClick = {
+                                            isProcessingRegistration = true
                                             showAsistenciaDialog = false
                                             alumno?.idETS?.let { idETS ->
                                                 viewModel.registrarAsistencia(boleta, idETS)
@@ -308,6 +305,7 @@ fun DetalleAlumnosScreen(
                     AlertDialog(
                         onDismissRequest = {
                             showMensajeAsistencia = false
+                            navController.popBackStack()
                         },
                         title = {
                             Text(
@@ -340,8 +338,40 @@ fun DetalleAlumnosScreen(
                     )
                 }
 
+                // Diálogo para error de deserialización
+                if (showDeserializationError) {
+                    AlertDialog(
+                        onDismissRequest = {
+                            showDeserializationError = false
+                            navController.popBackStack()
+                        },
+                        title = {
+                            Text("Asistencia registrada", color = Color.Green, fontWeight = FontWeight.Bold)
+                        },
+                        text = {
+                            Column {
+                                Text("La asistencia se registró correctamente en el servidor.")
+                                Text("Hubo un pequeño problema al interpretar la respuesta, pero tu registro fue exitoso.")
+                                Text(
+                                    text = fechaHoraRegistro,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                    modifier = Modifier.padding(top = 8.dp)
+                                )
+                            }
+                        },
+                        confirmButton = {
+                            Button(onClick = {
+                                showDeserializationError = false
+                                navController.popBackStack()
+                            }) {
+                                Text("Aceptar")
+                            }
+                        }
+                    )
+                }
+
                 // Diálogo de error general
-                if (!errorMessage.isNullOrEmpty()) {
+                if (!errorMessage.isNullOrEmpty() && !showDeserializationError) {
                     AlertDialog(
                         onDismissRequest = { viewModel.clearErrorMessage() },
                         title = {
@@ -384,9 +414,9 @@ fun DetalleAlumnosScreen(
                         text = {
                             Column {
                                 Text("El alumno ya tiene registrada su asistencia el día de hoy.")
-                                errorMessage?.let {
-                                    Text(it, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
-                                }
+                                Text("Boleta: $boleta", fontWeight = FontWeight.Bold)
+                                Text("ETS: ${alumno?.nombreETS ?: "N/A"}", fontWeight = FontWeight.Bold)
+                                Text("Fecha: ${SimpleDateFormat("dd/MM/yyyy").format(Date())}")
                             }
                         },
                         confirmButton = {
