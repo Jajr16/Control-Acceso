@@ -21,9 +21,9 @@ object RetrofitCamaraInstance {
 
         private val okHttpClient = OkHttpClient.Builder()
             .addInterceptor(logging)
-            .connectTimeout(120, TimeUnit.SECONDS)
-            .writeTimeout(120, TimeUnit.SECONDS)
-            .readTimeout(120, TimeUnit.SECONDS)
+            .connectTimeout(300, TimeUnit.SECONDS)
+            .writeTimeout(300, TimeUnit.SECONDS)
+            .readTimeout(300, TimeUnit.SECONDS)
             .build()
 
         private val retrofit = Retrofit.Builder()
@@ -40,7 +40,7 @@ object RetrofitCamaraInstance {
             val imgPart = MultipartBody.Part.createFormData(
                 "img",
                 imageFile.name,
-                imageFile.asRequestBody("image/png".toMediaType())
+                imageFile.asRequestBody("image/jpg".toMediaType())
             )
             val studentIdBody = studentId.toRequestBody("text/plain".toMediaType())
             val response = cameraApi.uploadImage(studentIdBody, imgPart)

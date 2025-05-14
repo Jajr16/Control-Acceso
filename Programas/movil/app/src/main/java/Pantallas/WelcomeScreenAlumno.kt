@@ -93,7 +93,7 @@ fun WelcomeScreenAlumno(navController: NavController, loginViewModel: LoginViewM
                 title = "Probar reconocimiento facial",
                 icon = ImageVector.vectorResource(id = R.drawable.icon_camara),
                 onClick = { navController.navigate("camara/$username/Valor") },
-                modifier = Modifier.weight(2f) // Occupy more space to center better
+                modifier = Modifier.weight(2f)
             )
         }
     }

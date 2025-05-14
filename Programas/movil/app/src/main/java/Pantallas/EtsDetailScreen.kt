@@ -160,6 +160,7 @@ fun EtsDetailScreen(
                             )
                         }
                     } else if (etsDetail != null) {
+                        val salonList = etsDetail?.salon ?: emptyList()
                         SingleStyledCard(
                             unidadAprendizaje = etsDetail!!.ets.unidadAprendizaje,
                             tipoETS = etsDetail!!.ets.tipoETS,
@@ -168,7 +169,7 @@ fun EtsDetailScreen(
                             turno = etsDetail!!.ets.turno,
                             cupo = etsDetail!!.ets.cupo,
                             duracion = etsDetail!!.ets.duracion,
-                            salon = etsDetail!!.salon,
+                            salon = salonList,
                             salonState = salonState!!,
                             hora = etsDetail!!.ets.hora,
                             userRole = savedRole,
@@ -283,8 +284,12 @@ fun SingleStyledCard(
                     append("$duracion horas\n\n")
                     if (!salonState) {
                         append("Salones asignados:  \n")
-                        salon.take(3).forEach { salon ->
-                            append("• Salón ${salon.numSalon} (${salon.tipoSalon})\n\n")
+                        if (salon.isNotEmpty()) {
+                            salon.take(3).forEach { salon ->
+                                append("• Salón ${salon.numSalon} (${salon.tipoSalon})\n\n")
+                            }
+                        } else {
+                            append("• No hay salones asignados aún.\n\n")
                         }
                     } else {
                         append("Asignación de salones:\n")

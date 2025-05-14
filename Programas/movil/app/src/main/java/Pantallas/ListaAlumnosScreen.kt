@@ -253,8 +253,8 @@ fun ListaAlumnosScreen(
                             ) {
                                 Row(
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(8.dp),
+                                        .fillMaxWidth(),
+                                        //.padding(8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     // Botón con boleta y nombre (Navega a InfoA SOLO SI es el aplicador y dentro del periodo)
@@ -288,14 +288,16 @@ fun ListaAlumnosScreen(
                                             Text(
                                                 text = "Boleta: ${alumno.boleta}",
                                                 fontSize = 14.sp,
-                                                color = Color.Black
+                                                color = Color.Black,
+                                                textAlign = TextAlign.Start
                                             )
                                             Text(
                                                 text = "Nombre: ${alumno.nombreA} ${alumno.apellidoP} ${alumno.apellidoM}",
                                                 fontSize = 14.sp,
                                                 color = Color.Black,
                                                 maxLines = 2,
-                                                overflow = TextOverflow.Ellipsis
+                                                overflow = TextOverflow.Ellipsis,
+                                                textAlign = TextAlign.Start
                                             )
                                         }
                                     }

@@ -199,7 +199,7 @@ fun Reporte(
                         ) {}
 
                         // Sección de imágenes
-                        if (reporte?.presicion != "0") {
+                        if (reporte?.presicion != "-1") {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -382,19 +382,24 @@ fun Reporte(
 
                                     if (reporteItem.motivo == "No Motivo"){
 
-                                        InfoRow("motivo del rechazo", reporteItem.motivo ?: "N/A")
+                                        InfoRow("Motivo del rechazo", "Sin motivo")
+
+                                    }else{
+
+                                        InfoRow("Motivo del rechazo", reporteItem.motivo ?: "N/A")
 
                                     }
                                     if (reporteItem.presicion != null && reporteItem.presicion != "0" && reporteItem.presicion != "-1") {
-                                        InfoRow("Precisión", reporteItem.presicion.toString())
-                                    }else if (reporteItem.presicion != null && reporteItem.presicion == "-1") {
+                                        val numero = reporteItem.presicion.toFloat()
+                                        val porcentaje = numero + 100
+                                        InfoRow("Precisión", porcentaje.toString()+"%")
+                                    }else if (reporteItem.presicion != null && reporteItem.presicion == "0") {
                                         InfoRow("Precisión", "Menor que el 60% porciento")
                                     }
                                 }
                             }
                         }
                     } else if (ingresoResultado == "no existe") {
-                        // ... (mensaje de no existencia - sin cambios)
                         Column(
                             modifier = Modifier.fillMaxSize(),
                             horizontalAlignment = Alignment.CenterHorizontally,
