@@ -109,7 +109,7 @@ fun CredencialScreen(navController: NavController, loginViewModel: LoginViewMode
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             AsyncImage(
-                                model = alumno?.ImagenCredencial.takeUnless { it.isNullOrBlank() } ?: R.drawable.placeholder_image,
+                                model = alumno?.imagenCredencial.takeUnless { it.isNullOrBlank() } ?: R.drawable.placeholder_image,
                                 contentDescription = "Foto del alumno",
                                 modifier = Modifier
                                     .size(100.dp)

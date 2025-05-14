@@ -87,9 +87,7 @@ fun Camara(
     loginViewModel: LoginViewModel,
     cameraViewModel: CamaraViewModel,
 ) {
-
-
-
+    
     val context = LocalContext.current
     val userRole = loginViewModel.getUserRole()
 
@@ -101,9 +99,7 @@ fun Camara(
                 listOf(Manifest.permission.CAMERA)
             } else {
                 listOf(
-                    Manifest.permission.CAMERA,
-                    //Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    //Manifest.permission.READ_EXTERNAL_STORAGE
+                    Manifest.permission.CAMERA
                 )
             }
         )
@@ -437,8 +433,6 @@ private fun tomarFoto(
                         rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
                     }
                 }
-
-                // Ahora 'rotatedBitmap' debería estar en la orientación correcta (probablemente vertical si el usuario la tomó así)
 
                 val targetWidth = 640
                 val targetHeight = 480
