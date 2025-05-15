@@ -383,6 +383,24 @@ private fun tomarFoto(
                 buffer.get(bytes)
                 image.close()
 
+                val originalBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                val originalWidth = originalBitmap.width
+                val originalHeight = originalBitmap.height
+
+                val targetWidth = 640
+                val targetHeight = 480
+
+                // Calcular el factor de escala manteniendo la relación de aspecto
+                val widthScaleFactor = targetWidth.toFloat() / originalWidth
+                val heightScaleFactor = targetHeight.toFloat() / originalHeight
+                val scaleFactor = minOf(widthScaleFactor, heightScaleFactor)
+
+                val newWidth = (originalWidth * scaleFactor).toInt()
+                val newHeight = (originalHeight * scaleFactor).toInt()
+
+                val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true)
+
+                // Rotación basada en la orientación EXIF (aplicar después del escalado para evitar problemas)
                 val inputStream = ByteArrayInputStream(bytes)
                 val exifInterface = ExifInterface(inputStream)
                 val orientation = exifInterface.getAttributeInt(
@@ -391,62 +409,56 @@ private fun tomarFoto(
                 )
                 inputStream.close()
 
-                val originalBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                var rotatedBitmap = originalBitmap
+                var rotatedBitmap = scaledBitmap // Rotar el bitmap escalado
 
                 when (orientation) {
                     ExifInterface.ORIENTATION_ROTATE_90 -> {
                         val matrix = Matrix()
                         matrix.postRotate(90f)
-                        rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
+                        rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.width, scaledBitmap.height, matrix, true)
                     }
                     ExifInterface.ORIENTATION_ROTATE_180 -> {
                         val matrix = Matrix()
                         matrix.postRotate(180f)
-                        rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
+                        rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.width, scaledBitmap.height, matrix, true)
                     }
                     ExifInterface.ORIENTATION_ROTATE_270 -> {
                         val matrix = Matrix()
                         matrix.postRotate(270f)
-                        rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
+                        rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.width, scaledBitmap.height, matrix, true)
                     }
                     ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> {
                         val matrix = Matrix()
                         matrix.postScale(-1f, 1f)
-                        rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
+                        rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.width, scaledBitmap.height, matrix, true)
                     }
                     ExifInterface.ORIENTATION_FLIP_VERTICAL -> {
                         val matrix = Matrix()
                         matrix.postScale(1f, -1f)
-                        rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
+                        rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.width, scaledBitmap.height, matrix, true)
                     }
                     ExifInterface.ORIENTATION_TRANSPOSE -> {
                         val matrix = Matrix()
                         matrix.postRotate(90f)
                         matrix.postScale(-1f, 1f)
-                        rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
+                        rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.width, scaledBitmap.height, matrix, true)
                     }
                     ExifInterface.ORIENTATION_TRANSVERSE -> {
                         val matrix = Matrix()
                         matrix.postRotate(-90f)
                         matrix.postScale(-1f, 1f)
-                        rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
+                        rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.width, scaledBitmap.height, matrix, true)
                     }
                 }
 
-                val targetWidth = 640
-                val targetHeight = 480
-
-                val scaledBitmap = Bitmap.createScaledBitmap(rotatedBitmap, targetWidth, targetHeight, true)
-
-                cameraViewModel.setImagen(scaledBitmap)
+                cameraViewModel.setImagen(rotatedBitmap)
 
                 val outputStream = ByteArrayOutputStream()
-                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
                 val resizedBytes = outputStream.toByteArray()
                 outputStream.close()
 
-                Log.d("Camara", "Tamaño de la imagen redimensionada: ${resizedBytes.size / 1024} KB (${scaledBitmap.width}x${scaledBitmap.height}), Orientación EXIF: $orientation")
+                Log.d("Camara", "Tamaño de la imagen redimensionada: ${resizedBytes.size / 1024} KB (${rotatedBitmap.width}x${rotatedBitmap.height}), Orientación EXIF: $orientation")
                 enviarFotoAlServidor(resizedBytes)
             }
 
@@ -505,14 +517,14 @@ fun ResultDialog(
                             if (precision >= 0.8) {
                                 Text("Es casi seguro que el alumno es quien dice ser. \nPrecisión del reconocimiento facial: ${String.format("%.2f", precisionPorcentaje)}%")
                             }
-                            if (precision >= 0.6 && precision < 0.8) {
+                            if (precision >= 0.7 && precision < 0.8) {
                                 Text("Es dudosa la identidad del alumno. \nPrecisión del reconocimiento facial: ${String.format("%.2f", precisionPorcentaje)}%")
                             }
                         }
                     } else {
                         if (precision != null) {
-                            if (precision < 0.6 && precision != -1.0f) {
-                                Text("Es casi seguro que el alumno no es quien dice ser. \nPrecisión del reconocimiento facial: menor al 60%.")
+                            if (precision < 0.7 && precision != -1.0f) {
+                                Text("Es casi seguro que el alumno no es quien dice ser. \nPrecisión del reconocimiento facial: menor al 70%.")
                             } else if (precision?.toInt() == -1) {
                                 Text("No se detecta un rostro en la fotografía.")
                             }
