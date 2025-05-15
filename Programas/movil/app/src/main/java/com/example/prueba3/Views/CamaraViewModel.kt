@@ -64,11 +64,10 @@ class CamaraViewModel : ViewModel() {
                                     setPrecision(calculatedPrecision)
                                     Log.d("CamaraViewModel", "Distancia: $distance, Precisión calculada: $calculatedPrecision (rango 0-0.3)")
                                 } else {
-
-                                    val normalizedDistance = (distance - 0.31f) / (0.4f - 0.31f)
-                                    val calculatedPrecision = 0.799f - (0.199f * normalizedDistance)
+                                    val normalizedDistance = (distance - 0.3f) / (0.4f - 0.3f)
+                                    val calculatedPrecision = 0.8f - (0.1f * normalizedDistance)
                                     setPrecision(calculatedPrecision)
-                                    Log.d("CamaraViewModel", "Distancia: $distance, Precisión calculada: $calculatedPrecision (rango 0.31-0.4)")
+                                    Log.d("CamaraViewModel", "Distancia: $distance, Precisión calculada: $calculatedPrecision (rango 0.3-0.4)")
                                 }
                             }
                         }

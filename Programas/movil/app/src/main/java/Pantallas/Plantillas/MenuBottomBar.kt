@@ -39,6 +39,7 @@ import java.io.File
 fun MenuBottomBar(navController: NavController, userRole: String?) {
 
     var showDialog by remember { mutableStateOf(false) }
+    var showLogoutConfirmationDialog by remember { mutableStateOf(false) }
 
     if (showDialog) {
         AlertDialog(
@@ -52,6 +53,28 @@ fun MenuBottomBar(navController: NavController, userRole: String?) {
             }
         )
     }
+
+    if (showLogoutConfirmationDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutConfirmationDialog = false },
+            title = { Text("Cerrar sesión") },
+            text = { Text("¿Estás seguro que quieres cerrar la sesión?") },
+            confirmButton = {
+                Button(onClick = {
+                    showLogoutConfirmationDialog = false
+                    clearSession(navController)
+                }) {
+                    Text("Sí")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showLogoutConfirmationDialog = false }) {
+                    Text("No")
+                }
+            }
+        )
+    }
+
     // Barra inferior
     BottomAppBar(
         modifier = Modifier
@@ -104,9 +127,8 @@ fun MenuBottomBar(navController: NavController, userRole: String?) {
                     }
 
                     IconButton(onClick = {
-                        clearSession(navController)
-                    }
-                    ) {
+                        showLogoutConfirmationDialog = true
+                    }) {
                         Icon(
                             imageVector = Icons.Default.ExitToApp,
                             contentDescription = "Cerrar sesión",

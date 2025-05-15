@@ -315,15 +315,29 @@ fun InformacionAlumno(
 
                     // Título
                     Text(
-                        text = "Información del Alumno",
+                        text = "Asignar asistencia",
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 20.dp),
+                            .fillMaxWidth(),
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                         textAlign = TextAlign.Center
                     )
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+
+                    Text(
+                        text = "Información del alumno",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Left
+                    )
+                        }
 
                     // Credencial del alumno
                     Card(
@@ -361,7 +375,6 @@ fun InformacionAlumno(
                                         contentScale = ContentScale.Crop
                                     )
                                 } else {
-                                    //Log.d("InformacionAlumno", "Bitmap is null, showing default image")
                                     Image(
                                         painter = painterResource(id = R.drawable.icon_camara),
                                         contentDescription = "Foto de perfil",
@@ -595,7 +608,7 @@ fun InformacionAlumno(
                             if (precision.toFloat() == -1f || precision.toFloat() == 0f){
                             Text(
 
-                                text = "Similitud: menor al 60%",
+                                text = "Similitud: menor al 70%",
                                 color = Color.White,
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.padding(top = 8.dp)
