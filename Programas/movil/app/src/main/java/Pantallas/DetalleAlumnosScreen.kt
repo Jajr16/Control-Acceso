@@ -4,6 +4,7 @@ import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
 import android.graphics.BitmapFactory
+import com.example.prueba3.R
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,7 +27,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.prueba3.R
 import com.example.prueba3.Views.AlumnosViewModel
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.ui.theme.BlueBackground
@@ -64,6 +64,19 @@ fun DetalleAlumnosScreen(
             viewModel.fetchFotoAlumno(boleta) {}
         }
 
+        LaunchedEffect(boleta) {
+            viewModel.resetAsistenciaFlags()
+            viewModel.fetchDetalleAlumnos(boleta)
+            viewModel.fetchFotoAlumno(boleta) {}
+
+            // Resetear todos los estados locales relacionados con asistencia
+            showAsistenciaDialog = false
+            showMensajeAsistencia = false
+            showMensajeAsistenciaExistente = false
+            showDeserializationError = false
+            isProcessingRegistration = false
+        }
+
         // Manejar mensajes de error
         LaunchedEffect(errorMessage) {
             errorMessage?.let { message ->
@@ -83,16 +96,14 @@ fun DetalleAlumnosScreen(
             }
         }
 
-        // Manejar éxito del registro
+        // En el manejo de éxito del registro (cambia este bloque):
         LaunchedEffect(registroSuccess) {
             if (registroSuccess) {
                 if (!showDeserializationError) {
                     showMensajeAsistencia = true
                     fechaHoraRegistro = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(Date())
                     isProcessingRegistration = false
-                    delay(2000)
-                    showMensajeAsistencia = false
-                    navController.popBackStack()
+                    // Elimina el delay y el popBackStack automático
                 }
             }
         }
@@ -305,7 +316,7 @@ fun DetalleAlumnosScreen(
                     AlertDialog(
                         onDismissRequest = {
                             showMensajeAsistencia = false
-                            navController.popBackStack()
+                            // No hagas popBackStack aquí en el onDismissRequest
                         },
                         title = {
                             Text(
@@ -330,7 +341,7 @@ fun DetalleAlumnosScreen(
                         confirmButton = {
                             Button(onClick = {
                                 showMensajeAsistencia = false
-                                navController.popBackStack()
+                                navController.popBackStack() // Solo haz popBackStack cuando se presione Aceptar
                             }) {
                                 Text("Aceptar")
                             }
@@ -338,12 +349,13 @@ fun DetalleAlumnosScreen(
                     )
                 }
 
+
                 // Diálogo para error de deserialización
                 if (showDeserializationError) {
                     AlertDialog(
                         onDismissRequest = {
                             showDeserializationError = false
-                            navController.popBackStack()
+                            // No hagas popBackStack aquí
                         },
                         title = {
                             Text("Asistencia registrada", color = Color.Green, fontWeight = FontWeight.Bold)
