@@ -4,6 +4,7 @@ import Pantallas.Plantillas.MenuBottomBar
 import Pantallas.Plantillas.MenuTopBar
 import Pantallas.components.ValidateSession
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,6 +55,7 @@ import androidx.navigation.NavController
 import com.example.prueba3.Clases.Salon
 import com.example.prueba3.Views.EtsInfoViewModel
 import com.example.prueba3.Views.LoginViewModel
+import com.example.prueba3.Views.PersonaViewModel
 import com.example.prueba3.ui.theme.BlueBackground
 
 @Composable
@@ -82,12 +84,14 @@ fun EtsDetailScreen(
         .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
     val username = sharedPreferences.getString("username", "") ?: ""
 
-    val docenteRfc by viewModel.rfcDocenteState.collectAsState()
+
 
     LaunchedEffect(idETS) {
         viewModel.fetchRfcDocente(idETS)
         viewModel.fetchEtsDetail(idETS)
     }
+
+    val docenteRfc by viewModel.rfcDocenteState.collectAsState()
 
     ValidateSession(navController = navController) {
         val etsDetail by remember { viewModel.etsDetailState }.collectAsState()
@@ -246,10 +250,21 @@ fun SingleStyledCard(
     userRole: String?,
     username: String,
     docenteRfc: String,
-    onRequestReplacement: () -> Unit
+    onRequestReplacement: () -> Unit,
+    viewModel3: PersonaViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 
 
 ) {
+
+    LaunchedEffect(docenteRfc) {
+        viewModel3.obtenerDatos(docenteRfc)
+    }
+
+    val datos by viewModel3.datosPersona.collectAsState()
+    val nombreUsuario = datos.firstOrNull()?.nombre ?: ""
+    val appellidoP = datos.firstOrNull()?.apellidoP ?: ""
+    val appellidoM = datos.firstOrNull()?.apellidoM ?: ""
+    val docente = "${appellidoP.trim()} ${appellidoM.trim()} ${nombreUsuario.trim()}".trim()
 
 
 
@@ -282,6 +297,14 @@ fun SingleStyledCard(
                     append("$turno\n\n")
                     append("Con una duracion de ")
                     append("$duracion horas\n\n")
+
+                    if(docente != "" && docente != null){
+                        append("Aplicado por ")
+                        append("$docente\n\n")
+                    }else{
+                        append("Aplicado por ")
+                        append("sin asignar\n\n")
+                    }
                     if (!salonState) {
                         append("Salones asignados:  \n")
                         if (salon.isNotEmpty()) {

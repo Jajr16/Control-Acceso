@@ -156,7 +156,7 @@ fun LoginScreen(
             OutlinedTextField (
                 value = boleta,
                 onValueChange = { boleta = it },
-                label = { Text("Boleta",
+                label = { Text("Usuario",
                     style = MaterialTheme.typography.labelMedium) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -238,11 +238,16 @@ fun LoginScreen(
             // Mostrar mensaje de error si es necesario
             if (errorMessage.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
+                val mensajeAMostrar = if (errorMessage.contains("401", ignoreCase = true)) {
+                    "Error al intentar iniciar sesión, contraseña y/o usuario incorrectos"
+                } else {
+                    errorMessage
+                }
                 Text(
-                    text = errorMessage,
+                    text = mensajeAMostrar,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.fillMaxWidth(), // Hace que el texto ocupe todo el ancho disponible
+                    modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
             }

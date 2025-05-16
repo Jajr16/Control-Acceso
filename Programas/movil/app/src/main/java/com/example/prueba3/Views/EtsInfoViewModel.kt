@@ -3,6 +3,7 @@ package com.example.prueba3.Views
 import com.example.prueba3.Clases.SalonETSResponse
 import RetroFit.RetrofitInstance
 import RetroFit.RfcResponse
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,21 +15,19 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class EtsInfoViewModel : ViewModel() {
+
     private val _etsDetailState = MutableStateFlow<SalonETSResponse?>(null)
     val etsDetailState: StateFlow<SalonETSResponse?> = _etsDetailState
 
     private val _salonDetailState = MutableStateFlow(true)
     val salonDetailState: StateFlow<Boolean?> = _salonDetailState
 
-    // ESTADO DE CARGA
     private val _loadingState = MutableStateFlow(true)
     val loadingState: StateFlow<Boolean> = _loadingState
 
-    // Estado para el RFC del docente
     private val _rfcDocenteState = MutableStateFlow<String?>(null)
     val rfcDocenteState: StateFlow<String?> = _rfcDocenteState
 
-    // Estado de carga para el RFC del docente
     private val _loadingRfcState = MutableStateFlow(false)
     val loadingRfcState: StateFlow<Boolean> = _loadingRfcState
 
@@ -58,7 +57,6 @@ class EtsInfoViewModel : ViewModel() {
             try {
                 _loadingRfcState.value = true
                 val call: Call<RfcResponse> = RetrofitInstance.aplicaApi.obtenerRfcDocente(idets)
-
                 call.enqueue(object : Callback<RfcResponse> {
                     override fun onResponse(
                         call: Call<RfcResponse>,
@@ -72,14 +70,12 @@ class EtsInfoViewModel : ViewModel() {
                         }
                         _loadingRfcState.value = false
                     }
-
                     override fun onFailure(call: Call<RfcResponse>, t: Throwable) {
                         println("Fallo en la petición del RFC: ${t.message}")
                         _rfcDocenteState.value = null
                         _loadingRfcState.value = false
                     }
                 })
-
             } catch (e: Exception) {
                 e.printStackTrace()
                 _rfcDocenteState.value = null
@@ -87,6 +83,5 @@ class EtsInfoViewModel : ViewModel() {
             }
         }
     }
-
 }
 
