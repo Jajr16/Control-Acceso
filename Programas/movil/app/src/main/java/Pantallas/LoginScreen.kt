@@ -40,9 +40,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import com.example.prueba3.Clases.getFCMToken
 import com.example.prueba3.R
+import androidx.compose.foundation.layout.imePadding // Importar imePadding
 
 @Composable
 fun LoginScreen(
@@ -55,6 +57,7 @@ fun LoginScreen(
 
     val loginResponse = loginViewModel.loginResponse.collectAsState().value
     val loginError = loginViewModel.loginError.collectAsState().value
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(Unit) {
         loginViewModel.getUserRole()?.let { savedRole ->
@@ -81,14 +84,12 @@ fun LoginScreen(
 
     LaunchedEffect(loginResponse) {
         loginResponse?.let {
-
             if (it.error_code == 0) {
                 loginViewModel.saveUserName(it.usuario)
                 loginViewModel.saveUserRole(it.rol)
 
                 when (it.rol) {
                     "Alumno", "Personal Academico", "Docente" -> {
-                        // Solo estos roles recibirán notificaciones
                         getFCMToken(it.usuario)
                     }
                 }
@@ -117,32 +118,30 @@ fun LoginScreen(
         }
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(30.dp, 0.dp, 16.dp, bottom = 30.dp) // Margen para no pegarse a los bordes
+            .verticalScroll(scrollState)
+            .padding(horizontal = 30.dp, vertical = 30.dp)
+            .imePadding(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
             painter = painterResource(id = R.drawable.escom),
             contentDescription = "Logo IPN",
             modifier = Modifier
                 .fillMaxWidth(0.9f)
-                //.padding(start = 20.dp, top = 160.dp, end = 20.dp, bottom = 20.dp)
-                .padding(start = 20.dp, top = 120.dp, end = 20.dp, bottom = 20.dp)
-                .align(Alignment.TopCenter),
+                .padding(top = 90.dp, bottom = 40.dp),
             contentScale = ContentScale.Crop
         )
 
-        // Fondo blanco para el contenedor
         Column(
             modifier = Modifier
-                .fillMaxWidth() // Asegurarse de que ocupe todo el ancho
+                .fillMaxWidth()
                 .background(Color.White, shape = RoundedCornerShape(30.dp))
-                .padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 60.dp)
-                .align(Alignment.BottomCenter)
-
+                .padding(horizontal = 20.dp, vertical = 20.dp)
+                .imePadding(),
         ) {
-            // Título de la pantalla
             Text(
                 text = "Iniciar sesión",
                 style = MaterialTheme.typography.titleLarge,
@@ -152,16 +151,14 @@ fun LoginScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            // Campo para la boleta
             OutlinedTextField (
                 value = boleta,
                 onValueChange = { boleta = it },
-                label = { Text("Usuario",
-                    style = MaterialTheme.typography.labelMedium) },
+                label = { Text("Usuario", style = MaterialTheme.typography.labelMedium) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 shape = RoundedCornerShape(50.dp),
-                colors =  TextFieldDefaults.colors(
+                colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFFF0F0F0),
                     unfocusedContainerColor = Color(0xFFF0F0F0),
                 ),
@@ -172,20 +169,18 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Campo para la contraseña
             OutlinedTextField (
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Contraseña",
-                    style = MaterialTheme.typography.labelMedium) },
+                label = { Text("Contraseña", style = MaterialTheme.typography.labelMedium) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 shape = RoundedCornerShape(50.dp),
-                colors =  TextFieldDefaults.colors(
+                colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFFF0F0F0),
                     unfocusedContainerColor = Color(0xFFF0F0F0),
-                    ),
+                ),
                 leadingIcon = {
                     Icon(imageVector = Icons.Default.Lock, contentDescription = "")
                 }
@@ -193,7 +188,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            // Botón de iniciar sesión
             Button(
                 onClick = {
                     if (boleta.isEmpty() || password.isEmpty()) {
@@ -202,7 +196,7 @@ fun LoginScreen(
                         loginViewModel.login(boleta, password)
                     }
                 },
-                    modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF1414E3),
                     contentColor = Color.White
@@ -213,29 +207,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-//            Text(
-//                text = "¿Su cuenta está bloqueada?",
-//                modifier = Modifier.align(Alignment.CenterHorizontally),
-//            )
-//
-//            Text (
-//                text = "Presione aquí para pedir su activación",
-//                style = TextStyle(
-//                    color = Color.Blue,  // Color del texto como hipervínculo
-//                    textDecoration = TextDecoration.Underline,  // Subrayado para parecer un enlace
-//                    fontWeight = FontWeight.Bold
-//                ),
-//                modifier = Modifier
-//                    .clickable {
-//                        // Acción de navegación al hacer clic
-//                        if (navController != null) {
-//                            navController.navigate("screen2")
-//                        }
-//                    }
-//                    .align(Alignment.CenterHorizontally),
-//            )
-
-            // Mostrar mensaje de error si es necesario
             if (errorMessage.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
                 val mensajeAMostrar = if (errorMessage.contains("401", ignoreCase = true)) {
@@ -251,6 +222,9 @@ fun LoginScreen(
                     textAlign = TextAlign.Center
                 )
             }
+            // Mantenemos este Spacer para darle un "colchón" extra al final del contenido,
+            // pero imePadding() será el principal controlador del desplazamiento del teclado.
+            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }
