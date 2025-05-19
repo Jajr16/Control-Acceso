@@ -9,6 +9,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,14 +47,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.prueba3.MessageUpdateService
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.example.prueba3.Clases.Mensaje
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -64,10 +62,8 @@ fun ChatScreen(
     loginViewModel: LoginViewModel,
     mensajesViewModel: MensajesViewModel = viewModel()
 ) {
-
     ValidateSession(navController = navController) {
         val lazyListState = rememberLazyListState()
-
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
 
@@ -75,33 +71,37 @@ fun ChatScreen(
         val username = loginViewModel.getUserName()
         val mensajes by mensajesViewModel.mensajes.collectAsState()
         val errorMessage by mensajesViewModel.errorMessage.collectAsState()
-
         val usuarioActual = loginViewModel.getUserName()
 
-        LaunchedEffect(mensajes) { // Scroll to the bottom after messages update
+        LaunchedEffect(mensajes) {
             if (mensajes.isNotEmpty()) {
-                lazyListState.animateScrollToItem(mensajes.size - 1) // Scroll to last item
+                coroutineScope.launch {
+                    lazyListState.animateScrollToItem(mensajes.size - 1)
+                }
             }
         }
+
         val destinatarioActual = remember(destinatario) { destinatario }
         val usuarioActualRemembered = remember(usuarioActual) { usuarioActual }
-
         val updateMessageReceiver = remember {
             object : BroadcastReceiver() {
                 override fun onReceive(context: Context?, intent: Intent?) {
                     FirebaseCrashlytics.getInstance().log("ChatScreen: Broadcast Recibido - Action=${intent?.action}")
                     Log.d("ChatScreen", "Broadcast recibido: ${intent?.action}")
+
                     if (intent?.action == MessageUpdateService.ACTION_UPDATE_MESSAGES) {
+
                         val broadcastRemitente = intent?.getStringExtra("remitente")
                         val broadcastDestinatario = intent?.getStringExtra("destinatario")
+
                         Log.d("ChatScreen", "Broadcast recibido: remitente=$broadcastRemitente, destinatario=$broadcastDestinatario")
                         FirebaseCrashlytics.getInstance().log("ChatScreen: Datos del Broadcast - Remitente=$broadcastRemitente, Destinatario=$broadcastDestinatario, Usuario Actual=$usuarioActualRemembered, Destinatario Actual=$destinatarioActual")
-                        // Refrescar los mensajes si la conversación actual coincide
+// Refrescar los mensajes si la conversación actual coincide
                         if ((broadcastRemitente == usuarioActualRemembered && broadcastDestinatario == destinatarioActual) ||
                             (broadcastRemitente == destinatarioActual && broadcastDestinatario == usuarioActualRemembered)) {
                             Log.d("ChatScreen", "Si entró")
                             FirebaseCrashlytics.getInstance().log("ChatScreen: Conversación coincidente. Llamando a getMessages()")
-                            coroutineScope.launch {
+                            coroutineScope.launch { // Usar coroutineScope para llamadas suspend
                                 mensajesViewModel.getMessages(usuarioActualRemembered ?: "", destinatarioActual)
                             }
                         } else {
@@ -114,6 +114,7 @@ fun ChatScreen(
 
         val filter = IntentFilter(MessageUpdateService.ACTION_UPDATE_MESSAGES)
         val localBroadcastManager = LocalBroadcastManager.getInstance(context)
+
         DisposableEffect(context, updateMessageReceiver) {
             localBroadcastManager.registerReceiver(updateMessageReceiver, filter)
             onDispose { localBroadcastManager.unregisterReceiver(updateMessageReceiver) }
@@ -123,7 +124,9 @@ fun ChatScreen(
             Log.d("ChatScreen", "LaunchedEffect triggered para cargar mensajes con destinatario=$destinatarioActual, usuario=$usuarioActualRemembered")
             FirebaseCrashlytics.getInstance().log("ChatScreen: LaunchedEffect triggered para cargar mensajes con remitente = $usuarioActualRemembered, destinatario = $destinatarioActual")
             if (usuarioActualRemembered != null) {
-                mensajesViewModel.getMessages(usuarioActualRemembered, destinatarioActual)
+                coroutineScope.launch {
+                    mensajesViewModel.getMessages(usuarioActualRemembered, destinatarioActual)
+                }
             }
         }
 
@@ -139,39 +142,89 @@ fun ChatScreen(
                     }
                 )
             },
-            bottomBar = {
+            bottomBar = {}
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(BlueBackground)
+                    .padding(padding)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    val nuevoMensajeEnviado by mensajesViewModel.nuevoMensajeEnviado.collectAsState(initial = null)
+
+                    LaunchedEffect(nuevoMensajeEnviado) {
+                        if (nuevoMensajeEnviado != null) {
+                            Log.d("ChatScreen", "Evento nuevoMensajeEnviado recibido")
+                            FirebaseCrashlytics.getInstance().log("ChatScreen: Evento nuevoMensajeEnviado recibido. Recargando mensajes.")
+                            if (usuarioActualRemembered != null) {
+                                coroutineScope.launch {
+                                    mensajesViewModel.getMessages(usuarioActualRemembered, destinatarioActual)
+                                }
+                            }
+                        }
+                    }
+
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                        state = lazyListState,
+                        contentPadding = PaddingValues(vertical = 8.dp)
+                    ) {
+                        items(mensajes) { mensaje ->
+                            Log.d("ChatScreen", "Rendering message: $mensaje")
+                            MensajeItem(mensaje, usuarioActualRemembered ?: "")
+                        }
+                        if (errorMessage != null) {
+                            item {
+                                Text(text = errorMessage!!, color = Color.Red)
+                            }
+                        }
+                    }
+                }
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 10.dp)
+                        .padding(horizontal = 8.dp)
+                        .imePadding()
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .border(2.dp, Color.Gray, RoundedCornerShape(16.dp))
                             .background(Color.White, RoundedCornerShape(16.dp))
-                            .padding(horizontal = 10.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         BasicTextField(
                             value = message,
                             onValueChange = { newText -> message = newText },
                             modifier = Modifier
-                                .weight(1f)
-                                .padding(8.dp),
+                                .weight(1f),
                             textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
-                            maxLines = 2
+                            maxLines = 4
                         )
+
                         IconButton(
                             onClick = {
                                 if (message.isNotBlank()) {
                                     if (username != null) {
-                                        FirebaseCrashlytics.getInstance().log("ChatScreen: Intentando enviar mensaje: $message a $destinatario desde $username")
-                                        mensajesViewModel.sendMessage(
-                                            username,
-                                            destinatario,
-                                            message
-                                        )
+                                        FirebaseCrashlytics.getInstance()
+                                            .log("ChatScreen: Intentando enviar mensaje: $message " +
+                                                    "a $destinatario desde $username")
+
+                                        coroutineScope.launch {
+                                            mensajesViewModel.sendMessage(
+                                                username,
+                                                destinatario,
+                                                message
+                                            )
+                                        }
                                     }
                                     message = ""
                                 }
@@ -186,37 +239,6 @@ fun ChatScreen(
                     }
                 }
             }
-        ) { padding ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(BlueBackground)
-                    .padding(padding)
-            ) {
-                val nuevoMensajeEnviado by mensajesViewModel.nuevoMensajeEnviado.collectAsState(initial = null)
-
-                LaunchedEffect(nuevoMensajeEnviado) {
-                    if (nuevoMensajeEnviado != null) {
-                        Log.d("ChatScreen", "Evento nuevoMensajeEnviado recibido")
-                        FirebaseCrashlytics.getInstance().log("ChatScreen: Evento nuevoMensajeEnviado recibido. Recargando mensajes.")
-                        if (usuarioActualRemembered != null) {
-                            mensajesViewModel.getMessages(usuarioActualRemembered, destinatarioActual)
-                        }
-                    }
-                }
-
-                LazyColumn(modifier = Modifier.padding(16.dp), state = lazyListState) {
-                    items(mensajes) { mensaje ->
-                        Log.d("ChatScreen", "Rendering message: $mensaje")
-                        MensajeItem(mensaje, usuarioActualRemembered ?: "")
-                    }
-                    if (errorMessage != null) {
-                        item {
-                            Text(text = errorMessage!!, color = Color.Red)
-                        }
-                    }
-                }
-            }
         }
     }
 }
@@ -226,13 +248,12 @@ fun MensajeItem(mensaje: Mensaje, usuarioActual: String) {
     val esUsuarioActual = mensaje.usuario == usuarioActual
     val modifier = Modifier
         .fillMaxWidth()
-        .padding(8.dp)
+        .padding(vertical = 4.dp)
 
     Row(modifier = modifier, horizontalArrangement = if (esUsuarioActual) Arrangement.End else Arrangement.Start) {
-        // Si es el usuario actual:
         if (esUsuarioActual) {
             MensajeMio(mensaje)
-        } else { //Si no es el usuario actual
+        } else {
             MensajeOtro(mensaje)
         }
     }
@@ -243,19 +264,18 @@ fun MensajeMio(mensaje: Mensaje) {
     Box(
         modifier = Modifier
             .background(Color(0xFFDCF8C6), RoundedCornerShape(16.dp, 16.dp, 0.dp, 16.dp))
-            .padding(16.dp)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
         Text(text = mensaje.mensaje, color = Color.Black)
     }
 }
-
 
 @Composable
 fun MensajeOtro(mensaje: Mensaje) {
     Box(
         modifier = Modifier
             .background(Color(0xFFEEEEEE), RoundedCornerShape(16.dp, 0.dp, 16.dp, 16.dp))
-            .padding(16.dp)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
         Text(text = mensaje.mensaje, color = Color.Black)
     }
