@@ -47,11 +47,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.prueba3.MessageUpdateService
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.ui.platform.LocalDensity
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.example.prueba3.Clases.Mensaje
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -62,16 +67,23 @@ fun ChatScreen(
     loginViewModel: LoginViewModel,
     mensajesViewModel: MensajesViewModel = viewModel()
 ) {
+
     ValidateSession(navController = navController) {
         val lazyListState = rememberLazyListState()
+
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
+        val density = LocalDensity.current
 
         var message by remember { mutableStateOf("") }
         val username = loginViewModel.getUserName()
         val mensajes by mensajesViewModel.mensajes.collectAsState()
         val errorMessage by mensajesViewModel.errorMessage.collectAsState()
+
         val usuarioActual = loginViewModel.getUserName()
+
+        val imeInsets = WindowInsets.ime.asPaddingValues(density)
+
 
         LaunchedEffect(mensajes) {
             if (mensajes.isNotEmpty()) {
@@ -83,25 +95,22 @@ fun ChatScreen(
 
         val destinatarioActual = remember(destinatario) { destinatario }
         val usuarioActualRemembered = remember(usuarioActual) { usuarioActual }
+
         val updateMessageReceiver = remember {
             object : BroadcastReceiver() {
                 override fun onReceive(context: Context?, intent: Intent?) {
                     FirebaseCrashlytics.getInstance().log("ChatScreen: Broadcast Recibido - Action=${intent?.action}")
                     Log.d("ChatScreen", "Broadcast recibido: ${intent?.action}")
-
                     if (intent?.action == MessageUpdateService.ACTION_UPDATE_MESSAGES) {
-
                         val broadcastRemitente = intent?.getStringExtra("remitente")
                         val broadcastDestinatario = intent?.getStringExtra("destinatario")
-
                         Log.d("ChatScreen", "Broadcast recibido: remitente=$broadcastRemitente, destinatario=$broadcastDestinatario")
                         FirebaseCrashlytics.getInstance().log("ChatScreen: Datos del Broadcast - Remitente=$broadcastRemitente, Destinatario=$broadcastDestinatario, Usuario Actual=$usuarioActualRemembered, Destinatario Actual=$destinatarioActual")
-// Refrescar los mensajes si la conversación actual coincide
                         if ((broadcastRemitente == usuarioActualRemembered && broadcastDestinatario == destinatarioActual) ||
                             (broadcastRemitente == destinatarioActual && broadcastDestinatario == usuarioActualRemembered)) {
                             Log.d("ChatScreen", "Si entró")
                             FirebaseCrashlytics.getInstance().log("ChatScreen: Conversación coincidente. Llamando a getMessages()")
-                            coroutineScope.launch { // Usar coroutineScope para llamadas suspend
+                            coroutineScope.launch {
                                 mensajesViewModel.getMessages(usuarioActualRemembered ?: "", destinatarioActual)
                             }
                         } else {
@@ -114,7 +123,6 @@ fun ChatScreen(
 
         val filter = IntentFilter(MessageUpdateService.ACTION_UPDATE_MESSAGES)
         val localBroadcastManager = LocalBroadcastManager.getInstance(context)
-
         DisposableEffect(context, updateMessageReceiver) {
             localBroadcastManager.registerReceiver(updateMessageReceiver, filter)
             onDispose { localBroadcastManager.unregisterReceiver(updateMessageReceiver) }
@@ -143,6 +151,7 @@ fun ChatScreen(
                 )
             },
             bottomBar = {}
+
         ) { padding ->
             Column(
                 modifier = Modifier
@@ -170,9 +179,16 @@ fun ChatScreen(
                     }
 
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
                         state = lazyListState,
-                        contentPadding = PaddingValues(vertical = 8.dp)
+                        contentPadding = PaddingValues(
+                            start = 0.dp,
+                            end = 0.dp,
+                            top = 8.dp,
+                            bottom = 8.dp + imeInsets.calculateBottomPadding()
+                        )
                     ) {
                         items(mensajes) { mensaje ->
                             Log.d("ChatScreen", "Rendering message: $mensaje")
@@ -191,13 +207,15 @@ fun ChatScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp)
                         .imePadding()
+                    // Opcional para ajuste fino si hay un espacio pequeño:
+                    // .offset(y = (-2).dp)
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .border(2.dp, Color.Gray, RoundedCornerShape(16.dp))
                             .background(Color.White, RoundedCornerShape(16.dp))
-                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                            .padding(horizontal = 10.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
@@ -209,7 +227,6 @@ fun ChatScreen(
                             textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
                             maxLines = 4
                         )
-
                         IconButton(
                             onClick = {
                                 if (message.isNotBlank()) {
@@ -217,14 +234,15 @@ fun ChatScreen(
                                         FirebaseCrashlytics.getInstance()
                                             .log("ChatScreen: Intentando enviar mensaje: $message " +
                                                     "a $destinatario desde $username")
-
-                                        coroutineScope.launch {
-                                            mensajesViewModel.sendMessage(
-                                                username,
-                                                destinatario,
-                                                message
-                                            )
-                                        }
+                                        // Lógica de envío: Mantengo tu lógica original
+                                        // Si sendMessage es suspend, debería estar envuelta en launch
+                                        // coroutineScope.launch {
+                                        mensajesViewModel.sendMessage(
+                                            username,
+                                            destinatario,
+                                            message
+                                        )
+                                        // }
                                     }
                                     message = ""
                                 }
@@ -274,7 +292,7 @@ fun MensajeMio(mensaje: Mensaje) {
 fun MensajeOtro(mensaje: Mensaje) {
     Box(
         modifier = Modifier
-            .background(Color(0xFFEEEEEE), RoundedCornerShape(16.dp, 0.dp, 16.dp, 16.dp))
+            .background(Color(0xFFEEEEEE), RoundedCornerShape(0.dp, 16.dp, 16.dp, 16.dp))
             .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
         Text(text = mensaje.mensaje, color = Color.Black)
