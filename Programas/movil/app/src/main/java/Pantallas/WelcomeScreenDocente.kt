@@ -66,7 +66,6 @@ fun WelcomeScreenDocente(navController: NavController, loginViewModel: LoginView
 //                )
 
                 Spacer(modifier = Modifier.width(20.dp))
-
                 OptionButton(
                     title = "ETS",
                     icon = ImageVector.vectorResource(id = R.drawable.exam),
@@ -78,94 +77,4 @@ fun WelcomeScreenDocente(navController: NavController, loginViewModel: LoginView
         }
     }
 }
-//
-//@Composable
-//fun WelcomeScreenDocente(navController: NavController, loginViewModel: LoginViewModel) {
-//
-//    val userRole = loginViewModel.getUserRole();
-//
-//        Scaffold(
-//            bottomBar = { MenuBottomBar(navController = navController, userRole) }
-//        ) { padding ->
-//            androidx.compose.foundation.layout.Box(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .background(BlueBackground)
-//                    .padding(padding)
-//            )
-//            ValidateSession(navController = navController) {
-//                LazyColumn(
-//                    modifier = Modifier
-//                        .fillMaxSize()
-//                        .padding(padding)
-//                        .background(BlueBackground),
-//                    horizontalAlignment = Alignment.CenterHorizontally,
-//                    verticalArrangement = Arrangement.Center
-//                ) {
-//                    item {
-//                        Text(
-//                            text = "Bienvenido Usuario.",
-//                            style = MaterialTheme.typography.titleLarge,
-//                            modifier = Modifier.padding(bottom = 16.dp),
-//                            color = Color.White,
-//                        )
-//                        Text(
-//                            text = "¿Qué deseas hacer?",
-//                            style = MaterialTheme.typography.bodyMedium,
-//                            modifier = Modifier.padding(bottom = 32.dp),
-//                            color = Color.White,
-//                        )
-//                    }
-//
-//                    // Botones organizados en dos filas
-//                    item {
-//                        Box(
-//                            modifier = Modifier.fillMaxWidth(), // Asegura que el Box ocupe todo el ancho
-//                            contentAlignment = Alignment.Center // Centra el contenido dentro del Box
-//                        ) {
-//                            Column(
-//                                verticalArrangement = Arrangement.spacedBy(16.dp), // Espacio entre filas
-//                                horizontalAlignment = Alignment.CenterHorizontally, // Centra los botones en la columna
-//                                modifier = Modifier.fillMaxWidth()
-//                            ) {
-//                                // Primera fila de botones
-//                                Row(
-//                                    modifier = Modifier.fillMaxWidth(),
-//                                    horizontalArrangement = Arrangement.Center // Centra los botones dentro de la fila
-//                                ) {
-//                                    OptionButton(
-//                                        title = "Escanear Código QR",
-//                                        icon = ImageVector.vectorResource(id = R.drawable.qrc),
-//                                        onClick = { navController.navigate("scanQr") },
-//                                        modifier = Modifier.size(150.dp), // Tamaño fijo
-//                                        )
-//                                }
-//
-//
-//                                Row(
-//                                    modifier = Modifier.fillMaxWidth(),
-//                                    horizontalArrangement = Arrangement.Center // Centra los botones dentro de la fila
-//                                ) {
-//                                    OptionButton(
-//                                        title = "Información de acceso",
-//                                        icon = Icons.Default.Info,
-//                                        onClick = { navController.navigate("info") },
-//                                        modifier = Modifier.size(150.dp) // Tamaño fijo
-//                                    )
-//
-//                                    Spacer(modifier = Modifier.width(20.dp))
-//
-//                                    OptionButton(
-//                                        title = "ETS",
-//                                        icon = ImageVector.vectorResource(id = R.drawable.exam),
-//                                        onClick = { navController.navigate("LETS") },
-//                                        modifier = Modifier.size(150.dp) // Tamaño fijo
-//                                    )
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//        }
-//    }
-//}
+
