@@ -74,6 +74,8 @@ fun LoginScreen(
                         popUpTo("login") { inclusive = true } }
                     "Jefe Departamento" -> navController.navigate("Menu Academico") {
                         popUpTo("login") { inclusive = true } }
+                    "Presidente de academia" -> navController.navigate("Menu Academico") {
+                        popUpTo("login") { inclusive = true } }
                 }
             }
         }

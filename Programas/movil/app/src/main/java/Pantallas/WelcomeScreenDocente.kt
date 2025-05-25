@@ -30,6 +30,8 @@ fun WelcomeScreenDocente(navController: NavController, loginViewModel: LoginView
     val sharedPreferences = navController.context
         .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
     val username = sharedPreferences.getString("username", "") ?: ""
+    val userRole = loginViewModel.getUserRole()
+
 
     LaunchedEffect(username) {
         viewModel.obtenerDatos(username)
@@ -58,12 +60,14 @@ fun WelcomeScreenDocente(navController: NavController, loginViewModel: LoginView
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
-//                OptionButton(
-//                    title = "Reconocimiento facial yeah yeah",
-//                    icon = ImageVector.vectorResource(id = R.drawable.qrc),
-//                    onClick = { navController.navigate("scanQr") },
-//                    modifier = Modifier.size(150.dp)
-//                )
+                if (userRole == "Presidente de academia" || userRole == "Jefe Departamento") {
+                OptionButton(
+                    title = "Solicitudes de Reemplazo",
+                    icon = ImageVector.vectorResource(id = R.drawable.exam),
+                    onClick = { navController.navigate("listadoReemplazos") },
+                    modifier = Modifier.size(150.dp)
+                    )
+                }
 
                 Spacer(modifier = Modifier.width(20.dp))
 
