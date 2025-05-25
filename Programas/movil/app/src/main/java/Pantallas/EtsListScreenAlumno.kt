@@ -147,7 +147,9 @@ fun EtsListScreenAlumno(navController: NavController,
                                     idPeriodo = ets.idPeriodo,
                                     Turno = ets.turno,
                                     Fecha = ets.fecha,
-                                    UnidadAprendizaje = ets.unidadAprendizaje
+                                    UnidadAprendizaje = ets.unidadAprendizaje,
+                                    carrera = ets.carrera
+
                                 )
                             },
                             additionalContent = {

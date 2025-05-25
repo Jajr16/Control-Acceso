@@ -150,6 +150,7 @@ dependencies {
     implementation(libs.google.firebase.crashlytics.ktx)
     implementation(libs.google.firebase.messaging.ktx)
     implementation(libs.firebase.analytics)
+    implementation(libs.kotlinx.coroutines.android)
 
     implementation("com.google.android.gms:play-services-auth:20.7.0")
     implementation(libs.accompanist.insets)

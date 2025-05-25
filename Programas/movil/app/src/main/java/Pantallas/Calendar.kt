@@ -61,151 +61,154 @@ fun CalendarScreen(navController: NavController, loginViewModel: LoginViewModel,
                 modifier = Modifier
                     .fillMaxSize()
                     .background(BlueBackground)
-                    .padding(top = 90.dp)
+                    .padding(padding)
             ) {
-                if (isZoomed) {
+                if (isZoomed && imageBitmap != null) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(Color.Black.copy(alpha = 0.8f))
                             .clickable {
                                 isZoomed = false
-                            }, // Salir del zoom al hacer clic en el fondo
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         ZoomableImage(bitmap = imageBitmap!!)
                     }
                 }
 
-                // Encabezado
-                Column (
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        text = "Calendario Escolar",
-                        style = MaterialTheme.typography.titleLarge,
+                if (!isZoomed) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .padding(bottom = 8.dp)
-                            .align(Alignment.CenterHorizontally),
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        textAlign = TextAlign.Center
-                    )
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        // Encabezado
+                        Text(
+                            text = "Calendario Escolar",
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier
+                                .padding(bottom = 8.dp)
+                                .align(Alignment.CenterHorizontally),
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            textAlign = TextAlign.Center
+                        )
 
-                    Divider(
-                        modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .width(270.dp),
-                        thickness = 1.dp,
-                        color = Color.White
-                    )
+                        Divider(
+                            modifier = Modifier
+                                .padding(vertical = 8.dp)
+                                .width(270.dp),
+                            thickness = 1.dp,
+                            color = Color.White
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                            when {
+                                isLoading -> {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.align(Alignment.Center),
+                                        color = Color.White
+                                    )
+                                }
+
+                                imageBitmap != null -> {
+                                    Image(
+                                        bitmap = imageBitmap!!.asImageBitmap(),
+                                        contentDescription = "Calendario",
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { isZoomed = true }
+                                    )
+                                }
+
+                                errorMessage != null -> {
+                                    Text(
+                                        text = errorMessage ?: "Error desconocido",
+                                        color = Color.Red,
+                                        modifier = Modifier.align(Alignment.Center)
+                                    )
+                                }
+
+                                else -> {
+                                    Text(
+                                        text = "No hay imagen disponible",
+                                        color = Color.White,
+                                        modifier = Modifier.align(Alignment.Center)
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = {
+                                diasETSModel.getDays()
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.White,
+                                contentColor = Color.Black
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .align(Alignment.CenterHorizontally)
+                        ) {
+                            Text(
+                                text = "Calcular cuántos días faltan \npara el periodo de ETS",
+                                textAlign = TextAlign.Center
+                            )
+                        }
+
+                        if (loadingState) {
+                            Text(
+                                text = "Calculando...",
+                                color = Color.White,
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(top = 8.dp)
+                            )
+                        }
+
+                        if (calendarDays != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = calendarDays!!,
+                                color = Color.White,
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(bottom = 16.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(25.dp))
-
-                Box(modifier = Modifier.fillMaxSize()) {
-
-                    when {
-                        isLoading -> {
-                            CircularProgressIndicator(
-                                modifier = Modifier.align(Alignment.Center),
-                                color = Color.White
-                            )
-                        }
-
-                        imageBitmap != null -> {
-                            Column(
-                            ) {
-                                Image(
-                                    bitmap = imageBitmap!!.asImageBitmap(),
-                                    contentDescription = "Calendario",
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(400.dp)
-                                        .clickable {
-                                            isZoomed = true
-                                        } // Hacer zoom al hacer clic en la imagen
-                                )
-
-                                Spacer(modifier = Modifier.height(20.dp))
-
-                                Button(
-                                    onClick = {
-                                        diasETSModel.getDays()
-                                    },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color.White,
-                                        contentColor = Color.Black
-                                    ),
-                                    modifier = Modifier
-                                        .padding(10.dp)
-                                        .align(Alignment.CenterHorizontally)
-                                ) {
-                                    Text("Calcular cuántos días faltan \npara el periodo de ETS",
-                                        textAlign = TextAlign.Center)
-                                }
-
-                                if (loadingState) {
-                                    Text(
-                                        text = "Calculando...",
-                                        color = Color.White,
-                                        modifier = Modifier
-                                            .align(Alignment.CenterHorizontally)
-                                    )
-                                }
-
-                                if(calendarDays != null) {
-                                    Spacer(modifier = Modifier.height(20.dp))
-
-                                    Text(
-                                        text = calendarDays!!,
-                                        color = Color.White,
-                                        modifier = Modifier
-                                            .align(Alignment.CenterHorizontally)
-                                    )
-                                }
-                            }
-                        }
-
-                        errorMessage != null -> {
-                            Text(
-                                text = errorMessage ?: "Error desconocido",
-                                color = Color.Red,
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-                        }
-
-                        else -> {
-                            Text(
-                                text = "No hay imagen disponible",
-                                color = Color.White,
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-                        }
-                    }
-                    LaunchedEffect(Unit) {
-                        diasETSModel.resetDays()
-                        scope.launch {
-                            try {
-                                val response = RetrofitInstance.getCalendar.getCalendar()
-                                if (response.isSuccessful && response.body() != null) {
-                                    val inputStream: InputStream = response.body()!!.byteStream()
-                                    val bitmap = BitmapFactory.decodeStream(inputStream)
-                                    imageBitmap = bitmap
-                                    isLoading = false
-                                } else {
-                                    errorMessage = "Error al obtener la imagen"
-                                    isLoading = false
-                                }
-                            } catch (e: HttpException) {
-                                errorMessage = "Error en la solicitud: ${e.message()}"
+                LaunchedEffect(Unit) {
+                    diasETSModel.resetDays()
+                    scope.launch {
+                        try {
+                            val response = RetrofitInstance.getCalendar.getCalendar()
+                            if (response.isSuccessful && response.body() != null) {
+                                val inputStream: InputStream = response.body()!!.byteStream()
+                                val bitmap = BitmapFactory.decodeStream(inputStream)
+                                imageBitmap = bitmap
                                 isLoading = false
-                            } catch (e: Exception) {
-                                errorMessage = "Error general: ${e.message}"
+                            } else {
+                                errorMessage = "Error al obtener la imagen"
                                 isLoading = false
                             }
+                        } catch (e: HttpException) {
+                            errorMessage = "Error en la solicitud: ${e.message()}"
+                            isLoading = false
+                        } catch (e: Exception) {
+                            errorMessage = "Error general: ${e.message}"
+                            isLoading = false
                         }
                     }
                 }

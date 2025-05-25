@@ -97,58 +97,69 @@ RETURNS TABLE(
     turno_nombre VARCHAR,
     fecha DATE,
     unidad_aprendizaje_nombre VARCHAR,
-	inscrito Boolean
+    idpa VARCHAR, 
+    inscrito Boolean
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
-	RETURN QUERY
+    RETURN QUERY
 
-	SELECT 
-	    ets.idets,
-	    periodoets.periodo, 
-	    turno.nombre AS turno, 
-	    ets.fecha,
-	    unidadaprendizaje.nombre AS unidad_aprendizaje,
-	    EXISTS (
-            SELECT 1 
-            FROM inscripcionets i 
-            WHERE i.idets = ets.idets 
+    SELECT
+        ets.idets,
+        periodoets.periodo,
+        turno.nombre AS turno,
+        ets.fecha,
+        unidadaprendizaje.nombre AS unidad_aprendizaje,
+        unidadaprendizaje.idpa,
+    EXISTS (
+            SELECT 1
+            FROM inscripcionets i
+            WHERE i.idets = ets.idets
             AND i.boleta = boletaC
-        ) AS inscrito
-	FROM ets
-	INNER JOIN periodoets ON ets.id_periodo = periodoets.id_periodo 
-	INNER JOIN turno ON turno.id_turno = ets.turno
-	INNER JOIN unidadaprendizaje ON unidadaprendizaje.idua = ets.idua;
-    
+            ) AS inscrito
+            FROM ets
+    INNER JOIN periodoets ON ets.id_periodo = periodoets.id_periodo
+    INNER JOIN turno ON turno.id_turno = ets.turno
+    INNER JOIN unidadaprendizaje ON unidadaprendizaje.idua = ets.idua;
+
 END;
 $$;
 
 -- FUNCIÓN PARA EL LISTADO DE ETS
 CREATE OR REPLACE FUNCTION ListAplica(
-    boletaC VARCHAR(18)
-)
-RETURNS TABLE(
-    idets INTEGER,
-    periodo VARCHAR,
-    turno_nombre VARCHAR,
-    fecha DATE,
-    unidad_aprendizaje_nombre VARCHAR
-)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-	RETURN QUERY
-
-    SELECT aplica.idets, periodoets.periodo, turno.nombre as turno, ets.fecha, unidadaprendizaje.nombre FROM aplica
-	INNER JOIN ets ON aplica.idets = ets.idets
-	INNER JOIN periodoets ON ets.id_periodo = periodoets.id_periodo 
-	INNER JOIN turno ON turno.id_turno = ets.turno
-	INNER JOIN unidadaprendizaje ON unidadaprendizaje.idua = ets.idua WHERE aplica.docente_rfc = boletaC;
-	
-    
-END;
-$$;
+                   boletaC VARCHAR(18)
+               )
+               RETURNS TABLE(
+                   idets INTEGER,
+                   periodo VARCHAR,
+                   turno_nombre VARCHAR,
+                   fecha DATE,
+                   unidad_aprendizaje_nombre VARCHAR,
+                   idpa VARCHAR
+               )
+               LANGUAGE plpgsql
+               AS $$
+               BEGIN
+                RETURN QUERY
+            
+                   SELECT 
+                       aplica.idets, 
+                       periodoets.periodo, 
+                       turno.nombre as turno_nombre, 
+                       ets.fecha, 
+                       unidadaprendizaje.nombre as unidad_aprendizaje_nombre, 
+                       unidadaprendizaje.idpa
+                   FROM aplica
+                INNER JOIN ets ON aplica.idets = ets.idets
+                INNER JOIN periodoets ON ets.id_periodo = periodoets.id_periodo
+                INNER JOIN turno ON turno.id_turno = ets.turno
+                INNER JOIN unidadaprendizaje ON unidadaprendizaje.idua = ets.idua 
+                   WHERE aplica.docente_rfc = boletaC;
+            
+                  
+               END;
+               $$;
 
 -- Función para buscar datos especificos de un alumno
 
