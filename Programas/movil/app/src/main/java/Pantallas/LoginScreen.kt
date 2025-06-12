@@ -90,6 +90,14 @@ fun LoginScreen(
                 loginViewModel.saveUserName(it.usuario)
                 loginViewModel.saveUserRole(it.rol)
 
+
+                it.cargos?.let { it1 ->
+                    loginViewModel.guardarCargosEnSharedPreferences(
+                        context = navController.context,
+                        cargos = it1
+                    )
+                }
+
                 when (it.rol) {
                     "Alumno", "Personal Academico", "Docente" -> {
                         getFCMToken(it.usuario)

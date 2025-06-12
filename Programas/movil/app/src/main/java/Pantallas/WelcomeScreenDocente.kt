@@ -30,7 +30,8 @@ fun WelcomeScreenDocente(navController: NavController, loginViewModel: LoginView
     val sharedPreferences = navController.context
         .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
     val username = sharedPreferences.getString("username", "") ?: ""
-    val userRole = loginViewModel.getUserRole()
+    val cargosString = sharedPreferences.getString("cargos", "") ?: ""
+    val cargosList = if (cargosString.isNotEmpty()) cargosString.split(",") else emptyList()
 
 
     LaunchedEffect(username) {
@@ -60,7 +61,7 @@ fun WelcomeScreenDocente(navController: NavController, loginViewModel: LoginView
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
-                if (userRole == "Presidente de academia" || userRole == "Jefe Departamento") {
+                if (cargosList.contains("Presidente de academia") || cargosList.contains("Jefe Departamento")) {
                 OptionButton(
                     title = "Solicitudes de Reemplazo",
                     icon = ImageVector.vectorResource(id = R.drawable.exam),

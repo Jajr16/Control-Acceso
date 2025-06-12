@@ -42,6 +42,14 @@ class LoginViewModel(private val sharedPreferences: SharedPreferences) : ViewMod
         editor.apply()
     }
 
+    fun guardarCargosEnSharedPreferences(context: Context, cargos: List<String>) {
+        val sharedPreferences = context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        val cargosJson = cargos.joinToString(",")
+        editor.putString("cargos", cargosJson)
+        editor.apply()
+    }
+
     fun login(username: String, password: String) {
         viewModelScope.launch {
             try {
@@ -49,6 +57,7 @@ class LoginViewModel(private val sharedPreferences: SharedPreferences) : ViewMod
 
                 if (response.isSuccessful && response.body() != null) {
                     _loginResponse.value = response.body()
+                    println("LA RESPUESTA DEL LOGIN ES: ${response.body()}")
                 } else {
                     _loginError.value = "Error de autenticación: ${response.code()} ${response.message()}"
                 }

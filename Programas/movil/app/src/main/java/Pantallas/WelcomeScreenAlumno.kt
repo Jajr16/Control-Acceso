@@ -1,6 +1,7 @@
 package Pantallas
 
 import Pantallas.Plantillas.WelcomeScreenBase
+import Pantallas.components.DataStoreManager
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,6 +19,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,11 +28,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -39,9 +47,14 @@ import com.example.prueba3.Views.CamaraViewModel
 import com.example.prueba3.Views.LoginViewModel
 import com.example.prueba3.Views.PersonaViewModel
 import com.example.prueba3.ui.theme.BlueBackground
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun WelcomeScreenAlumno(navController: NavController, loginViewModel: LoginViewModel, cameraViewModel: CamaraViewModel, viewModel: PersonaViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+
+    MostrarVentanaPrivacidad()
 
     val sharedPreferences = navController.context
         .getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
@@ -137,3 +150,51 @@ fun OptionButton(
 }
 
 val BlueBackground = Color(0xFF00395D)
+
+@Composable
+fun MostrarVentanaPrivacidad() {
+    val context = LocalContext.current
+    val dataStore = remember { DataStoreManager(context) }
+
+    val accepted by dataStore.privacyAccepted.collectAsState(initial = false)
+    var showDialog by rememberSaveable { mutableStateOf(false) }
+
+    // Solo mostramos el diálogo una vez cuando se sabe que no ha aceptado
+    LaunchedEffect(accepted) {
+        if (!accepted) {
+            showDialog = true
+        }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = {}, // Evita que se cierre al tocar afuera
+            title = { Text("Política de privacidad") },
+            text = {
+                Text(
+                        "Con el objetivo de brindarte una experiencia más segura y eficiente dentro de esta aplicación, se te informa que como parte del proceso de autenticación, se tomará una fotografía tuya con fines exclusivos de reconocimiento facial.\n" +
+                        "\n" +
+                        "La imagen capturada será utilizada únicamente para validar tu identidad durante el uso de la aplicación. Esta imagen:\n" +
+                        "\n" +
+                        "- Se almacenará de manera segura en servidores protegidos.\n" +
+                        "\n" +
+                        "- No será compartida, difundida ni utilizada para ningún otro propósito distinto al aquí mencionado.\n" +
+                        "\n" +
+                        "- No será usada con fines publicitarios, comerciales ni maliciosos.\n" +
+                        "\n" +
+                        "Al presionar el botón \"Aceptar\", estás dando tu consentimiento explícito para que la aplicación capture tu fotografía y la utilice con el fin mencionado." +
+                        ".")
+            },
+            confirmButton = {
+                Button(onClick = {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        dataStore.setPrivacyAccepted(true)
+                    }
+                    showDialog = false
+                }) {
+                    Text("Aceptar")
+                }
+            }
+        )
+    }
+}

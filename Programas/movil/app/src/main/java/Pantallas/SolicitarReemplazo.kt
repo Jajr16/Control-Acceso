@@ -111,7 +111,7 @@ fun SolicitarReemplazo(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(BlueBackground)
+                    .background(Color.White)
                     .padding(padding)
             ) {
                 Column(

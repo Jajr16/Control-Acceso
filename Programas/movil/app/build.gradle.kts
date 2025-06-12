@@ -75,6 +75,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.5.0")
     implementation(libs.accompanist.permissions)
     implementation(libs.face.detection)
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 
     //implementation("com.github.chrisbanes:photoview:2.3.0")
     implementation(libs.androidx.camera.camera2)
